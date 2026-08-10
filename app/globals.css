@@ -98,6 +98,50 @@ select.field {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
+   The wordmark. See components/Mark.tsx for what is his and what is not.
+
+   `currentColor`, deliberately: his mark is monochrome and takes its colour from
+   whatever it sits on — black over the sun on his own artwork, bone in this site's
+   navigation. A two-tone version was the first attempt and it invented a brand
+   decision he had not made.
+   ─────────────────────────────────────────────────────────────────────────── */
+.mg-mark {
+  display: inline-flex;
+  flex-direction: column;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  /* Tight enough that the letters nearly touch, which is how his are set. */
+  letter-spacing: -0.055em;
+  /* Under 1 so the two rows can meet on a shared axis rather than sitting apart
+     with a leading gap between them. */
+  line-height: 0.74;
+  white-space: nowrap;
+}
+.mg-mark-row {
+  display: block;
+}
+/* The reflection. Measured off his logo: a vertical flip, not a 180° rotation — see
+   the numbers in Mark.tsx.
+
+   The two rows TOUCH and do not overlap, and that is measured too rather than
+   eyeballed. The row-ink profile of his lockup has two peaks with a clear dip
+   between them at 51% of the height, which is what abutting rows look like;
+   overlapping rows would show one merged band. A first attempt pulled the mirror up
+   by -0.06em and swallowed the bottoms of the letters above it.
+
+   At `line-height: 0.74` the line box is about one cap height, so consecutive rows
+   place their caps adjacent, and flipping the second puts its baseline at its own
+   top edge — the two baselines then meet with no extra margin at all. The lockup
+   comes out at 2.18:1 against his 2.40:1, and the remainder is a letterform
+   difference rather than a spacing one: his glyphs are squarer and wider than
+   anything in this build's type. Loosening the tracking to chase the number would
+   make it look LESS like his, because his letters nearly touch. */
+.mg-mark-flip {
+  transform: scaleY(-1);
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
    The sun. See components/Sun.tsx for why it is drawn rather than photographed,
    and why nothing that moves carries a blur filter.
 

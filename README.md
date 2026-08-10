@@ -114,9 +114,16 @@ to leave alone.
       An operator who will not DM a stranger currently has no way to reach him at all.
 - [ ] **Who processes his payments** — and has anyone ever asked them about the cannabis
       education category? Everything about how money moves depends on this answer.
-- [ ] **His logo, as a file.** `components/Mark.tsx` is a stand-in and says so. The real mark
-      cannot be traced from a screenshot: the letters overhang the sun onto pure black, so the
-      parts that leave the disc are indistinguishable from the background.
+- [ ] **His logo, as a file — the letterforms only.** `components/Mark.tsx` now reproduces the
+      lockup's actual construction: MIGAS set once, then again directly beneath as a vertical
+      mirror, the two rows meeting on a shared axis. That was verified against his artwork
+      rather than assumed — masking the letters off the sun and comparing the halves gives an
+      intersection-over-union of 0.42 for a vertical flip against 0.37 for a 180° rotation and
+      0.13 for anything unmirrored, and his row-ink profile has two peaks with a dip at 51%,
+      which is what abutting rows look like. What is still missing is the letterforms: his are
+      heavy and angular, closer to blackletter, and they cannot be traced from a screenshot
+      because the strokes overhang the disc onto pure black where they are indistinguishable
+      from the background.
 - [ ] **Consulting rates.** `SESSIONS`. He has never published any, so $150/$300/$500 is a
       proposal built from published comparables in the niche and from the principle that a live
       hour should cost more than a $200 guide. It should not survive contact with him.

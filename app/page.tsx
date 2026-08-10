@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Sun from "@/components/Sun";
+import { Mark } from "@/components/Mark";
 import { GuideCard, ReviewCard, SessionCard } from "@/components/cards";
 import {
   BUNDLE,
@@ -65,7 +66,21 @@ export default function Home() {
               behind the copy, which matters because `bone` on the disc measures 3.40:
               enough for a display heading, not enough for a paragraph. No paragraph is
               ever allowed over it. */}
-          <Sun className="reveal pointer-events-none mx-auto w-[86%] max-w-[380px] lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]" />
+          <div className="reveal pointer-events-none relative mx-auto w-[86%] max-w-[380px] lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]">
+            <Sun />
+            {/* His own device: the mark in near-black, over the fire. It appears only where the
+                disc is whole — on a wide screen the sun is cropped off the frame and there is
+                no room for a 2.4:1 lockup on a crescent.
+
+                On contrast: WCAG 1.4.3 explicitly exempts "text that is part of a logo or brand
+                name", which is the one place on this site where laying type over a gradient is
+                not a machine-checkable-contrast problem being waved away. Everything that is
+                actually text still sits on flat ground. */}
+            <Mark
+              stacked
+              className="absolute left-1/2 top-[47%] -translate-x-1/2 -translate-y-1/2 text-[min(17vw,66px)] text-ink lg:hidden"
+            />
+          </div>
         </div>
       </section>
 
