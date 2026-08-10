@@ -1,0 +1,13 @@
+import { chromium } from 'playwright-core';
+const b = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium' });
+const p = await b.newPage({ viewport: { width: 1440, height: 900 }, deviceScaleFactor: 3 });
+await p.goto('http://127.0.0.1:4491/', { waitUntil: 'networkidle' });
+await p.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
+await p.waitForTimeout(900);
+const bar = p.locator('footer > div').last();
+await bar.screenshot({ path: '/home/claude/migas-shots/credit-rest.png' });
+await p.locator('.gw-credit').hover();
+await p.waitForTimeout(600);
+await bar.screenshot({ path: '/home/claude/migas-shots/credit-hover.png' });
+console.log('mark height:', await p.evaluate(() => Math.round(document.querySelector('.gw-credit-mark').getBoundingClientRect().height) + 'px'));
+await b.close();

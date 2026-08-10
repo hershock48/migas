@@ -1,3 +1,17 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   Tailwind directives below. If a deployed build ever serves this file with
+   `@tailwind base;` still in it as literal text, PostCSS ran without the Tailwind
+   plugin — the browser drops those lines silently and every utility class on the
+   site stops working while the hand-written rules keep going. It looks like a CDN
+   fault. It is not.
+
+   That happened once. .gitignore carried `/*.mjs`, which matched
+   postcss.config.mjs, so the config was never committed and Vercel built without
+   it. Committing the file was not enough on its own: Vercel restored the build
+   cache from the broken deployment and Next's CSS cache key does not include the
+   PostCSS config, so it served the stale stylesheet anyway. This comment exists
+   partly to change the hash of this file and force that recompile.
+   ───────────────────────────────────────────────────────────────────────────── */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
