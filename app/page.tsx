@@ -155,16 +155,33 @@ export default function Home() {
           <p className="eyebrow">In their words</p>
           <h2 className="mt-4 text-3xl sm:text-4xl">What growers say after.</h2>
         </div>
-        <div className="reveal mt-10 grid gap-6 md:grid-cols-3">
-          {REVIEWS.map((r, i) => (
-            <ReviewCard key={i} quote={r.quote} who={r.who} context={r.context} />
-          ))}
-        </div>
-        <p className="reveal mt-8 text-sm text-muted">
-          <Link href="/reviews" className="text-gas hover:underline">
-            Read all of them
-          </Link>
-        </p>
+        {/* Three identical "to supply" cards side by side read as a rendering fault rather
+            than as a gap. While there is no real review text, this is one panel; the moment
+            any of them is real, the grid comes back on its own. */}
+        {REVIEWS.some((r) => !r.quote.startsWith("PLACEHOLDER")) ? (
+          <>
+            <div className="reveal mt-10 grid gap-6 md:grid-cols-3">
+              {REVIEWS.map((r, i) => (
+                <ReviewCard key={i} quote={r.quote} who={r.who} context={r.context} />
+              ))}
+            </div>
+            <p className="reveal mt-8 text-sm text-muted">
+              <Link href="/reviews" className="text-gas hover:underline">
+                Read all of them
+              </Link>
+            </p>
+          </>
+        ) : (
+          <div className="reveal mt-10 max-w-3xl rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-7">
+            <p className="eyebrow">To supply</p>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              Six reviews exist on the current site, as screenshots &mdash; which means Google
+              cannot read a word of them and neither can a screen reader. Send the text and
+              they go here, and into structured data, so they can surface under his name in
+              search results. No invented testimonials in the meantime.
+            </p>
+          </div>
+        )}
       </section>
 
       {/* ── Shop, told the truth ─────────────────────────────────────────────

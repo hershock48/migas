@@ -34,10 +34,16 @@ export default function Footer() {
               <a href={SITE.instagram} className="text-muted hover:text-gas">Instagram</a>
             </li>
             <li>
-              {/* Reads the constant, so when the real address lands it is one edit. */}
-              <a href={`mailto:${SITE.email}`} className="text-muted hover:text-gas">
-                {SITE.email}
-              </a>
+              {/* Reads the constant, so when the real address lands it is one edit — and
+                  while it is still a placeholder this renders as plain text rather than a
+                  mailto: link that opens a mail client addressed to nobody. */}
+              {SITE.email.startsWith("PLACEHOLDER") ? (
+                <span className="text-muted">Email &mdash; to be supplied</span>
+              ) : (
+                <a href={`mailto:${SITE.email}`} className="text-muted hover:text-gas">
+                  {SITE.email}
+                </a>
+              )}
             </li>
           </ul>
         </div>
