@@ -292,10 +292,34 @@ select.field {
 }
 
 /* ── Disc ────────────────────────────────────────────────────────────────── */
+/* THE DISC IS MASKED, NOT JUST ROUNDED, AND THIS IS A BUG FIX.
+   Reported from an iPhone: the sun rendered as a grey smoky SQUARE with the orange disc
+   sitting inside it. `border-radius: 50%` plus `overflow: hidden` was the only thing
+   holding the circular clip, and that is not enough here, because this element contains
+   nine children that get promoted to their own compositing layers -- `will-change` and
+   `mix-blend-mode` on the churn tiles, transform animations on the cells, the spots and
+   the churn. A composited descendant is clipped by an ancestor's overflow BOX. Its
+   border-radius does not travel with that clip. The box is a square, so the escaping
+   layer is a square.
+   The escapees explain both halves of the report exactly. The churn tiles sit at
+   `inset: -50%`, so unclipped they fill the whole square -- that is the frame. And
+   `overlay` / `soft-light` noise needs warm pixels underneath to read as plasma; over the
+   near-black page outside the disc it resolves to raw mid-grey -- that is the smoke.
+   Confirmed by elimination rather than by reproducing it, because headless WebKit on Linux
+   renders it correctly and only a real device accelerates this path: on his phone the
+   corona and the spokes are both fine, and they are precisely the layers with no
+   composited children. This disc is the only layer that has any, and the only one broken.
+   A mask clips the composited result, so it holds where a border-radius does not. The
+   border-radius and overflow stay -- they are not wrong, they are just not sufficient
+   alone, and on engines where they do work they save the mask a compositing pass. 99.6%
+   rather than 100% keeps the mask's own edge a hair inside the disc so it cannot leave a
+   pale ring of its own. */
 .sun-disc {
   border-radius: 50%;
   overflow: hidden;
   isolation: isolate;
+  -webkit-mask-image: radial-gradient(closest-side circle, #000 99.6%, transparent 100%);
+  mask-image: radial-gradient(closest-side circle, #000 99.6%, transparent 100%);
 }
 .sun-disc > * {
   position: absolute;
@@ -452,7 +476,12 @@ select.field {
 .sun-churn {
   inset: -50%;
   background-repeat: repeat;
-  will-change: transform;
+  /* `will-change: transform` was here and is deliberately gone. It bought nothing — a
+     transform animation is handed to the compositor anyway — and it is the most aggressive
+     promotion hint in this file, on the element that also carries a blend mode and is twice
+     the disc's size. That combination is what escaped the circular clip on iOS and drew the
+     grey square. Removing the hint does not fix that on its own, which is why the disc is
+     masked, but there is no reason to keep asking for the promotion that made it worst. */
 }
 .sun-churn-a {
   mix-blend-mode: overlay;
