@@ -33,10 +33,43 @@ export default function Home() {
         <div className="wrap relative grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:min-h-[680px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16">
           <div className="reveal relative">
             <p className="eyebrow">{SITE.region} &middot; Indoor cultivators worldwide</p>
-            <h1 className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]">
-              Run the room
+            {/* HIS WORDS, AND THE ONE WORD THAT EARNS AN ANIMATION.
+                "grow with us" is his own headline, lifted whole. What it buys that "Run the room
+                like a facility" could not: that line only spoke to somebody who does NOT yet run a
+                facility, while the tagline and metadata under it target licensed operators — the
+                h1 and the positioning were addressing two different buyers. His line has no such
+                problem, and it is unimpeachably his.
+
+                `aria-label` on the heading rather than a visually-hidden duplicate: GROW is split
+                into four spans so each letter can rise on its own, and some screen readers spell
+                out a word broken into inline-blocks. The label gives assistive tech the clean
+                string; the DOM text still concatenates to "Grow with us." for a crawler. */}
+            <h1
+              aria-label="Grow with us."
+              className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]"
+            >
+              <span className="grow-word text-flare">
+                {"Grow".split("").map((c, i) => (
+                  <span
+                    key={i}
+                    className="grow-letter"
+                    style={{
+                      animationDelay: `${0.12 + i * 0.09}s`,
+                      // Alternating lean, so they uncurl in opposite directions like real shoots
+                      // rather than rising as one rigid block.
+                      ["--lean" as string]: `${i % 2 ? 5 : -5}deg`,
+                    }}
+                  >
+                    {c}
+                  </span>
+                ))}
+              </span>
+              {/* A real space before the break: <br /> contributes nothing to textContent, so
+                  without this the heading reads "Growwith us." to anything parsing the DOM rather
+                  than rendering it — a crawler, a reader mode, a scraper. The old headline had the
+                  same fault ("Run the roomlike a facility."). Invisible on screen either way. */}{" "}
               <br />
-              like a <span className="text-flare">facility</span>.
+              with us.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
               Consulting, SOPs and full grow programs from a cultivator who runs a licensed

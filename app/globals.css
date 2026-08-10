@@ -112,6 +112,70 @@ select.field {
 }
 
 /* ───────────────────────────────────────────────────────────────────────────
+   "Grow" grows. The hero's first word, one letter at a time.
+
+   Each letter scales up from the BASELINE, not from its own middle:
+   `transform-origin: 50% 100%` on an inline-block puts the origin at the bottom
+   centre, so the letters rise out of the line of text the way a shoot comes out of
+   soil. Scaled from the centre they would inflate in place, which reads as a zoom
+   and not as growth. That distinction is the whole effect.
+
+   Three things make it read as growing rather than as a transform:
+
+   1. THE STAGGER. 90ms apart, left to right, so it is four shoots coming up rather
+      than one word getting bigger.
+   2. THE OVERSHOOT. cubic-bezier(0.22, 1.35, 0.36, 1) carries past 100% and settles
+      back. Linear growth reads mechanical; living things overshoot and settle.
+   3. THE UNCURL. Each letter starts leaning, alternating direction via --lean set
+      per letter in the markup, and straightens as it rises. Without it four letters
+      scaling in sequence still read as a rigid block being stretched.
+
+   It also warms as it grows -- `ember` to `flare` -- so the word heats up on its way
+   in, which is the one place the headline touches the sun's palette.
+
+   RUNS ONCE, ON LOAD. A looping headline is a distraction, and this is the first
+   thing on the page. `both` fill-mode holds the collapsed state through the delay so
+   there is no flash of full-size type before it starts.
+   ─────────────────────────────────────────────────────────────────────────── */
+.grow-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+.grow-letter {
+  display: inline-block;
+  transform-origin: 50% 100%;
+  /* Without this, a letter mid-overshoot can nudge its neighbours and the word
+     shuffles as it grows. */
+  will-change: transform;
+  animation: growUp 820ms cubic-bezier(0.22, 1.35, 0.36, 1) both;
+}
+@keyframes growUp {
+  from {
+    transform: scaleY(0.05) scaleX(0.82) rotate(var(--lean, 0deg));
+    opacity: 0;
+    color: theme("colors.ember.DEFAULT");
+  }
+  55% {
+    opacity: 1;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+    color: theme("colors.flare");
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Explicit `none` rather than relying on the global 0.001ms duration. With
+     `animation-fill-mode: both`, an engine that shortens the duration still holds a
+     keyframe, and the resting state here — no transform, full size — is the correct
+     still frame. Turning the animation off outright is the only way to be sure the
+     type is never left collapsed. */
+  .grow-letter {
+    animation: none;
+  }
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
    Glazed Web studio credit — pairs with components/GlazedCredit.
    Everything is scoped to .gw-credit. The words inherit the footer's own colour
    and size; the mark carries Glazed's own palette, because it is a logo and a
