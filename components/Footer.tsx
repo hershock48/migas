@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { NAV, SITE } from "@/lib/site";
 import { Mark } from "./Mark";
+import GlazedCredit from "./GlazedCredit";
 
 export default function Footer() {
   return (
@@ -52,10 +53,11 @@ export default function Footer() {
       <div className="border-t border-line">
         <div className="wrap flex flex-col gap-2 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
-          <p>
-            Built by{" "}
-            <a href="https://www.glazedweb.com" className="text-flare hover:underline">Glazed Web</a>
-          </p>
+          {/* Plain register for this client, deliberately: he sells SOPs to licensed
+              commercial operators, and a donut joke in his footer would be the studio
+              talking about itself while a facility director is mid-decision. Warmer
+              clients take a warmer line — the component's `line` prop is the knob. */}
+          <GlazedCredit line="Built by" />
         </div>
       </div>
     </footer>
