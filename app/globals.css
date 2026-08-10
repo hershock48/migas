@@ -141,6 +141,23 @@ select.field {
   display: inline-block;
   white-space: nowrap;
 }
+/* THE LETTERS ARE MADE OF THE SUN. Same generated fire tile as the disc, clipped to the
+   glyphs, instead of a flat flare-yellow fill.
+
+   `background-clip: text` with a transparent colour, per LETTER rather than on the word:
+   each letter carries its own transform for the grow animation, and a transformed
+   descendant is not reliably clipped by an ancestor's text-clip. Per-letter always works,
+   and at this size the slight discontinuity between letters reads as texture rather than as
+   a seam.
+
+   The tile is sized to about one and a half letter-heights and positioned at the centre, so
+   each glyph shows a hot region rather than whatever happened to land there — a letter that
+   catches only a dark void in the tile reads as a hole. And it drifts, on the same slow
+   creep as the disc's own surface, so the type smoulders instead of sitting still.
+
+   The fallback matters: if background-clip: text is unsupported, `color: transparent` would
+   leave the headline invisible. `@supports` gates the whole treatment, so anything that
+   cannot do it keeps the solid flare colour it had before. */
 .grow-letter {
   display: inline-block;
   transform-origin: 50% 100%;
@@ -169,6 +186,43 @@ select.field {
     color: theme("colors.flare");
   }
 }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .grow-letter {
+    /* A PURPOSE-BUILT TILE, not the disc's one blended lighter. Two attempts at blending
+       failed: the disc tile averages luminance 69 — most of its area is void — so glyphs
+       filled with it raw came out nearly black, `overlay` dragged the base down as hard as it
+       lifted it, and `screen` measured no better in practice, glyph median 68 against the
+       ~110 where type stops reading as murky.
+       So noise/ember-text.png is the same generator with a TEXT palette: its darkest tone is
+       already a mid ember rather than a void, so the floor a glyph can hit is 109 and the
+       median is 165 by construction — solved for, not guessed. The filament structure is
+       identical, only the tone range is lifted. One layer, no blend mode, nothing to depend on.
+       Measured: min 109, median 165, max 226. */
+    background-image: url("/noise/ember-text.png");
+    background-repeat: repeat;
+    /* 150% of the line box: big enough that a glyph lands on structure rather than one flat
+       patch, small enough that the filaments still read as filaments. */
+    background-size: 150% 150%;
+    background-position: 50% 55%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    animation-name: growUp, growSmoulder;
+    animation-duration: 1150ms, 22s;
+    animation-timing-function: cubic-bezier(0.2, 1.28, 0.32, 1), linear;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: both, none;
+  }
+  /* The colour keyframes in growUp cannot tint fire, so the warm-up is dropped here and the
+     letters simply arrive already made of it. */
+  @keyframes growSmoulder {
+    to {
+      background-position: 150% 55%;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   /* Explicit `none` rather than relying on the global 0.001ms duration. With
      `animation-fill-mode: both`, an engine that shortens the duration still holds a
@@ -340,98 +394,99 @@ select.field {
 
 
 /* ── The fire outside the limb ────────────────────────────────────────────
-   The same turbulent tiles as the surface, masked to a ring so they exist only beyond
-   the disc.
+   It STREAMS OUTWARD. That is the correction, and it took three passes to hear.
 
-   This replaces the radial-streak layer: two repeating conic gradients throwing straight
-   rays out from the centre. Zoomed in on a phone they read as ruled pencil lines, and
-   being low-alpha warm grey over near-black they averaged to a dull olive that turned the
-   whole outside of the sun grey-green. His reference has no straight line anywhere in it
-   — outside the limb is the SAME churning filamentary fire as the surface, blazing where
-   it meets the edge and thinning outward.
+   He marked up the reference for me: X's struck through the inside of the sphere,
+   meaning "not this", and arrows pointing radially out from the limb, meaning "this".
+   What was here before was isotropic turbulence translating diagonally — correct
+   texture, no direction — so it read as a static halo sitting around the disc rather
+   than as material leaving it.
 
-   THE MASK IS THE WHOLE TRICK. Transparent through 58%, which is where the disc ends
-   inside this 168%-wide box (100/168 = 59.5%), then straight to full just outside it and
-   a long fall to nothing by 96%. The fire hugs the limb and dissolves into the page with
-   no edge of its own.
+   THE MASK STAYS STILL WHILE THE TEXTURE MOVES THROUGH IT. This was the thing that
+   made it work. Scaling a masked element scales its mask along with it, so the ring's
+   inner edge lifts off the limb and opens a gap. So this wrapper never moves and owns
+   the mask — a fixed window sitting on the edge — and the layers inside scale outward
+   through it. The material flows; the window does not.
 
-   Composited normally rather than with `screen`: bright fire over a near-black page is
-   already additive to the eye, and a blend layer here would spend from the same budget
-   the disc's churn uses. The two drift in opposite directions at scales and periods
-   sharing no factor, so the flow never resolves into one sheet sliding. */
+   The mask is transparent through 58%, which is where the disc ends inside this
+   168%-wide box (100/168 = 59.5%), then straight to full just outside it and a long
+   fall to nothing by 99%. So the fire is born at the limb and dissolves into the page
+   with no edge of its own.
+
+   This replaces `.sun-spokes`: two repeating conic gradients throwing straight rays
+   from the centre. Zoomed in on a phone they read as ruled pencil lines, and being
+   low-alpha warm grey over near-black they averaged to a dull olive that turned the
+   whole outside of the sun grey-green. */
 .sun-flame {
   inset: -34%;
   border-radius: 50%;
-  background-repeat: repeat;
-  /* SCREEN, and this was the other reason the outside looked wrong. Composited normally at
-     0.85 opacity, the tile's dark regions -- which are most of its area -- painted OVER the
-     corona's bloom and subtracted from it, leaving a dark gap between the disc and the fire
-     beyond it. Glowing material has to be additive: screened, the dark threads contribute
-     nothing and only the bright ones build up, so the flame field lies on top of the bloom
-     instead of blotting it out. Two blend layers here, but on `.sun` rather than inside
-     `.sun-disc`, so it is not spending the disc's measured budget. */
   -webkit-mask-image: radial-gradient(
     closest-side circle,
     transparent 58%,
     #000 62%,
-    rgba(0, 0, 0, 0.85) 72%,
-    rgba(0, 0, 0, 0.35) 85%,
-    transparent 96%
+    rgba(0, 0, 0, 0.92) 74%,
+    rgba(0, 0, 0, 0.5) 88%,
+    transparent 99%
   );
   mask-image: radial-gradient(
     closest-side circle,
     transparent 58%,
     #000 62%,
-    rgba(0, 0, 0, 0.85) 72%,
-    rgba(0, 0, 0, 0.35) 85%,
-    transparent 96%
+    rgba(0, 0, 0, 0.92) 74%,
+    rgba(0, 0, 0, 0.5) 88%,
+    transparent 99%
   );
 }
-.sun-flame-a {
+/* Each layer is the fire texture, scaled up about the disc's own centre so every
+   filament travels straight out along its own radius. A translate cannot do this: it
+   moves the whole field one way, which is what made the old version look like a sheet
+   sliding past. A scale about the centre IS radial motion, by definition. */
+.sun-flame-fx {
+  position: absolute;
+  inset: 0;
+  display: block;
+  border-radius: 50%;
+  /* SCREEN, or the tile's dark half — most of its area — paints over the bloom beneath
+     and subtracts from it, which is what left a dark gap between the disc and the fire.
+     Glowing material has to be additive. */
   mix-blend-mode: screen;
-  opacity: 0.85;
   background-image: url("/noise/plasma-a.png");
-  background-size: 60% 60%;
-  animation: sunFlameA 26s linear infinite;
+  background-repeat: repeat;
+  background-size: 46% 46%;
+  animation: flameOut 7.5s linear infinite;
 }
-/* A DIFFERENT MASK ON THE SECOND LAYER, on purpose. With both sharing one radial mask the
-   fire ended at a single clean radius and read as a doughnut — a halo ring rather than flame
-   streaming off. Giving B a wider, longer falloff makes the outer boundary the sum of two
-   different curves, so it thins out unevenly and has no edge of its own. */
-.sun-flame-b {
-  -webkit-mask-image: radial-gradient(
-    closest-side circle,
-    transparent 57%,
-    rgba(0, 0, 0, 0.9) 64%,
-    rgba(0, 0, 0, 0.55) 80%,
-    rgba(0, 0, 0, 0.2) 92%,
-    transparent 100%
-  );
-  mask-image: radial-gradient(
-    closest-side circle,
-    transparent 57%,
-    rgba(0, 0, 0, 0.9) 64%,
-    rgba(0, 0, 0, 0.55) 80%,
-    rgba(0, 0, 0, 0.2) 92%,
-    transparent 100%
-  );
+/* Phase-offset by a third of the cycle each. One layer expanding and fading leaves the
+   ring empty between repeats; three staggered means there is always material at every
+   radius and the flow never visibly restarts. The finer tile on the middle one so the
+   three do not move as one body. */
+.ff-1 {
+  animation-delay: 0s;
 }
-.sun-flame-b {
-  mix-blend-mode: screen;
-  opacity: 0.6;
+.ff-2 {
   background-image: url("/noise/plasma-b.png");
-  background-size: 38% 38%;
-  animation: sunFlameB 17s linear infinite;
+  background-size: 30% 30%;
+  animation-delay: -2.5s;
 }
-/* Each translates by exactly one tile so the loop has no seam. */
-@keyframes sunFlameA {
-  to {
-    transform: translate(-60%, 60%);
+.ff-3 {
+  background-size: 58% 58%;
+  animation-delay: -5s;
+}
+/* Born at the limb, fading as it expands — material thins as it climbs away, so opacity
+   and radius are inversely related. Ends fully transparent so the wrap is invisible. */
+@keyframes flameOut {
+  0% {
+    transform: scale(1);
+    opacity: 0;
   }
-}
-@keyframes sunFlameB {
-  to {
-    transform: translate(38%, 38%);
+  14% {
+    opacity: 0.85;
+  }
+  55% {
+    opacity: 0.55;
+  }
+  100% {
+    transform: scale(1.62);
+    opacity: 0;
   }
 }
 

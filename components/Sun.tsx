@@ -141,8 +141,26 @@ export default function Sun({ className = "" }: { className?: string }) {
             has nothing like it: outside the limb is the SAME churning filamentary fire as the
             surface, brightest where it meets the edge and thinning outward. Straight lines do
             not appear anywhere in it. */}
-        <span className="sun-flame sun-flame-a" />
-        <span className="sun-flame sun-flame-b" />
+        {/* THE FIRE STREAMS OUTWARD, which is the whole point and what I had missed twice.
+            He drew it on the reference: X's through the inside of the sphere meaning "not
+            this", and arrows pointing radially OUT from the limb meaning "this". My exterior
+            was isotropic turbulence translating diagonally — textured, but with no direction
+            at all, so it read as a static halo.
+
+            THE MASK HAS TO STAY STILL WHILE THE TEXTURE MOVES THROUGH IT. Scaling the masked
+            element scales its mask too, so the ring's inner edge lifts off the limb and leaves
+            a gap. So the wrapper is static and owns the mask — a fixed window sitting on the
+            edge — and the layers inside it scale outward through that window. Material flows
+            out; the window does not move.
+
+            Three of them, phase-offset by a third of the cycle each, because one layer
+            expanding and fading leaves the ring empty between repeats. Staggered, there is
+            always material at every radius and the flow never restarts visibly. */}
+        <span className="sun-flame">
+          <span className="sun-flame-fx ff-1" />
+          <span className="sun-flame-fx ff-2" />
+          <span className="sun-flame-fx ff-3" />
+        </span>
 
         {/* Everything that leaves the surface, drawn BEHIND the disc.
 
