@@ -1,8 +1,10 @@
 "use server";
 
+import nodemailer from "nodemailer";
 import { INTAKE, SESSIONS, SITE } from "@/lib/site";
 import { PHOTO_LIMITS, type FormState } from "@/lib/forms";
 import { describeSlot, slotIsBookable } from "@/lib/slots";
+import { buildIcs, icsDataUrl } from "@/lib/ics";
 
 /**
  * Every form on the site posts to one of these three server actions.
@@ -14,6 +16,19 @@ import { describeSlot, slotIsBookable } from "@/lib/slots";
  * booking to one long form rather than to a dead button. That is the whole reason the
  * flow is not a fetch-and-render single-page thing.
  *
+ * NOTHING HERE IS RENTED. Mail goes out over plain SMTP through whatever mailbox he
+ * already pays for, using nodemailer — MIT, free, no vendor, no account, no per-message
+ * price, nothing that can raise a bill or change its terms. The first version of this file
+ * posted to a hosted email API, which meant the site could not deliver a booking without a
+ * third party's key and a third party's free-tier ceiling. That was the wrong shape for a
+ * one-man business, and it is gone.
+ *
+ * The photos ride along as MIME attachments on the same email, which is the other thing that
+ * removal fixed. There is no object store, no bucket, no signed upload URL and no storage
+ * bill, because a photo of a sick canopy has exactly one consumer — him — and he is already
+ * being sent a message. The brief and the pictures arrive together in his inbox, which is
+ * better than a link to a bucket anyway.
+ *
  * WHAT IS DELIBERATELY NOT HERE.
  *
  * No card is taken. That is not laziness, it is unresolved: Stripe's published
@@ -22,10 +37,6 @@ import { describeSlot, slotIsBookable } from "@/lib/slots";
  * PayPal. Which processor a cannabis-education business can actually use is a question
  * for him and whoever underwrites him, and building a checkout against the wrong answer
  * wastes the work twice. A booking request therefore reaches him and he invoices.
- *
- * No photo is stored. `storeUploads` is the seam and it currently only measures what
- * arrived. Doing it properly means client-direct upload to blob storage, and that needs
- * a token nobody should paste into a chat window. The README has the six lines.
  *
  * VALIDATION IS SERVER-SIDE AND MEANT IT. The client validates too, for speed, but
  * every rule below is enforced here, because the no-JS path can genuinely post a slot
@@ -42,70 +53,106 @@ const emailLooksReal = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
 const reference = () => `MG-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 
 /**
- * Notification transport. Resend, with the key set in the Vercel dashboard and never in
- * the repo. If it is missing the submission still succeeds for the visitor and the
- * brief is written to the server log, because a form that says "something went wrong"
- * when the fault is a missing environment variable trains people not to trust it.
+ * Mail, over SMTP, through a mailbox he already owns.
  *
- * The consequence, stated plainly for whoever deploys this: with no RESEND_API_KEY,
- * bookings exist only in the Vercel logs. Set it before launch.
+ * Credentials come from the environment and are set in the hosting dashboard — never in the
+ * repo, never in a commit. If SMTP is not configured the submission still SUCCEEDS for the
+ * visitor and the whole brief is written to the server log, because a form that reports
+ * "something went wrong" when the real fault is an unset environment variable teaches people
+ * that the form does not work. It does work; the delivery is what is missing, and that is the
+ * operator's problem to see in the logs, not the visitor's to puzzle over.
+ *
+ * Stated plainly for whoever deploys this: with no SMTP_HOST, bookings exist only in the
+ * server log. Set it before anyone real uses the site.
  */
-async function notify(subject: string, body: string) {
-  const key = process.env.RESEND_API_KEY;
-  const to = process.env.MIGAS_NOTIFY_TO ?? SITE.email;
-  if (!key || to.startsWith("PLACEHOLDER")) {
+type Attachment = { filename: string; content: Buffer; contentType?: string };
+
+function transport() {
+  const host = process.env.SMTP_HOST;
+  if (!host) return null;
+  const port = Number(process.env.SMTP_PORT ?? 587);
+  return nodemailer.createTransport({
+    host,
+    port,
+    // 465 is implicit TLS; 587 starts plaintext and upgrades with STARTTLS. Getting this
+    // backwards is the single most common SMTP misconfiguration and it fails by hanging.
+    secure: port === 465,
+    auth: process.env.SMTP_USER
+      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
+      : undefined,
+  });
+}
+
+async function sendMail(opts: {
+  to: string;
+  subject: string;
+  text: string;
+  attachments?: Attachment[];
+}) {
+  const t = transport();
+  const from = process.env.SMTP_FROM ?? process.env.SMTP_USER;
+  if (!t || !from || opts.to.startsWith("PLACEHOLDER")) {
     console.warn(
-      `[migas] Not emailed (RESEND_API_KEY or MIGAS_NOTIFY_TO unset). ${subject}\n${body}`
+      `[migas] Not sent — SMTP_HOST/SMTP_FROM unset, or recipient is a placeholder.\n` +
+        `to: ${opts.to}\nsubject: ${opts.subject}\n${opts.text}\n` +
+        `attachments: ${(opts.attachments ?? []).map((a) => a.filename).join(", ") || "none"}`
     );
     return false;
   }
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        from: process.env.MIGAS_NOTIFY_FROM ?? "MI Gas site <noreply@mi-gas.net>",
-        to: [to],
-        subject,
-        text: body,
-      }),
-    });
-    if (!res.ok) console.error(`[migas] Resend ${res.status}: ${await res.text()}`);
-    return res.ok;
+    await t.sendMail({ from, ...opts });
+    return true;
   } catch (err) {
-    console.error("[migas] Resend threw", err);
+    // Logged, not surfaced. The visitor has already done their part correctly.
+    console.error("[migas] SMTP send failed", err);
     return false;
   }
 }
 
+/** Where a booking notification goes. His own address, from lib/site.ts, unless the
+ *  environment overrides it. */
+const notifyTo = () => process.env.MIGAS_NOTIFY_TO ?? SITE.email;
+
 /**
- * The upload seam.
+ * Validate the uploaded photos and turn them into mail attachments.
  *
- * Right now it validates and counts. To make it real: `npm i @vercel/blob`, have the
- * browser upload straight to blob storage with a short-lived token, and post the
- * resulting URLs as text fields instead of file fields. That route also sidesteps the
- * request-body ceiling entirely, which is the actual reason to prefer it over making
- * this function store bytes.
+ * No storage, on purpose — see the note at the top of this file. The photos are attached to
+ * the brief and that is their whole journey: browser, request, email, his inbox. Nothing to
+ * host, nothing to expire, nothing to pay for, and no bucket full of strangers' grow rooms
+ * sitting around waiting to be a liability.
  */
-async function storeUploads(files: File[]): Promise<{ count: number; error?: string }> {
+async function readPhotos(files: File[]): Promise<{ attachments: Attachment[]; error?: string }> {
   const real = files.filter((f) => f && f.size > 0 && f.name);
   if (real.length > PHOTO_LIMITS.count) {
-    return { count: 0, error: `Up to ${PHOTO_LIMITS.count} photos.` };
+    return { attachments: [], error: `Up to ${PHOTO_LIMITS.count} photos.` };
   }
   let total = 0;
   for (const f of real) {
     if (!f.type.startsWith("image/")) {
-      return { count: 0, error: `${f.name} is not an image.` };
+      return { attachments: [], error: `${f.name} is not an image.` };
     }
     if (f.size > PHOTO_LIMITS.bytesEach) {
-      return { count: 0, error: `${f.name} is too large. Keep photos under 3 MB each.` };
+      return { attachments: [], error: `${f.name} is too large. Keep photos under 3 MB each.` };
     }
     total += f.size;
   }
   if (total > PHOTO_LIMITS.bytesTotal) {
-    return { count: 0, error: "Those photos are too large altogether. Try three instead of four." };
+    return {
+      attachments: [],
+      error: "Those photos are too large altogether. Try three instead of four.",
+    };
   }
-  return { count: real.length };
+  const attachments: Attachment[] = [];
+  for (const [i, f] of real.entries()) {
+    attachments.push({
+      // Renamed on the way through. A camera roll filename is noise in an inbox, and
+      // `IMG_4821.jpg` from four different growers in one week is worse than noise.
+      filename: `photo-${i + 1}${f.name.match(/\.[a-z0-9]+$/i)?.[0] ?? ".jpg"}`,
+      content: Buffer.from(await f.arrayBuffer()),
+      contentType: f.type,
+    });
+  }
+  return { attachments };
 }
 
 /* ── Booking ────────────────────────────────────────────────────────────────── */
@@ -155,7 +202,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       `That time is no longer open for a ${session.minutes}-minute session. Pick another.`;
   }
 
-  const photos = await storeUploads(fd.getAll("photos") as File[]);
+  const photos = await readPhotos(fd.getAll("photos") as File[]);
   if (photos.error) errors.photos = photos.error;
 
   if (Object.keys(errors).length) return { status: "error", errors, values };
@@ -173,32 +220,73 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     "THE ROOM",
     ...INTAKE.map((q) => `${q.label}\n  ${values[q.id] || "—"}`),
     "",
-    `Photos attached by the grower: ${photos.count}`,
-    photos.count > 0
-      ? "(Uploads are not stored yet — see storeUploads in app/actions.ts.)"
-      : "",
+    `Photos attached to this email: ${photos.attachments.length}`,
   ]
     .filter((l) => l !== null && l !== "")
     .join("\n");
 
   const ref = reference();
-  await notify(`[${ref}] ${session!.name} — ${name} — ${when}`, brief);
+
+  // One invite, built once, sent to both sides. His copy makes his own calendar the record
+  // of what is booked — which is the closest this build gets to solving availability, and
+  // it is closer than a weekly pattern in a config file will ever get on its own.
+  const ics = buildIcs({
+    uid: `${ref.toLowerCase()}@mi-gas.net`,
+    localStart: slot,
+    minutes: session!.minutes,
+    title: `${SITE.name} — ${session!.name} — ${name}`,
+    description: brief,
+    attendeeEmail: email,
+  });
+  const invite: Attachment = {
+    filename: `${ref}.ics`,
+    content: Buffer.from(ics, "utf8"),
+    contentType: "text/calendar; charset=utf-8; method=REQUEST",
+  };
+
+  await sendMail({
+    to: notifyTo(),
+    subject: `[${ref}] ${session!.name} — ${name} — ${when}`,
+    text: brief,
+    attachments: [...photos.attachments, invite],
+  });
+
+  // And a confirmation to the grower. Deliberately contains NO text they supplied — only the
+  // session name, the time and the reference. A form that will email an arbitrary address is
+  // a relay; one whose body an attacker cannot influence is not worth abusing.
+  await sendMail({
+    to: email,
+    subject: `${SITE.name} — booking request received (${ref})`,
+    text: [
+      `Your request for a ${session!.name} is with ${SITE.name}.`,
+      "",
+      `When:      ${when}`,
+      `Length:    ${session!.minutes} minutes`,
+      `Reference: ${ref}`,
+      "",
+      "He reads your intake and your photos before the call, and will confirm the time",
+      "by reply along with an invoice to settle beforehand.",
+      "",
+      "A calendar invite is attached.",
+    ].join("\n"),
+    attachments: [invite],
+  });
 
   return {
     status: "done",
     reference: ref,
+    ics: icsDataUrl(ics),
     summary: [
       `${session!.name}, ${session!.minutes} minutes`,
       when,
       `${money(session!.price)} — invoiced before the call`,
-      // "0 photos received" is a worse thing to read than an ask. When somebody skipped
-      // the most useful field on the form, the confirmation is the last good moment to
-      // get it back.
-      photos.count === 0
-        ? "No photos yet — reply to the confirmation with any and he will read them before the call"
-        : photos.count === 1
-          ? "1 photo received"
-          : `${photos.count} photos received`,
+      // "0 photos received" is a worse thing to read than an ask. When somebody skipped the
+      // most useful field on the form, the confirmation is the last good moment to get it.
+      photos.attachments.length === 0
+        ? "No photos yet — reply to your confirmation email with any and he will read them before the call"
+        : photos.attachments.length === 1
+          ? "1 photo sent with your intake"
+          : `${photos.attachments.length} photos sent with your intake`,
     ],
   };
 }
@@ -215,7 +303,11 @@ export async function notifyRestock(_prev: FormState, fd: FormData): Promise<For
   if (!emailLooksReal(email)) {
     return { status: "error", errors: { email: "That does not look like an email address." }, values: { email } };
   }
-  await notify("Restock list signup", `${email}\nWants to hear about the next merch drop.`);
+  await sendMail({
+    to: notifyTo(),
+    subject: "Restock list signup",
+    text: `${email}\nWants to hear about the next merch drop.`,
+  });
   return { status: "done", summary: ["You are on the list for the next drop."] };
 }
 
@@ -240,7 +332,11 @@ export async function requestGuide(_prev: FormState, fd: FormData): Promise<Form
   if (!emailLooksReal(email)) errors.email = "An email address he can send it to.";
   if (Object.keys(errors).length) return { status: "error", errors, values: { name, email } };
 
-  await notify(`Guide request — ${guide || "unspecified"} — ${name}`, `${name} <${email}>\nWants: ${guide || "—"}`);
+  await sendMail({
+    to: notifyTo(),
+    subject: `Guide request — ${guide || "unspecified"} — ${name}`,
+    text: `${name} <${email}>\nWants: ${guide || "—"}`,
+  });
   return {
     status: "done",
     summary: ["Request sent. He replies with the invoice and the download."],
@@ -264,10 +360,11 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
   if (values.message.length < 10) errors.message = "A sentence or two about what you need.";
   if (Object.keys(errors).length) return { status: "error", errors, values };
 
-  await notify(
-    `Question — ${values.name}${values.topic ? ` — ${values.topic}` : ""}`,
-    `${values.name} <${values.email}>\nTopic: ${values.topic || "—"}\n\n${values.message}`
-  );
+  await sendMail({
+    to: notifyTo(),
+    subject: `Question — ${values.name}${values.topic ? ` — ${values.topic}` : ""}`,
+    text: `${values.name} <${values.email}>\nTopic: ${values.topic || "—"}\n\n${values.message}`,
+  });
   return {
     status: "done",
     summary: ["Message sent. He answers from the same inbox the bookings land in."],

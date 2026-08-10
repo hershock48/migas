@@ -29,7 +29,7 @@ export default function Shop() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Merch</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            Between <span className="text-gas">runs</span>.
+            Between <span className="text-flare">runs</span>.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             {allOut
@@ -38,7 +38,7 @@ export default function Shop() {
           </p>
         </div>
 
-        <div className="reveal mt-10 max-w-xl rounded-xl2 border border-gas/40 bg-ink-panel p-7">
+        <div className="reveal mt-10 max-w-xl rounded-xl2 border border-ember/60 bg-ink-panel p-7">
           <p className="eyebrow">Restock list</p>
           <h2 className="mt-3 text-xl text-bone">Hear about the drop first.</h2>
           <MiniForm
@@ -62,7 +62,7 @@ export default function Shop() {
               <div className="relative flex aspect-[4/3] items-center justify-center border-b border-line bg-ink px-6">
                 <span
                   aria-hidden
-                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_50%_at_50%_0%,rgba(124,224,75,0.10),transparent_70%)]"
+                  className="pointer-events-none absolute inset-0 bg-[radial-gradient(65%_55%_at_50%_0%,rgba(240,114,44,0.16),transparent_72%)]"
                 />
                 <span className="relative text-center font-display text-2xl font-extrabold uppercase leading-tight tracking-tight text-bone/70">
                   {m.kind}

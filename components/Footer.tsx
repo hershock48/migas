@@ -16,7 +16,7 @@ export default function Footer() {
           <ul className="mt-4 space-y-2.5 text-sm">
             {NAV.map((i) => (
               <li key={i.href}>
-                <Link href={i.href} className="text-muted hover:text-gas">
+                <Link href={i.href} className="text-muted hover:text-flare">
                   {i.label}
                 </Link>
               </li>
@@ -28,10 +28,10 @@ export default function Footer() {
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-bone">Elsewhere</h2>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li>
-              <a href={SITE.patreon} className="text-muted hover:text-gas">Patreon</a>
+              <a href={SITE.patreon} className="text-muted hover:text-flare">Patreon</a>
             </li>
             <li>
-              <a href={SITE.instagram} className="text-muted hover:text-gas">Instagram</a>
+              <a href={SITE.instagram} className="text-muted hover:text-flare">Instagram</a>
             </li>
             <li>
               {/* Reads the constant, so when the real address lands it is one edit — and
@@ -40,7 +40,7 @@ export default function Footer() {
               {SITE.email.startsWith("PLACEHOLDER") ? (
                 <span className="text-muted">Email &mdash; to be supplied</span>
               ) : (
-                <a href={`mailto:${SITE.email}`} className="text-muted hover:text-gas">
+                <a href={`mailto:${SITE.email}`} className="text-muted hover:text-flare">
                   {SITE.email}
                 </a>
               )}
@@ -54,7 +54,7 @@ export default function Footer() {
           <p>&copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
           <p>
             Built by{" "}
-            <a href="https://www.glazedweb.com" className="text-gas hover:underline">Glazed Web</a>
+            <a href="https://www.glazedweb.com" className="text-flare hover:underline">Glazed Web</a>
           </p>
         </div>
       </div>

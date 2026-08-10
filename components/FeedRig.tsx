@@ -55,18 +55,18 @@ export default function FeedRig({ className = "" }: { className?: string }) {
           </filter>
         </defs>
 
-        <ellipse cx="118" cy="232" rx="94" ry="64" filter="url(#rigBloom)" className="fill-gas/[0.07]" />
+        <ellipse cx="118" cy="232" rx="94" ry="64" filter="url(#rigBloom)" className="fill-flare/[0.07]" />
 
         {/* ── Manifold ─────────────────────────────────────────────────────── */}
         <rect x="26" y="20" width="184" height="11" rx="5.5" className="fill-rig-metal" />
         <rect x="26" y="20" width="184" height="11" rx="5.5" className="fill-none stroke-rig-edge" strokeWidth="1" />
         {/* Flow, as travelling dashes rather than a moving highlight. Rest state is a
             static dashed line, which still reads as a line carrying something. */}
-        <line x1="33" y1="25.5" x2="203" y2="25.5" className="rig-flow stroke-gas/60" strokeWidth="2" strokeLinecap="round" />
+        <line x1="33" y1="25.5" x2="203" y2="25.5" className="rig-flow stroke-flare/60" strokeWidth="2" strokeLinecap="round" />
 
         {/* ── Drop tube and emitter ────────────────────────────────────────── */}
         <rect x="115" y="29" width="6" height="54" className="fill-rig-metal" />
-        <line x1="118" y1="35" x2="118" y2="79" className="rig-flow stroke-gas/60" strokeWidth="2" strokeLinecap="round" />
+        <line x1="118" y1="35" x2="118" y2="79" className="rig-flow stroke-flare/60" strokeWidth="2" strokeLinecap="round" />
         <rect x="108" y="80" width="20" height="11" rx="3.5" className="fill-rig-metal stroke-rig-edge" strokeWidth="1" />
         <rect x="115.5" y="91" width="5" height="5" className="fill-rig-metal" />
 
@@ -74,7 +74,7 @@ export default function FeedRig({ className = "" }: { className?: string }) {
             otherwise read as two unrelated objects with a gap between them. */}
         <line
           x1="118" y1="99" x2="118" y2="176"
-          className="stroke-gas/15"
+          className="stroke-flare/15"
           strokeWidth="1"
           strokeDasharray="1 6"
           strokeLinecap="round"
@@ -83,7 +83,7 @@ export default function FeedRig({ className = "" }: { className?: string }) {
         {/* Feed drops. Position on the group, motion on the path — see rule 2 above. */}
         {[0, 1, 2].map((i) => (
           <g key={i} transform="translate(118 102)" className="rig-feed">
-            <path d={DROP} className={`rig-drop rig-drop-${i} fill-gas`} />
+            <path d={DROP} className={`rig-drop rig-drop-${i} fill-flare`} />
           </g>
         ))}
 
@@ -91,7 +91,7 @@ export default function FeedRig({ className = "" }: { className?: string }) {
         <rect x="60" y="178" width="116" height="88" rx="2" className="fill-rig-media" />
         {/* Wet front, descending from the top surface. Physically the right direction:
             rockwool saturates downward, it does not fill like a glass. */}
-        <rect x="60" y="178" width="116" height="88" className="rig-wet fill-gas/20" />
+        <rect x="60" y="178" width="116" height="88" className="rig-wet fill-flare/20" />
         {/* Grain. A slab reads as a slab because of the horizontal fibre. */}
         {[194, 208, 222, 236, 250].map((y) => (
           <line key={y} x1="66" y1={y} x2="170" y2={y} className="stroke-rig-fibre" strokeWidth="1" />
@@ -103,16 +103,16 @@ export default function FeedRig({ className = "" }: { className?: string }) {
 
         {/* Runoff. Two drops, offset, because runoff does not leave on a grid. */}
         <g transform="translate(100 270)">
-          <path d={DROP} className="rig-drop rig-run-0 fill-gas" />
+          <path d={DROP} className="rig-drop rig-run-0 fill-flare" />
         </g>
         <g transform="translate(136 270)">
-          <path d={DROP} className="rig-drop rig-run-1 fill-gas" />
+          <path d={DROP} className="rig-drop rig-run-1 fill-flare" />
         </g>
 
         {/* ── Tray ─────────────────────────────────────────────────────────── */}
         <rect x="46" y="304" width="144" height="16" rx="4" className="fill-ink-panel stroke-rig-edge" strokeWidth="1.25" />
-        <rect x="50" y="310" width="136" height="6" rx="2" className="fill-gas/25" />
-        <line x1="50" y1="310.5" x2="186" y2="310.5" className="stroke-gas/50" strokeWidth="1" />
+        <rect x="50" y="310" width="136" height="6" rx="2" className="fill-flare/25" />
+        <line x1="50" y1="310.5" x2="186" y2="310.5" className="stroke-flare/50" strokeWidth="1" />
 
         {/* ── Labels ───────────────────────────────────────────────────────────
             Top-right and bottom-left rather than stacked down one side: the objects they

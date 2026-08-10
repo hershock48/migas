@@ -30,7 +30,7 @@ export default function Reviews() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Reviews</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            What growers say <span className="text-gas">after</span>.
+            What growers say <span className="text-flare">after</span>.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Published as text rather than screenshots &mdash; so a search engine can index
@@ -47,8 +47,8 @@ export default function Reviews() {
         </div>
 
         {real.length === 0 && (
-          <div className="reveal mt-10 max-w-2xl rounded-xl2 border border-amber/40 bg-amber/[0.06] p-6">
-            <p className="text-sm font-semibold text-amber">Note for MI Gas</p>
+          <div className="reveal mt-10 max-w-2xl rounded-xl2 border border-alert/40 bg-alert/[0.06] p-6">
+            <p className="text-sm font-semibold text-alert">Note for MI Gas</p>
             <p className="mt-2 text-[15px] leading-relaxed text-bone/90">
               Your six existing reviews live on the current site as images. Send the text and
               they go here as text, with structured data so they can show up under your name

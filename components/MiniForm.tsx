@@ -50,7 +50,7 @@ export default function MiniForm({
 
   if (state.status === "done") {
     return (
-      <div className={`rounded-xl2 border border-gas/40 bg-gas/[0.06] p-6 ${className}`} aria-live="polite">
+      <div className={`rounded-xl2 border border-ember/60 bg-ember/[0.07] p-6 ${className}`} aria-live="polite">
         <p className="eyebrow">Done</p>
         <p className="mt-3 text-[15px] leading-relaxed text-bone">
           {state.summary?.[0] ?? "Sent. He will be in touch."}
@@ -99,7 +99,7 @@ export default function MiniForm({
               />
             )}
             {state.errors?.[f.id] && (
-              <p role="alert" className="mt-2 text-sm text-amber">
+              <p role="alert" className="mt-2 text-sm text-alert">
                 {state.errors[f.id]}
               </p>
             )}

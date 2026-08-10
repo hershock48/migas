@@ -43,11 +43,11 @@ export default function Connect() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Connect</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            Reach him <span className="text-gas">properly</span>.
+            Reach him <span className="text-flare">properly</span>.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Booking a consult? Go through{" "}
-            <Link href="/consulting#book" className="text-gas hover:underline">
+            <Link href="/consulting#book" className="text-flare hover:underline">
               consulting
             </Link>{" "}
             &mdash; the intake means he arrives at the call already knowing your room.
@@ -100,7 +100,7 @@ export default function Connect() {
                     <span className="block font-display text-lg font-bold text-bone">{c.name}</span>
                     <span className="mt-1.5 block text-sm leading-relaxed text-muted">{c.label}</span>
                   </span>
-                  <span aria-hidden className="mt-1 shrink-0 text-muted group-hover:text-gas">
+                  <span aria-hidden className="mt-1 shrink-0 text-muted group-hover:text-flare">
                     &rarr;
                   </span>
                 </a>
@@ -111,7 +111,7 @@ export default function Connect() {
           <div className="card mt-4 p-6">
             <p className="eyebrow">Email</p>
             {emailReady ? (
-              <a href={`mailto:${SITE.email}`} className="mt-3 block text-lg text-bone hover:text-gas">
+              <a href={`mailto:${SITE.email}`} className="mt-3 block text-lg text-bone hover:text-flare">
                 {SITE.email}
               </a>
             ) : (
@@ -129,7 +129,7 @@ export default function Connect() {
           {SITE.phone && (
             <div className="card mt-4 p-6">
               <p className="eyebrow">Phone</p>
-              <a href={`tel:${SITE.phone}`} className="mt-3 block text-lg text-bone hover:text-gas">
+              <a href={`tel:${SITE.phone}`} className="mt-3 block text-lg text-bone hover:text-flare">
                 {SITE.phone}
               </a>
             </div>

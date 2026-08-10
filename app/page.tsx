@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import FeedRig from "@/components/FeedRig";
+import Sun from "@/components/Sun";
 import { GuideCard, ReviewCard, SessionCard } from "@/components/cards";
 import {
   BUNDLE,
@@ -28,36 +28,45 @@ export default function Home() {
           sentence, above the fold. The live site opens on a logo and a slideshow, so
           a facility director landing on it has to scroll to find out it is for them.
           ───────────────────────────────────────────────────────────────────── */}
-      <section className="wrap grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:grid-cols-[1.15fr_minmax(0,0.85fr)] lg:items-center lg:gap-16">
-        <div className="reveal">
-          <p className="eyebrow">{SITE.region} &middot; Commercial cultivation</p>
-          <h1 className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]">
-            Run the room
-            <br />
-            like a <span className="text-gas">facility</span>.
-          </h1>
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-            Consulting, SOPs and full grow programs from a working commercial cultivator
-            &mdash; not a forum thread, not a highlight reel.
-          </p>
+      <section className="relative isolate overflow-hidden">
+        <div className="wrap relative grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:min-h-[680px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16">
+          <div className="reveal relative">
+            <p className="eyebrow">{SITE.region} &middot; Indoor cultivators worldwide</p>
+            <h1 className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]">
+              Run the room
+              <br />
+              like a <span className="text-flare">facility</span>.
+            </h1>
+            <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
+              Consulting, SOPs and full grow programs from a working commercial cultivator
+              &mdash; not a forum thread, not a highlight reel.
+            </p>
 
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/consulting#book" className="btn-primary">
-              Book a consult
-            </Link>
-            <Link href="/guides" className="btn-ghost">
-              See the programs
-            </Link>
+            <div className="mt-9 flex flex-wrap gap-3">
+              <Link href="/consulting#book" className="btn-primary">
+                Book a consult
+              </Link>
+              <Link href="/guides" className="btn-ghost">
+                See the programs
+              </Link>
+            </div>
+
+            <p className="mt-6 max-w-lg text-sm leading-relaxed text-muted">
+              Every call starts with an eight-question room intake and your photos, read
+              before you dial in. So it starts at the diagnosis instead of the
+              introduction.
+            </p>
           </div>
 
-          <p className="mt-6 max-w-lg text-sm leading-relaxed text-muted">
-            Every call starts with an eight-question room intake and your photos, read
-            before you dial in. So it starts at the diagnosis instead of the
-            introduction.
-          </p>
+          {/* ONE sun, positioned two ways rather than two suns with one hidden. On a
+              phone it sits in the flow beneath the copy at full size. On a wide screen it
+              goes absolute and crops off the right edge, so it reads as something burning
+              past the frame rather than a circle placed on a page — and `-z-10` puts it
+              behind the copy, which matters because `bone` on the disc measures 3.40:
+              enough for a display heading, not enough for a paragraph. No paragraph is
+              ever allowed over it. */}
+          <Sun className="reveal pointer-events-none mx-auto w-[86%] max-w-[380px] lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]" />
         </div>
-
-        <FeedRig className="reveal mx-auto w-full max-w-[300px] lg:max-w-[400px]" />
       </section>
 
       {/* Credibility, as three flat statements. No badges, no fake logos. */}
@@ -65,7 +74,7 @@ export default function Home() {
         <dl className="reveal grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
           {CREDS.map((c) => (
             <div key={c.label} className="bg-ink-panel px-6 py-7">
-              <dt className="font-display text-2xl font-extrabold text-gas">{c.stat}</dt>
+              <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
             </div>
           ))}
@@ -96,7 +105,7 @@ export default function Home() {
 
         <p className="reveal mt-8 text-sm text-muted">
           Rates are a starting proposal, not published prices &mdash;{" "}
-          <Link href="/consulting" className="text-gas hover:underline">
+          <Link href="/consulting" className="text-flare hover:underline">
             how a consult runs
           </Link>
           .
@@ -127,7 +136,7 @@ export default function Home() {
 
         {/* The bundle, given its own weight because it is the highest-value thing on
             the site and the current site treats it as a fifth tile. */}
-        <div className="reveal mt-6 flex flex-col gap-6 rounded-xl2 border border-gas/40 bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9">
+        <div className="reveal mt-6 flex flex-col gap-6 rounded-xl2 border border-ember/60 bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9">
           <div className="max-w-2xl">
             <p className="eyebrow">Best value</p>
             <h3 className="mt-3 text-2xl text-bone">{BUNDLE.name}</h3>
@@ -166,7 +175,7 @@ export default function Home() {
               ))}
             </div>
             <p className="reveal mt-8 text-sm text-muted">
-              <Link href="/reviews" className="text-gas hover:underline">
+              <Link href="/reviews" className="text-flare hover:underline">
                 Read all of them
               </Link>
             </p>
@@ -207,19 +216,41 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ── Close ────────────────────────────────────────────────────────────── */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal relative overflow-hidden rounded-xl2 border border-line bg-ink-panel px-7 py-14 text-center sm:px-10 sm:py-20">
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-x-0 -top-24 h-48 bg-gas/10 blur-3xl"
-          />
-          <h2 className="relative text-3xl sm:text-5xl">Bring the room to the call.</h2>
-          <p className="relative mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Answer eight questions, upload your photos, pick a time. He reads it before
-            you speak.
+      {/* ── Close ─────────────────────────────────────────────────────────────
+          The sun crests the top edge of this band and the copy sits underneath it, in
+          the light. Two reasons it is arranged that way rather than with the heading
+          laid over the disc, which was the first attempt and is closer to his poster:
+          text over the sun cannot be contrast-checked by any tool, because the ground
+          is a gradient rather than a colour — axe reports it as unverifiable and a
+          human has to take it on trust. And an eclipsed heading is a worse heading. The
+          black-on-fire device that makes his logo work is still here, on every primary
+          button on the site: ink on ember, measured at 5.44.
+          ───────────────────────────────────────────────────────────────────── */}
+      <section className="relative isolate mt-24 overflow-hidden sm:mt-32">
+        {/* Fixed widths per breakpoint rather than a vw width, because the horizon below
+            is a fixed offset and the two have to agree. Sized in vw, the disc's bottom edge
+            moved with the viewport while the hairline stayed put — so the sun crested at
+            one width and sank behind the copy at another. The translate puts the disc's
+            bottom just above the line: at 1100px wide, translated -83%, the disc ends at
+            187px and the hairline is at 190px. */}
+        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
+          <Sun className="w-[600px] shrink-0 -translate-y-[85%] sm:w-[1100px] sm:-translate-y-[83%]" />
+        </div>
+        {/* The horizon. A hairline where the disc meets the copy, so the crop reads as a
+            deliberate edge rather than as an image running out. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-[94px] h-px bg-gradient-to-r from-transparent via-ember/50 to-transparent sm:top-[190px]"
+        />
+
+        <div className="wrap relative pt-[130px] text-center sm:pt-[230px]">
+          <p className="eyebrow reveal">Indoors, you are the sun</p>
+          <h2 className="reveal mt-5 text-3xl sm:text-5xl">Every room has one.</h2>
+          <p className="reveal mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
+            Yours has a switch, a schedule and a feed chart. Bring it to the call &mdash;
+            eight questions, your photos, and he has read both before you speak.
           </p>
-          <div className="relative mt-9 flex flex-wrap justify-center gap-3">
+          <div className="reveal mt-9 flex flex-wrap justify-center gap-3">
             <Link href="/consulting#book" className="btn-primary">
               Book a consult
             </Link>

@@ -43,7 +43,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
     <>
       <section className="wrap pt-10 sm:pt-14">
         <nav aria-label="Breadcrumb" className="text-sm text-muted">
-          <Link href="/guides" className="hover:text-gas">
+          <Link href="/guides" className="hover:text-flare">
             Programs
           </Link>
           <span aria-hidden className="mx-2">
@@ -62,7 +62,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
               <ul className="mt-9 grid gap-5">
                 {guide.detail.map((d) => (
                   <li key={d} className="flex gap-4 border-b border-line pb-5 last:border-0 last:pb-0">
-                    <span aria-hidden className="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-gas" />
+                    <span aria-hidden className="mt-[10px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
                     <p className="text-[15px] leading-relaxed text-muted">{d}</p>
                   </li>
                 ))}
@@ -95,12 +95,12 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
               <ul className="mt-6 space-y-2.5 border-t border-line pt-6 text-sm text-muted">
                 {guide.includes.map((i) => (
                   <li key={i} className="flex gap-2.5">
-                    <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gas" />
+                    <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
                     <span>{i}</span>
                   </li>
                 ))}
                 <li className="flex gap-2.5">
-                  <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gas" />
+                  <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
                   <span>Bought once. Yours to keep.</span>
                 </li>
               </ul>

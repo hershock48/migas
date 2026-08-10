@@ -17,13 +17,13 @@ export function GuideCard({ guide }: { guide: Guide }) {
     >
       <div className="flex items-start justify-between gap-4">
         <h3 className="text-lg leading-snug text-bone">{guide.name}</h3>
-        <span className="shrink-0 font-display text-lg font-bold text-gas">
+        <span className="shrink-0 font-display text-lg font-bold text-flare">
           {money(guide.price)}
         </span>
       </div>
       <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">{guide.covers}</p>
       <p className="mt-4 flex-1 text-sm leading-relaxed text-muted">{guide.blurb}</p>
-      <p className="mt-5 text-sm font-semibold text-bone group-hover:text-gas">
+      <p className="mt-5 text-sm font-semibold text-bone group-hover:text-flare">
         What&rsquo;s inside <span aria-hidden>&rarr;</span>
       </p>
     </Link>
@@ -42,11 +42,11 @@ export function SessionCard({
   return (
     <div
       className={`card relative flex flex-col p-6 ${
-        featured ? "border-gas/50" : ""
+        featured ? "border-ember/60" : ""
       }`}
     >
       {featured && (
-        <span className="absolute -top-3 left-6 rounded-full bg-gas px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-ink">
+        <span className="absolute -top-3 left-6 rounded-full bg-ember px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-ink">
           Most booked
         </span>
       )}
@@ -63,7 +63,7 @@ export function SessionCard({
       <ul className="mt-5 flex-1 space-y-2 border-t border-line pt-5 text-sm text-muted">
         {session.includes.map((i) => (
           <li key={i} className="flex gap-2.5">
-            <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-gas" />
+            <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
             <span>{i}</span>
           </li>
         ))}

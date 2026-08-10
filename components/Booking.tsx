@@ -202,7 +202,7 @@ export default function Booking({ days }: Props) {
           <dl className="mt-8 divide-y divide-line border-y border-line">
             {state.summary.map((line) => (
               <div key={line} className="flex gap-3 py-3.5 text-[15px]">
-                <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-gas" />
+                <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
                 <dd className="text-bone">{line}</dd>
               </div>
             ))}
@@ -215,10 +215,21 @@ export default function Booking({ days }: Props) {
           </p>
         )}
         <div className="mt-8 flex flex-wrap gap-3">
+          {state.ics && (
+            /* The invite is already in this response as a data: URL, so there is nothing to
+               fetch and nothing hosting it. This is the feature people rent a scheduling
+               service for, and it is a text format from 1998 — see lib/ics.ts. */
+            <a href={state.ics} download="mi-gas-consult.ics" className="btn-primary">
+              Add to calendar
+            </a>
+          )}
           <Link href="/guides" className="btn-ghost">
             Read a program while you wait
           </Link>
         </div>
+        <p className="mt-4 text-xs text-muted">
+          A copy of the invite is on its way to your inbox too.
+        </p>
       </div>
     );
   }
@@ -266,7 +277,7 @@ export default function Booking({ days }: Props) {
           </div>
           <div className="mt-3 h-1 overflow-hidden rounded-full bg-line">
             <div
-              className="h-full rounded-full bg-gas transition-[width] duration-300"
+              className="h-full rounded-full bg-ember transition-[width] duration-300"
               style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
             />
           </div>
@@ -285,7 +296,7 @@ export default function Booking({ days }: Props) {
               // because a native radio click checks the input either way.
               <label
                 key={s.slug}
-                className="flex cursor-pointer gap-4 rounded-xl2 border border-edge p-5 transition-colors hover:border-bone/40 has-[:checked]:border-gas has-[:checked]:bg-gas/[0.06]"
+                className="flex cursor-pointer gap-4 rounded-xl2 border border-edge p-5 transition-colors hover:border-bone/40 has-[:checked]:border-flare has-[:checked]:bg-ember/[0.07]"
               >
                 <input
                   type="radio"
@@ -300,14 +311,14 @@ export default function Booking({ days }: Props) {
                     const held = days.flatMap((d) => d.slots).find((x) => x.value === slot);
                     if (held && held.maxMinutes < s.minutes) setSlot("");
                   }}
-                  className="mt-1 h-5 w-5 shrink-0 accent-gas"
+                  className="mt-1 h-5 w-5 shrink-0 accent-ember"
                 />
                 <span className="flex-1">
                   <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <span className="font-display text-lg font-bold text-bone">{s.name}</span>
                     <span className="text-sm text-muted">
                       {s.minutes} min &middot;{" "}
-                      <span className="font-semibold text-gas">{money(s.price)}</span>
+                      <span className="font-semibold text-flare">{money(s.price)}</span>
                     </span>
                   </span>
                   <span className="mt-2 block text-sm leading-relaxed text-bone/85">{s.summary}</span>
@@ -400,9 +411,9 @@ export default function Booking({ days }: Props) {
               accept="image/*"
               multiple
               onChange={onPickPhotos}
-              className="mt-4 block w-full text-sm text-muted file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-gas file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-gas-dim"
+              className="mt-4 block w-full text-sm text-muted file:mr-4 file:cursor-pointer file:rounded-full file:border-0 file:bg-ember file:px-4 file:py-2 file:text-sm file:font-semibold file:text-ink hover:file:bg-ember-hot"
             />
-            {resizing && <p className="mt-3 text-sm text-amber">Resizing&hellip;</p>}
+            {resizing && <p className="mt-3 text-sm text-alert">Resizing&hellip;</p>}
             {photos.length > 0 && (
               <ul className="mt-4 flex flex-wrap gap-3">
                 {photos.map((p) => (
@@ -453,7 +464,7 @@ export default function Booking({ days }: Props) {
                   aria-pressed={activeDay === i}
                   disabled={open === 0}
                   className={`shrink-0 rounded-lg border px-3.5 py-2.5 text-center transition-colors disabled:opacity-40 ${
-                    activeDay === i ? "border-gas bg-gas/10 text-bone" : "border-line text-muted hover:border-edge"
+                    activeDay === i ? "border-flare bg-ember/15 text-bone" : "border-line text-muted hover:border-edge"
                   }`}
                 >
                   <span className="block text-[11px] uppercase tracking-[0.12em]">{d.weekday}</span>
@@ -492,7 +503,7 @@ export default function Booking({ days }: Props) {
                             are. peer-checked also means the selected state survives with no
                             JavaScript, where React state cannot. */}
                         <span
-                          className={`block rounded-lg border px-3 py-2.5 text-center text-sm transition-colors peer-checked:border-gas peer-checked:bg-gas/10 peer-checked:text-bone peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-gas ${
+                          className={`block rounded-lg border px-3 py-2.5 text-center text-sm transition-colors peer-checked:border-flare peer-checked:bg-ember/15 peer-checked:text-bone peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-flare ${
                             ok
                               ? "cursor-pointer border-line text-bone hover:border-edge"
                               : "cursor-not-allowed border-line/60 text-muted/40"
@@ -565,7 +576,7 @@ export default function Booking({ days }: Props) {
         </div>
 
         {state.status === "error" && (
-          <p role="alert" className="mt-6 text-sm text-amber">
+          <p role="alert" className="mt-6 text-sm text-alert">
             Something above needs fixing before this can go.
           </p>
         )}
@@ -579,7 +590,7 @@ export default function Booking({ days }: Props) {
 function Err({ msg }: { msg?: string }) {
   if (!msg) return null;
   return (
-    <p role="alert" className="mt-2 text-sm text-amber">
+    <p role="alert" className="mt-2 text-sm text-alert">
       {msg}
     </p>
   );

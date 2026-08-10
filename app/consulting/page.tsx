@@ -27,7 +27,7 @@ export default function Consulting() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Consulting</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            A call that starts at the <span className="text-gas">diagnosis</span>.
+            A call that starts at the <span className="text-flare">diagnosis</span>.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Most paid consults spend their first twenty minutes on questions a form could
@@ -55,7 +55,7 @@ export default function Consulting() {
         <ol className="reveal mt-12 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line md:grid-cols-3">
           {PROCESS.map((p, i) => (
             <li key={p.step} className="flex flex-col bg-ink-panel p-7">
-              <p className="font-display text-sm font-bold uppercase tracking-[0.16em] text-gas">
+              <p className="font-display text-sm font-bold uppercase tracking-[0.16em] text-flare">
                 {String(i + 1).padStart(2, "0")} &middot; {p.step}
               </p>
               <h3 className="mt-4 text-xl leading-snug text-bone">{p.title}</h3>
@@ -116,7 +116,7 @@ export default function Consulting() {
               "Your feed chart, even if it is the one off the bottle.",
             ].map((line) => (
               <li key={line} className="flex gap-3 border-b border-line pb-4 last:border-0 last:pb-0">
-                <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-gas" />
+                <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
                 <span className="leading-relaxed text-bone/90">{line}</span>
               </li>
             ))}
@@ -140,7 +140,7 @@ export default function Consulting() {
                 {f.q}
                 <span
                   aria-hidden
-                  className="mt-1 shrink-0 text-gas transition-transform group-open:rotate-45"
+                  className="mt-1 shrink-0 text-flare transition-transform group-open:rotate-45"
                 >
                   +
                 </span>
@@ -152,7 +152,7 @@ export default function Consulting() {
         <p className="reveal mt-8 text-sm text-muted">
           Times shown across the site are {AVAILABILITY.timeZoneLabel}. Something not
           covered?{" "}
-          <Link href="/connect" className="text-gas hover:underline">
+          <Link href="/connect" className="text-flare hover:underline">
             Ask him directly
           </Link>
           .

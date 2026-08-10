@@ -27,7 +27,7 @@ export default function Nav() {
                 href={i.href}
                 aria-current={active ? "page" : undefined}
                 className={`text-sm transition-colors ${
-                  active ? "text-gas" : "text-muted hover:text-bone"
+                  active ? "text-flare" : "text-muted hover:text-bone"
                 }`}
               >
                 {i.label}
@@ -67,7 +67,7 @@ export default function Nav() {
               href={i.href}
               aria-current={path === i.href ? "page" : undefined}
               className={`rounded-lg px-4 py-3 text-base ${
-                path === i.href ? "bg-ink text-gas" : "text-bone hover:bg-ink"
+                path === i.href ? "bg-ink text-flare" : "text-bone hover:bg-ink"
               }`}
             >
               {i.label}

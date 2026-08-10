@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import FeedRig from "@/components/FeedRig";
 import { GuideCard } from "@/components/cards";
 import { BUNDLE, GUIDES, bundleSeparately, money } from "@/lib/site";
 
@@ -15,23 +16,26 @@ export const metadata: Metadata = {
 export default function Guides() {
   return (
     <>
-      <section className="wrap pt-14 sm:pt-20">
-        <div className="reveal max-w-3xl">
+      <section className="wrap grid gap-10 pt-14 sm:pt-20 lg:grid-cols-[1.15fr_minmax(0,0.85fr)] lg:items-center lg:gap-16">
+        <div className="reveal">
           <p className="eyebrow">Programs</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            The system, <span className="text-gas">written down</span>.
+            The system, <span className="text-flare">written down</span>.
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Four programs covering clone to harvest, the runoff SOP underneath all of them,
             and the transition off hand-watering. Video and PDF, bought once, yours to keep.
           </p>
         </div>
+        {/* The fertigation diagram belongs on this page more than on the home page: it is a
+            picture of what these four programs actually cover. */}
+        <FeedRig className="reveal mx-auto w-full max-w-[290px] lg:max-w-[360px]" />
       </section>
 
       {/* The bundle goes first, because it is the best thing on the page and burying the
           best thing behind four cheaper ones is a choice with a cost. */}
       <section className="wrap mt-14">
-        <div className="reveal flex flex-col gap-8 rounded-xl2 border border-gas/40 bg-ink-panel p-7 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
+        <div className="reveal flex flex-col gap-8 rounded-xl2 border border-ember/60 bg-ink-panel p-7 sm:p-10 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <p className="eyebrow">Start here</p>
             <h2 className="mt-3 text-3xl text-bone">{BUNDLE.name}</h2>
@@ -41,7 +45,7 @@ export default function Guides() {
                 const g = GUIDES.find((x) => x.slug === slug);
                 return (
                   <li key={slug} className="flex items-center gap-2">
-                    <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-gas" />
+                    <span aria-hidden className="h-1.5 w-1.5 rounded-full bg-ember" />
                     {g?.name}
                   </li>
                 );

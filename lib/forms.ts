@@ -16,6 +16,10 @@ export type FormState = {
   values?: Record<string, string>;
   reference?: string;
   summary?: string[];
+  /** A data: URL holding the .ics for a confirmed booking. Inline rather than a route,
+   *  because the file is already in the response that rendered the confirmation — no
+   *  storage, no second request, nothing to expire. */
+  ics?: string;
 };
 
 export const EMPTY: FormState = { status: "idle" };

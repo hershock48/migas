@@ -12,9 +12,10 @@ html {
 
 body {
   @apply bg-ink text-bone font-sans antialiased;
-  /* A faint bloom from the top of the page, like a room with the lights on above the
-     canopy. Fixed rather than scrolling so it reads as ambient light, not an object. */
-  background-image: radial-gradient(120% 60% at 50% -10%, rgba(124, 224, 75, 0.09), transparent 60%);
+  /* Ambient light, thrown from the top right — the same corner the hero sun occupies, so
+     the whole page is lit from one consistent direction. Fixed rather than scrolling, so it
+     reads as light in a room rather than as an object on the page. */
+  background-image: radial-gradient(95% 55% at 80% -12%, rgba(217, 94, 39, 0.17), transparent 62%);
   background-attachment: fixed;
 }
 
@@ -33,7 +34,7 @@ input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid theme("colors.gas.DEFAULT");
+  outline: 2px solid theme("colors.flare");
   outline-offset: 2px;
   border-radius: 4px;
 }
@@ -43,7 +44,7 @@ textarea:focus-visible,
 }
 
 .eyebrow {
-  @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-gas;
+  @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-flare;
 }
 
 .btn {
@@ -51,10 +52,10 @@ textarea:focus-visible,
          transition-colors duration-150;
 }
 .btn-primary {
-  @apply btn bg-gas text-ink hover:bg-gas-dim;
+  @apply btn bg-ember text-ink hover:bg-ember-hot;
 }
 .btn-ghost {
-  @apply btn border border-edge text-bone hover:border-gas hover:text-gas;
+  @apply btn border border-edge text-bone hover:border-flare hover:text-flare;
 }
 
 .card {
@@ -63,7 +64,7 @@ textarea:focus-visible,
 
 .field {
   @apply w-full rounded-lg border border-edge bg-ink px-4 py-3 text-bone
-         placeholder:text-muted focus:border-gas;
+         placeholder:text-muted focus:border-flare;
 }
 /* Native select arrows render as a light triangle on a dark field in some engines and
    vanish. Draw one, and reserve room for it so a long option label never sits under it. */
@@ -94,6 +95,351 @@ select.field {
 .r-armed .reveal.is-in {
   opacity: 1;
   transform: none;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   The sun. See components/Sun.tsx for why it is drawn rather than photographed,
+   and why nothing that moves carries a blur filter.
+
+   Keyframes live here, next to the rules that use them, because Tailwind only
+   emits a @keyframes block when the matching `animate-*` utility appears in
+   scanned markup — declared in tailwind.config.ts and referenced by a plain CSS
+   rule, they get purged and `animation` points at nothing. That failure looks
+   healthy: play-state reads "running", duration reads correctly, and the
+   transform never changes.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* `position: relative` belongs on this inner element and NOT on the element the
+   caller styles — see the note in Sun.tsx. This rule sits after @tailwind
+   utilities at the same specificity, so on a shared element it would beat an
+   `absolute` utility and quietly ignore every offset the caller set. */
+.sun {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  /* Contains the blend modes below. Without it the screen/multiply cells would
+     blend against the page instead of against the disc, which on a near-black
+     page means they mostly vanish. */
+  isolation: isolate;
+}
+.sun > * {
+  position: absolute;
+  inset: 0;
+  display: block;
+}
+
+/* ── Corona ──────────────────────────────────────────────────────────────
+   The box is 168% of the sun, so the disc's edge sits at 59.5% of this
+   gradient's radius. That number is why the stops start where they do: the
+   corona has to be brightest immediately outside the disc and fall to nothing
+   before the box ends, or it terminates in a visible circle. */
+.sun-corona {
+  inset: -34%;
+  border-radius: 50%;
+  background: radial-gradient(
+    closest-side circle,
+    transparent 52%,
+    rgba(255, 239, 168, 0.1) 58%,
+    rgba(245, 168, 60, 0.42) 61.5%,
+    rgba(217, 94, 39, 0.2) 71%,
+    rgba(142, 44, 17, 0.09) 85%,
+    transparent 100%
+  );
+  animation: sunBreathe 11s ease-in-out infinite;
+}
+
+/* Radial streaks in the corona — his sun has them, and they are what stops the
+   halo reading as an airbrushed glow. Masked to a ring so they only exist
+   outside the disc, and rotating slowly enough that you never catch it moving
+   but the composition is never quite the same twice. */
+.sun-spokes {
+  inset: -34%;
+  border-radius: 50%;
+  /* Two gradients at periods with no common factor — 3.8deg and 9.3deg — so the
+     rays interfere into something irregular. A single repeating-conic-gradient
+     at one period is a sunburst clip-art badge, which is what the first attempt
+     looked like: perfectly even hard-edged spokes, nothing like the ragged
+     streaks in his photograph. Alpha is a quarter of what it was, too. */
+  background:
+    repeating-conic-gradient(
+      from 0deg,
+      rgba(255, 208, 138, 0.055) 0deg 0.55deg,
+      transparent 0.55deg 3.8deg
+    ),
+    repeating-conic-gradient(
+      from 11deg,
+      rgba(245, 168, 60, 0.038) 0deg 1.5deg,
+      transparent 1.5deg 9.3deg
+    );
+  -webkit-mask-image: radial-gradient(closest-side circle, transparent 58%, #000 72%, transparent 96%);
+  mask-image: radial-gradient(closest-side circle, transparent 58%, #000 72%, transparent 96%);
+  animation: sunSpin 300s linear infinite;
+}
+
+/* ── Disc ────────────────────────────────────────────────────────────────── */
+.sun-disc {
+  border-radius: 50%;
+  overflow: hidden;
+  isolation: isolate;
+}
+.sun-disc > * {
+  position: absolute;
+  display: block;
+}
+.sun-base,
+.sun-limb {
+  inset: 0;
+}
+
+/* Sampled off his logo, including the part that looks wrong written down: the
+   disc dips DARKER through the middle and comes back up to its brightest at
+   88%, just inside the limb. A conventional hot-centre sun does not look like
+   his. The hot spot is nudged off-centre so the sphere reads as lit rather than
+   as a target. */
+.sun-base {
+  background: radial-gradient(
+    closest-side circle at 46% 43%,
+    #f78436 0%,
+    #e5591d 15%,
+    #c8461b 36%,
+    #d15524 57%,
+    #e46e28 76%,
+    #f28430 88%,
+    #b03a13 96%,
+    #8a2a0c 100%
+  );
+}
+
+/* Convection. Large soft gradients, blended, drifting on long coprime loops.
+   `screen` for the bright granules, `multiply` for the spots — the same two
+   operations a compositor does for free. */
+.sun-cell,
+.sun-spot {
+  border-radius: 50%;
+}
+.sun-cell {
+  mix-blend-mode: screen;
+  background: radial-gradient(
+    closest-side circle,
+    rgba(255, 239, 168, 0.5),
+    rgba(255, 190, 100, 0.17) 52%,
+    transparent 76%
+  );
+}
+.sun-cell-1 {
+  left: 4%;
+  top: 2%;
+  width: 62%;
+  height: 62%;
+  animation: sunCellA 23s ease-in-out infinite;
+}
+.sun-cell-2 {
+  left: 38%;
+  top: 34%;
+  width: 54%;
+  height: 54%;
+  animation: sunCellB 31s ease-in-out infinite;
+}
+.sun-cell-3 {
+  left: 16%;
+  top: 48%;
+  width: 44%;
+  height: 44%;
+  animation: sunCellC 17s ease-in-out infinite;
+}
+.sun-spot {
+  mix-blend-mode: multiply;
+  background: radial-gradient(
+    closest-side circle,
+    rgba(96, 26, 10, 0.9),
+    rgba(122, 38, 16, 0.42) 54%,
+    transparent 78%
+  );
+}
+.sun-spot-1 {
+  left: 30%;
+  top: 12%;
+  width: 46%;
+  height: 46%;
+  animation: sunSpotA 41s ease-in-out infinite;
+}
+.sun-spot-2 {
+  left: 6%;
+  top: 46%;
+  width: 34%;
+  height: 34%;
+  animation: sunSpotB 29s ease-in-out infinite;
+}
+
+/* Limb brightening, then the hard fall at the very edge. Two stops of gradient
+   doing the work of a rim light. */
+/* Limb brightening, drawn ON TOP of the disc. It has to be its own layer above
+   rather than a stop in the base gradient, because the corona sits *behind* the
+   disc and so cannot light its edge — without this the disc terminates in its own
+   dark rim and reads as a marble with a halo behind it rather than as a star. */
+.sun-limb {
+  background: radial-gradient(
+    closest-side circle,
+    transparent 80%,
+    rgba(255, 231, 158, 0.16) 89%,
+    rgba(255, 226, 150, 0.3) 96%,
+    rgba(255, 198, 118, 0.22) 99%,
+    transparent 100%
+  );
+}
+
+/* Surface texture. One tile of fractal noise, desaturated, blended overlay. It is a
+   data URI rather than a live SVG filter on the disc because a filter over a
+   1000px element re-rasterises whenever anything beneath it moves — and beneath
+   it, five gradients are moving constantly. As a background image it is decoded
+   once. `stitchTiles` is what stops the seams showing where the tile repeats. */
+.sun-grain {
+  inset: 0;
+  mix-blend-mode: overlay;
+  opacity: 0.3;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 140px 140px;
+}
+
+/* ── Prominences ─────────────────────────────────────────────────────────── */
+.sun-prom {
+  overflow: visible;
+}
+.sun-prom .prom {
+  /* Scales about the middle of the drawing rather than about its own bounding
+     box, so a prominence grows outward from the sun's centre the way a real one
+     does. view-box is the SVG equivalent of getting transform-origin right. */
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+}
+/* The softness is two strokes rather than a blur filter — see the note in Sun.tsx
+   for the duplicate-id bug that made the filter version unusable. The group's
+   animated opacity multiplies with these, so a prominence fades as one object. */
+/* Warm rather than white. A near-white core read as a solid ribbon laid over the
+   disc; ember and flare read as something the sun is doing. */
+.sun-prom .prom-glow {
+  stroke: theme("colors.ember.hot");
+  opacity: 0.28;
+}
+.sun-prom .prom-core {
+  stroke: theme("colors.flare");
+  opacity: 0.6;
+}
+.sun-prom .prom-1 {
+  animation: sunProm 19s ease-in-out 2.5s infinite;
+}
+.sun-prom .prom-2 {
+  animation: sunProm 27s ease-in-out 11s infinite;
+}
+
+@keyframes sunBreathe {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.88;
+  }
+  50% {
+    transform: scale(1.055);
+    opacity: 1;
+  }
+}
+@keyframes sunSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Each cell ends exactly where it began, so the loop has no seam and a frozen
+   last frame — which is what reduced motion leaves you with — is the same
+   picture as the first. */
+@keyframes sunCellA {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.55;
+  }
+  33% {
+    transform: translate(14%, 9%) scale(1.12);
+    opacity: 0.85;
+  }
+  66% {
+    transform: translate(5%, 20%) scale(0.94);
+    opacity: 0.6;
+  }
+}
+@keyframes sunCellB {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.7;
+  }
+  40% {
+    transform: translate(-16%, -12%) scale(1.16);
+    opacity: 0.45;
+  }
+  72% {
+    transform: translate(-6%, 8%) scale(0.9);
+    opacity: 0.8;
+  }
+}
+@keyframes sunCellC {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.5;
+  }
+  50% {
+    transform: translate(18%, -14%) scale(1.22);
+    opacity: 0.78;
+  }
+}
+@keyframes sunSpotA {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.75;
+  }
+  45% {
+    transform: translate(-22%, 16%) scale(1.18);
+    opacity: 0.95;
+  }
+}
+@keyframes sunSpotB {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.6;
+  }
+  55% {
+    transform: translate(26%, -10%) scale(0.88);
+    opacity: 0.85;
+  }
+}
+
+/* Mostly nothing, then an arc, then nothing. The long dead stretch is the point:
+   a prominence that fires every three seconds is a logo animation, one that
+   fires twice a minute is a star. Ends at opacity 0 so a frozen frame shows a
+   clean limb. */
+@keyframes sunProm {
+  0%,
+  62% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  70% {
+    opacity: 0.85;
+    transform: scale(1);
+  }
+  78% {
+    opacity: 0.7;
+    transform: scale(1.035);
+  }
+  88%,
+  100% {
+    opacity: 0;
+    transform: scale(1.07);
+  }
 }
 
 /* ───────────────────────────────────────────────────────────────────────────

@@ -1,52 +1,66 @@
 import type { Config } from "tailwindcss";
 
 /**
- * Brand tokens, and every one of them is a measured decision rather than a taste.
+ * Brand tokens, sampled from his own logo rather than invented.
  *
- * The palette is a flowering room: near-black with a green cast, a signal green for
- * anything that acts, and an HPS amber for warmth. It is deliberately dark and
- * high-contrast — this is a facility director selling SOPs to commercial operators,
- * not a wellness brand.
+ * His mark is a black interlocked wordmark over a burning sun on pure black. That image is
+ * the brand, so the palette was read off it pixel by pixel instead of guessed: the disc
+ * measures around #CC5528, the corona #F7C063, the bright granules near-white yellow, the
+ * sunspots #802715, and the background is literally #000000. Everything below is one of
+ * those, adjusted only as far as contrast required.
  *
- * IMPORTANT, IF HIS REAL BRAND ARRIVES. This is a proposed direction, designed
- * without ever seeing his site: the browser in the build environment cannot reach
- * the public internet, so nobody involved has seen his colours, type or photography.
- * When his logo and palette turn up, they land here and nowhere else. Nothing in the
- * app hardcodes a colour.
+ * TWO ACCENTS, AND THE SPLIT COMES FROM THE PHOTOGRAPH. `ember` is the disc — it fills
+ * things: buttons, plates, the sun itself. `flare` is the corona — it writes things: links,
+ * eyebrows, small emphasis. The disc is too dark to carry small text on black at the size
+ * links get used, and the corona is too pale to carry black button labels. Using one token
+ * for both is how you end up with either unreadable links or washed-out buttons.
  *
- * Contrast, measured against WCAG 2.1 AA rather than assumed:
+ * Contrast measured against WCAG 2.1 AA rather than assumed:
  *
- *   bone on ink     17.62   body text
- *   bone on panel   16.21
- *   muted on ink     7.71   secondary text
- *   muted on panel   7.09
- *   gas on ink      11.73   links and small text
- *   amber on ink     9.77
- *   ink on gas      11.73   button labels
- *   ink on amber     9.77
+ *   bone on ink     18.50   body text
+ *   bone on panel   17.05
+ *   muted on ink     7.62   secondary text
+ *   muted on panel   7.03
+ *   flare on ink    10.28   links, eyebrows, small accents
+ *   ember on ink     5.44   large accents, and passes for text if needed
+ *   ink on ember     5.44   button labels — note these are INK, never bone:
+ *                           bone on ember is 3.40 and fails for normal text
+ *   ink on ember-hot 6.96   button hover
+ *   alert on ink    10.25   errors. Deliberately rose rather than orange, because an
+ *                           orange error message on an orange brand is invisible as an
+ *                           error — it just reads as more brand.
+ *   hot on ink      17.70   the brightest highlight, for granules and hairlines
  *
- * TWO BORDER TOKENS, ON PURPOSE. `line` measures 1.36 on ink, which is fine for a
- * decorative divider — WCAG's 3:1 non-text rule applies to boundaries that identify
- * a control, not to hairlines between sections. `edge` measures 3.62 on ink and 3.33
- * on panel and is what every form field, button outline and focus ring uses, because
- * there the boundary IS the control. Do not swap one for the other.
+ * TWO BORDER TOKENS, ON PURPOSE. `line` measures 1.40 on ink, which is right for a
+ * decorative divider — WCAG's 3:1 non-text rule covers boundaries that identify a control,
+ * not hairlines between sections. `edge` measures 3.48 on ink and 3.21 on panel and is what
+ * every form field, button outline and focus ring uses, because there the boundary IS the
+ * control. Do not swap one for the other.
+ *
+ * IF HIS REAL ASSETS ARRIVE, THEY LAND HERE. Nothing else in the app hardcodes a colour —
+ * including the sun and the fertigation diagram, which is the usual place that rule breaks.
  */
 const config: Config = {
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        ink: { DEFAULT: "#0B0D0A", panel: "#141813" },
-        line: "#242C22",
-        edge: "#5E6F58",
-        bone: "#F2F4EF",
-        muted: "#9BA697",
-        gas: { DEFAULT: "#7CE04B", dim: "#5FB239" },
-        amber: "#F2A93B",
-        // The hero diagram's own tones. They live here rather than inside the SVG
-        // because the rule is that no colour is written anywhere but this file — and a
-        // diagram is exactly the place that rule usually gets broken.
-        rig: { metal: "#2A3327", edge: "#404B3B", media: "#39412F", fibre: "#505B44" },
+        // Near-black rather than #000000: a true black clips on OLED and makes the sun's
+        // outer corona terminate in a visible edge instead of falling off into the page.
+        ink: { DEFAULT: "#060403", panel: "#151010" },
+        line: "#332621",
+        edge: "#77604F",
+        bone: "#F7F3EC",
+        muted: "#A89C90",
+        ember: { DEFAULT: "#D95E27", hot: "#F0722C", deep: "#8E2C11", core: "#5E1B0A" },
+        flare: "#F5A83C",
+        hot: "#FFEFA8",
+        alert: "#FF9E8C",
+        // The fertigation diagram's own tones. They live here rather than inside the
+        // SVG because the rule is that no colour is written anywhere but this file — and
+        // a diagram is exactly the place that rule usually gets broken. Warm, because a
+        // rockwool slab under a sodium-coloured light is tan, not olive.
+        rig: { metal: "#2A2320", edge: "#5A4A3F", media: "#4A3A2C", fibre: "#6B5748" },
       },
       fontFamily: {
         display: ["var(--font-display)", "ui-sans-serif", "system-ui", "sans-serif"],
