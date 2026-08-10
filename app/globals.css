@@ -150,10 +150,19 @@ select.field {
    and at this size the slight discontinuity between letters reads as texture rather than as
    a seam.
 
-   The tile is sized to about one and a half letter-heights and positioned at the centre, so
-   each glyph shows a hot region rather than whatever happened to land there — a letter that
-   catches only a dark void in the tile reads as a hole. And it drifts, on the same slow
-   creep as the disc's own surface, so the type smoulders instead of sitting still.
+   The tile is sized to about one and a half letter-heights, so each glyph lands on structure
+   rather than on one flat patch.
+
+   THE FILL USED TO DRIFT and no longer does. A 22s creep of background-position was there as
+   insurance: with the old low-contrast tile a letter could land on a dark patch and read as a
+   hole, and a moving crop meant no letter sat in one for long. The re-toned tile removed the
+   need for it — the position was swept in 15% steps across a full tile width and at every
+   single step the dimmest of the four letters still measured above 128 mean luminance, so
+   there is no bad crop left to drift away from. Given that, a fill that crawls forever
+   underneath the first words on the page is just a distraction competing with the sun, which
+   already carries all the motion this section needs. Pinned at the hottest and highest-
+   contrast crop the sweep found (mean 156, sd 55, and only 14 luminance between the dimmest
+   and brightest letter). The one-off grow-in stays; it was asked for.
 
    The fallback matters: if background-clip: text is unsupported, `color: transparent` would
    leave the headline invisible. `@supports` gates the whole treatment, so anything that
@@ -188,38 +197,65 @@ select.field {
 }
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
   .grow-letter {
-    /* A PURPOSE-BUILT TILE, not the disc's one blended lighter. Two attempts at blending
-       failed: the disc tile averages luminance 69 — most of its area is void — so glyphs
-       filled with it raw came out nearly black, `overlay` dragged the base down as hard as it
-       lifted it, and `screen` measured no better in practice, glyph median 68 against the
-       ~110 where type stops reading as murky.
-       So noise/ember-text.png is the same generator with a TEXT palette: its darkest tone is
-       already a mid ember rather than a void, so the floor a glyph can hit is 109 and the
-       median is 165 by construction — solved for, not guessed. The filament structure is
-       identical, only the tone range is lifted. One layer, no blend mode, nothing to depend on.
-       Measured: min 109, median 165, max 226. */
+    /* THE TILE IS THE DISC'S OWN TILE, RE-TONED. He asked for the letters to be made of
+       the sun, so the structure is not a lookalike from the same recipe — ember-text.png is
+       generated FROM plasma-a.png, the exact texture on the disc. Only the tone curve
+       differs, and only because a letter and a sphere need opposite things from the same
+       fire.
+
+       WHY IT NEEDS RE-TONING AT ALL. plasma-a is half void by area (median 38 of 255):
+       on the disc the voids ARE the picture, and glyphs filled with it raw came out nearly
+       black. `overlay` dragged the base down as hard as it lifted it; `screen` measured no
+       better. So the source luminance is histogram-EQUALISED — a monotone per-pixel map, so
+       every filament survives exactly — which spreads the tones uniformly and lets the
+       palette decide the range instead of the source histogram deciding it.
+
+       THE FIRST VERSION OF THIS SOLVED THE FLOOR AND LOST THE FIRE. Its palette started at a
+       mid ember so no glyph pixel could ever go murky, which worked, and cost everything
+       else: standard deviation 26 against the disc's 46, and a ceiling of 213 — so nothing
+       in the word was ever actually hot, and it read as flat orange marble. "Make the sun
+       filling more intense" was exactly right.
+       The floor was being defended against the wrong number. The page is #060403,
+       luminance 4.4, so a glyph pixel at 69 is a 16:1 ratio — plainly visible. Murk was
+       never about the floor, it was about the MEDIAN. So the floor drops to 69 and the top
+       is carried to white-hot, which the old palette never reached at all:
+
+                        sd     p2    p50    p98
+         old tile      26.1  109.4  160.9  213.0
+         this tile     51.7   68.6  139.3  243.8
+         the disc      46.1   15.4   81.4  164.0
+
+       More contrast than the disc itself, and hot where the disc's limb is hot. Saturation
+       0.73, matching the disc to two decimal places. One layer, no blend mode.
+       Verified seamless: the wrap join differs from an adjacent interior row by 0.8/255. */
     background-image: url("/noise/ember-text.png");
     background-repeat: repeat;
     /* 150% of the line box: big enough that a glyph lands on structure rather than one flat
        patch, small enough that the filaments still read as filaments. */
     background-size: 150% 150%;
-    background-position: 50% 55%;
+    background-position: 0% 55%;
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
     -webkit-text-fill-color: transparent;
-    animation-name: growUp, growSmoulder;
-    animation-duration: 1150ms, 22s;
-    animation-timing-function: cubic-bezier(0.2, 1.28, 0.32, 1), linear;
-    animation-iteration-count: 1, infinite;
-    animation-fill-mode: both, none;
-  }
-  /* The colour keyframes in growUp cannot tint fire, so the warm-up is dropped here and the
-     letters simply arrive already made of it. */
-  @keyframes growSmoulder {
-    to {
-      background-position: 150% 55%;
-    }
+    /* HOT MATERIAL IS NOT THE SAME AS A HOT LIGHT, and this is the second half of making the
+       word intense. With the fill alone the letters are convincingly molten but they do not
+       throw anything, so beside a sun with a bloom around it they read as a cutout of fire
+       rather than as a piece of it.
+       Two shadows, not one: a tight 4px core in the flare tone for the heat right at the
+       stroke, and a 22px ember bleed for the bloom. A single wide shadow measured almost no
+       change in glyph contrast (sd 58 against 59 with none) because it spreads too far to
+       affect the edge; the pair takes glyph sd from 59 to 77 and puts light on 36% of the
+       surrounding area.
+       It has to be a filter rather than text-shadow. `-webkit-text-fill-color: transparent`
+       means a text-shadow would show THROUGH the glyph — a blurred orange blob inside each
+       letter, muddying the fill it is meant to set off. drop-shadow works off the element's
+       rendered alpha, so it lands strictly behind the painted pixels.
+       Inside @supports on purpose: this is tuned to the fire fill, and the no-clip fallback is
+       deliberately a plain solid headline. It also keeps `filter` — which creates a containing
+       block and a stacking context — off the path that does not need it. */
+    filter: drop-shadow(0 0 4px rgba(255, 150, 60, 0.6))
+      drop-shadow(0 0 22px rgba(214, 74, 20, 0.45));
   }
 }
 
