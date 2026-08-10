@@ -217,12 +217,20 @@ select.field {
 .sun-spot {
   border-radius: 50%;
 }
+/* NORMAL COMPOSITING, NOT `screen`, AND THE REASON IS MEASURED. Every
+   mix-blend-mode layer inside an isolated stacking context costs a backdrop
+   read-back, and on this disc the budget turned out to be exactly two: at three
+   blend layers per disc the page ran at 30fps and at two it ran at 60, with a
+   clean step between them and no sensitivity to element size, blend mode or
+   whether the layer was even animating. So the two churn tiles keep their blends,
+   because contrast modulation is the whole point of them, and everything else
+   here composites normally with its colour re-tuned to match what `screen` and
+   `multiply` were doing. */
 .sun-cell {
-  mix-blend-mode: screen;
   background: radial-gradient(
     closest-side circle,
-    rgba(255, 239, 168, 0.5),
-    rgba(255, 190, 100, 0.17) 52%,
+    rgba(255, 216, 140, 0.55),
+    rgba(255, 176, 92, 0.2) 52%,
     transparent 76%
   );
 }
@@ -248,11 +256,10 @@ select.field {
   animation: sunCellC 17s ease-in-out infinite;
 }
 .sun-spot {
-  mix-blend-mode: multiply;
   background: radial-gradient(
     closest-side circle,
-    rgba(96, 26, 10, 0.9),
-    rgba(122, 38, 16, 0.42) 54%,
+    rgba(112, 32, 12, 0.72),
+    rgba(134, 44, 18, 0.34) 54%,
     transparent 78%
   );
 }
@@ -288,24 +295,225 @@ select.field {
   );
 }
 
-/* Surface texture. One tile of fractal noise, desaturated, blended overlay. It is a
-   data URI rather than a live SVG filter on the disc because a filter over a
-   1000px element re-rasterises whenever anything beneath it moves — and beneath
-   it, five gradients are moving constantly. As a background image it is decoded
-   once. `stitchTiles` is what stops the seams showing where the tile repeats. */
-.sun-grain {
-  inset: 0;
+/* The static fine-grain layer that used to sit here has been DELETED, and it is
+   worth knowing why rather than wondering where the texture went. It was a ninth
+   mix-blend-mode layer on this disc, and blend layers are the one thing that costs
+   frames here — see the note on .sun-cell. Its high-frequency detail is now mixed
+   into the two churn PNGs, which are rasterised once and cost nothing per frame. */
+
+/* ── Surface churn ────────────────────────────────────────────────────────
+   The layer whose absence made the first version a lava lamp. Two opaque noise
+   tiles at different scales sliding in different directions at different speeds;
+   the interference between them produces continuously-changing structure for the
+   cost of two composited translations. This is the trick a fire shader uses, and
+   it is why nothing here needs an animated filter.
+
+   Each tile translates by EXACTLY its own background-size, so the loop is
+   seamless — translate percentages and background-size percentages are both
+   relative to the element's own box, so a 21% travel on a 21% tile lands exactly
+   one tile on. Any other number and there is a jump once per cycle.
+
+   THE TILES ARE PRE-RASTERISED PNGs, AND THAT IS A PERFORMANCE FIX, NOT A
+   PREFERENCE. They were inline SVG data URIs with an feTurbulence inside, which
+   looked elegant and cost the entire frame budget: an SVG background is
+   re-rasterised on repaint, so the turbulence filter ran again every single frame.
+   Measured at 1440x900, that one decision held the page at 30fps — and disabling
+   every other moving layer on the sun changed nothing at all, while disabling
+   these two took it straight back to 60. Element size and blend mode made no
+   difference either, which is what proved it was rasterisation rather than fill
+   rate. The PNGs are generated in the frequency domain so they tile exactly (see
+   the note in the repo history); together they are 30KB.
+
+   TWO RULES ABOUT THE SIZE, AND GETTING THE SECOND WRONG WAS VISIBLE IMMEDIATELY.
+   The element must be bigger than the disc, and its margin must be at least the
+   distance it travels: it is sliding away from one corner, and whatever it uncovers
+   there is simply not painted. The first attempt used `inset: -22%` and travelled
+   42% of the sun's width, so a hard-edged rectangle of un-churned disc opened up
+   behind it — which reads as a compositing bug, not as a missing margin.
+
+   At `inset: -50%` the element is 200% of the sun and every tile below travels
+   less than 50% of it, so the rule holds in both axes and for either sign. Keep
+   `margin >= travel` if these numbers are ever retuned. */
+.sun-churn {
+  inset: -50%;
+  background-repeat: repeat;
+  will-change: transform;
+}
+.sun-churn-a {
   mix-blend-mode: overlay;
+  opacity: 0.38;
+  background-image: url("/noise/plasma-a.png");
+  /* 21% of a 200%-wide element is 42% of the sun. */
+  background-size: 21% 21%;
+  animation: sunChurnA 2.7s linear infinite;
+}
+.sun-churn-b {
+  /* soft-light rather than overlay on the second layer: two overlays stack into
+     mud, and the finer tile only needs to break up the coarser one. */
+  mix-blend-mode: soft-light;
   opacity: 0.3;
-  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.68' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
-  background-size: 140px 140px;
+  background-image: url("/noise/plasma-b.png");
+  /* 13% of a 200%-wide element is 26% of the sun. */
+  background-size: 13% 13%;
+  animation: sunChurnB 1.6s linear infinite;
+}
+@keyframes sunChurnA {
+  to {
+    transform: translate(21%, -21%);
+  }
+}
+@keyframes sunChurnB {
+  to {
+    transform: translate(-13%, -13%);
+  }
 }
 
-/* ── Prominences ─────────────────────────────────────────────────────────── */
-.sun-prom {
+/* Combustion flicker. Irregular stops on purpose — an even sine reads as a pulse,
+   and a pulse reads as a lighthouse rather than a fire. First and last frames
+   match, so the loop is seamless and a frozen frame is the neutral bloom. */
+.sun-flicker {
+  inset: 0;
+  background: radial-gradient(
+    closest-side circle at 46% 43%,
+    rgba(255, 202, 128, 0.16),
+    rgba(240, 130, 60, 0.05) 60%,
+    transparent 86%
+  );
+  opacity: 0.3;
+  animation: sunFlicker 1.35s linear infinite;
+}
+@keyframes sunFlicker {
+  0% { opacity: 0.3; }
+  9% { opacity: 0.46; }
+  17% { opacity: 0.34; }
+  28% { opacity: 0.53; }
+  36% { opacity: 0.38; }
+  47% { opacity: 0.29; }
+  58% { opacity: 0.45; }
+  66% { opacity: 0.33; }
+  79% { opacity: 0.5; }
+  88% { opacity: 0.36; }
+  100% { opacity: 0.3; }
+}
+
+/* ── Flames, embers and prominences ──────────────────────────────────────── */
+.sun-fx {
   overflow: visible;
 }
-.sun-prom .prom {
+
+/* Tongues around the limb. transform-origin at the bottom of each path's own box
+   is the whole trick: the base of the shape sits on the limb, so scaling from
+   there grows the flame outward instead of stretching it in place. Requires
+   `transform-box: fill-box`, or the origin is measured from the viewBox corner. */
+.sun-fx .flame {
+  fill: theme("colors.flare");
+  /* A CSS blur, and this is the exception to "no filters on anything that moves".
+     A solid fill cannot fall off along its own length, and falloff is the single
+     quality that separates a flame from a spike — without it these rendered as a
+     ring of thorns however the silhouette was redrawn. A gradient fill would need
+     a <linearGradient id>, and an id in a component that renders twice on a page
+     is the bug documented above.
+
+     The cost objection does not apply at this size. A filter costs its AREA, and
+     each tongue is roughly 30 by 80 device pixels — fourteen of them is about
+     33,000 pixels per sun, against the 300,000+ of one full-disc filter. The rule
+     is not "never blur something that moves", it is "never blur something LARGE
+     that moves".
+
+     Bases are wide enough that neighbours nearly touch, so blurred they merge into
+     one restless fringe rather than reading as fourteen separate objects. */
+  filter: blur(2.2px);
+  /* Peak opacity is set in the keyframes and is deliberately low. These are drawn
+     BEHIND the disc (see Sun.tsx), so only the length past the limb is ever
+     visible. */
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  opacity: 0;
+  animation-name: sunFlame;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+/* Rises fast, hangs, thins, dies. Ends at zero opacity so a frozen last frame —
+   which is what reduced motion leaves — shows a clean limb rather than fourteen
+   half-formed tongues. */
+@keyframes sunFlame {
+  0% {
+    opacity: 0;
+    transform: scale(0.55, 0.1);
+    animation-timing-function: cubic-bezier(0.15, 0.7, 0.3, 1);
+  }
+  15% {
+    opacity: 0.52;
+    transform: scale(1.02, 0.74);
+    animation-timing-function: ease-in-out;
+  }
+  40% {
+    opacity: 0.46;
+    transform: scale(0.86, 1);
+    animation-timing-function: ease-in;
+  }
+  68% {
+    opacity: 0.22;
+    transform: scale(0.64, 0.86);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.42, 0.52);
+  }
+}
+
+/* Embers. `--reach` is registered below so it can be read inside calc() in a
+   keyframe; an unregistered custom property is a token stream, and `calc(var(--x)
+   * -1px)` on one is invalid at computed-value time and silently drops the whole
+   transform. */
+@property --reach {
+  syntax: "<number>";
+  inherits: false;
+  initial-value: 30;
+}
+.sun-fx .ember {
+  /* Warm rather than the near-white `hot`. White specks read as dust or snow; the
+     corona colour reads as material leaving a fire. */
+  fill: theme("colors.flare");
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+  animation-name: sunEmber;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+/* Bright almost immediately, then a long dimming coast outward while it shrinks.
+   Embers do not fade evenly — they hold, then go. */
+@keyframes sunEmber {
+  0% {
+    opacity: 0;
+    transform: translateY(0) scale(1);
+  }
+  8% {
+    opacity: 0.95;
+    transform: translateY(calc(var(--reach) * -0.09px)) scale(1);
+    animation-timing-function: ease-out;
+  }
+  55% {
+    opacity: 0.5;
+    transform: translateY(calc(var(--reach) * -0.58px)) scale(0.72);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(calc(var(--reach) * -1px)) scale(0.3);
+  }
+}
+
+/* Half the tongues and half the embers on a phone. Thirty animated nodes is fine
+   on a laptop and is not what a mid-range Android should be spending a frame on;
+   at that size the sun is also a third of the width, so the missing ones are not
+   missed. */
+@media (max-width: 640px) {
+  .sun-fx .fx-odd {
+    display: none;
+  }
+}
+.sun-fx .prom {
   /* Scales about the middle of the drawing rather than about its own bounding
      box, so a prominence grows outward from the sun's centre the way a real one
      does. view-box is the SVG equivalent of getting transform-origin right. */
@@ -318,18 +526,18 @@ select.field {
    animated opacity multiplies with these, so a prominence fades as one object. */
 /* Warm rather than white. A near-white core read as a solid ribbon laid over the
    disc; ember and flare read as something the sun is doing. */
-.sun-prom .prom-glow {
+.sun-fx .prom-glow {
   stroke: theme("colors.ember.hot");
   opacity: 0.28;
 }
-.sun-prom .prom-core {
+.sun-fx .prom-core {
   stroke: theme("colors.flare");
   opacity: 0.6;
 }
-.sun-prom .prom-1 {
+.sun-fx .prom-1 {
   animation: sunProm 19s ease-in-out 2.5s infinite;
 }
-.sun-prom .prom-2 {
+.sun-fx .prom-2 {
   animation: sunProm 27s ease-in-out 11s infinite;
 }
 
