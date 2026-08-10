@@ -104,6 +104,56 @@ a chat window.
 Any mailbox with SMTP works: his own domain mail, Google Workspace, Fastmail, whatever he
 already has. No new account and no new bill.
 
+## Their assets — permission, and where they live
+
+**Permission granted by Kevin, 10 Aug 2026: we may take the logo and photographs from
+mi-gas.net for this build.** Recorded here because "we have permission" is the kind of thing
+that lives in one person's memory and needs to survive them being on holiday.
+
+The site is Squarespace, so everything is on `images.squarespace-cdn.com` under the account
+prefix `64c303be135c1c0effa95844`. The CDN accepts a `?format=` parameter, so append
+`?format=2500w` to any of these to get the largest rendition rather than the resized one the
+page happens to request.
+
+| what | file |
+| --- | --- |
+| **Logo, primary** | `1c64c4cd-f109-4d1f-9f54-acbad40f7296/FullLogo.png` |
+| **Logo, white** | `2ade2437-7442-470b-8be5-813d7b14838c/Social+Signature+Logo-white.png` |
+| Hero image | `01ec6738-16ae-4a59-ac49-993c52e440d1/IMG_5497+2.png` |
+| Flower Guide cover | `b07c8fa5-5ea0-4e5e-ac6c-d3a8adfa404e/FGbutton2.png` |
+| Veg Guide cover | `6e2acba9-6ede-4684-97a2-714b9a6f5a73/VGbutton2.png` |
+| Hand-Water to Automation cover | `695c835f-a131-4967-9ffc-54155b4e2143/HWGButton2.png` |
+| The Complete Package cover | `c57047d7-d9da-40a1-ab00-c13da3d4cc10/TCPbutton2.png` |
+| Run-Off Guide cover | `bfbe6a96-ab4a-4d25-9c40-aa3dd48add9e/ROGbutton2.png` |
+| Grow gallery | `IMG_9011.jpg` – `IMG_9014.jpg`, same prefix, individual UUIDs |
+
+The five covers map one-to-one onto `GUIDES` plus `BUNDLE` in `lib/site.ts` — FG/VG/ROG/HWG
+and TCP against flower / veg / run-off / automation / complete. Five products, five covers,
+nothing missing on either side, which is a useful independent check that the product list
+read off their site is complete.
+
+**The white signature logo is probably the one to use.** This build is near-black
+(`ink #060403`) and the primary is likely dark-on-transparent.
+
+### The wordmark is still a stand-in, and this is what replaces it
+
+`components/Mark.tsx` sets MIGAS in this build's own display face because his letterforms
+could not be traced: they overhang the sun onto pure black, so the strokes leaving the disc
+are indistinguishable from the background. That reasoning still holds for tracing, and it is
+now moot — `FullLogo.png` is the real artwork.
+
+What is still worth having beyond the PNG:
+
+- **A vector, if it exists** (SVG, AI, EPS, PDF). A wordmark that has to render crisply from
+  nav size to poster size wants to be vector. A PNG at 2500w will do for the web but it
+  cannot be recoloured, animated, or set as a favicon cleanly.
+- **The typeface name**, if he knows it. If the wordmark is set type rather than custom
+  lettering, having the font means headings elsewhere on the site can share it, which is what
+  makes a site look like the brand rather than like a site with the brand's logo on it.
+
+Until one of those arrives the PNG is a straight upgrade on the stand-in and should be
+dropped in as `public/brand/logo.png`, with `Mark.tsx` swapped for an `<Image>`.
+
 ## Before launch
 
 Real unchecked boxes, because a numbered list of caveats reads as commentary and a checklist
