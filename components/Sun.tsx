@@ -16,7 +16,7 @@ import { DIAGRAM } from "@/lib/site";
  *
  *   fast    1.2–2.6s   surface churn, luminance flicker
  *   medium  2.6–5.4s   the spicule fringe rising and falling
- *   slow    13–300s    flare arcades, convection cells, corona breath, coronal streaks
+ *   slow    14–300s    flare plumes, convection cells, corona breath, coronal streaks
  *
  * Take away any one layer and it stops reading as a star. This list used to have a "medium"
  * layer of embers detaching and dying, and an argument that they were what made it read as
@@ -36,7 +36,7 @@ import { DIAGRAM } from "@/lib/site";
  * grain layer was deleted outright and its detail mixed into the churn tiles.
  *
  * HOW IT STAYS CHEAP OTHERWISE. NOTHING here carries a filter at all, and that is now a tested
- * position rather than a budget one: `filter: blur()` on the flare loops was tried at 5px and 9px
+ * position rather than a budget one: `filter: blur()` on the flare strands was tried at 5px and 9px
  * and it does not soften them, it erases them — the structure smears into a formless haze. Every
  * soft edge on this element is built out of stacked geometry instead. The surface churn is two
  * opaque
@@ -139,61 +139,55 @@ const CLUSTER_COVER = 20.5;
 const CLUSTER_OFFSET_LIMIT = 0.15;
 
 /**
- * FLARES, which is what was actually asked for twice before I built the right thing.
+ * FLARES: A FLASH AND A RISING PLUME. Third attempt, and the first one built from what a flare
+ * actually looks like rather than from what its physics diagram looks like.
  *
- * The spicule fringe was the correct fix for cartoon flames and it answered a different question.
- * A flare is not a limb texture. It is an eruption in an active region, and the research settles
- * how it has to be drawn:
+ * NASA's own alt text for an X1.9 on 30 Nov 2025, in extreme ultraviolet colorised orange and
+ * yellow: "a bright flash of yellow appears, a solar flare, and then a plume of yellow and orange
+ * material rises away from the Sun from the same location as the flare."
  *
- *   coronal loops are 10,000-200,000 km long and 100-1,000 km wide  ->  aspect 10:1 to 200:1
- *   against a 696,000 km radius that is 1.4% to 29% OF THE RADIUS   ->  apex 1.014R to 1.29R
- *   they are anchored at BOTH ends and follow the magnetic field
- *   they come in ARCADES "fanning out from magnetic concentrations"
- *   footpoints sit in active regions, at sunspots
- *   lifetimes minutes to days; the flare itself is the brightening
+ * That is two things in sequence at one spot on the limb — a flash, then a plume lifting away — and
+ * it is what he described from the start as a wick, or a small fire. I built a ring of wide flame
+ * tongues, was told it looked childish, and over-corrected twice: first into spicules, which are a
+ * limb TEXTURE and not a flare at all, then into coronal loop arcades, which are structurally what
+ * an arcade is and read as wire hoops. Both times I corrected his vocabulary instead of building
+ * what he was describing. The vocabulary was never the problem. An erupting prominence in 304
+ * angstrom footage genuinely does look like fire licking off the edge.
  *
- * THE ARCADE IS A VAULT, NOT AN ONION. This was the mistake that took a whole pass to see. Nesting
- * loops on shared footpoints and scaling them up renders as concentric rings — a drawn rainbow. A
- * real arcade has its footpoints marching ALONG the neutral line, so successive loops are
- * displaced sideways rather than scaled, and the system reads as a vault of arches standing in a
- * row. Same loop count, same brightness, completely different object.
+ * WHAT MAKES IT LICK RATHER THAN SPIKE is one term: each strand rises radially out of the surface
+ * and then CURLS tangentially. Radial-only is a spike, and a ring of spikes is the sea urchin from
+ * two versions ago. The curl is shared in sign across a plume — every strand leaning the same way —
+ * which is what makes it read as one coherent eruption rather than a starburst.
  *
- * THE LOOPS RISE RADIALLY, and that is the other thing measured rather than eyeballed. Drawn as a
- * quadratic through an apex, a loop leaves the surface along its CHORD, so the stretch near each
- * foot falls inside the disc — and the fringe is painted behind the disc, so those parts vanish
- * and the loop reads as a hoop floating unattached. A cubic with both control points pushed
- * straight out along each foot's own radius leaves the surface perpendicular instead. Sampled at
- * 40 points along the curve, minimum radius comes out at exactly 1.000R for every height tried, so
- * nothing sinks. Control length h maps to apex almost linearly: h=14 -> 1.10R, h=36 -> 1.26R,
- * which brackets the measured range.
- *
- * WHY THE ACTIVE REGIONS SIT WHERE THEY DO. Not at the two sunspots, which is where they belong
- * physically and would be invisible here: those sit 31% and 44% of the radius from centre, so they
- * face the viewer and a flare there is seen from above, not in profile. A flare only arcs off an
- * edge when its region is ON the edge. Both crops of this sun show the lower-left — the hero cuts
- * the top and right, the closing band shows only the bottom arc — so all three regions live
- * between 97 and 170 degrees, which is the arc that is visible in both.
+ * THE TAPER IS A POPULATION EFFECT, the same trick that fixed the fringe. Strand lengths follow a
+ * bell across the plume's footprint, so the silhouette comes to a point; and strands alternate
+ * between a short bright inner set and a long faint outer set, so the plume is dense and hot at the
+ * base and dissolves toward the tip without needing a gradient — which would need an id, and this
+ * page paints two suns.
  */
-const FLARE_PEAK = 0.24;
+const FLARE_PEAK = 0.5;
+/** Five alpha samples across a strand's cross-section. Fewer than the loops needed: a plume is
+ *  many overlapping strands, so the softness is mostly in the crowd rather than in each stroke. */
+const GLOW_PASSES = [1, 0.72, 0.46, 0.24, 0];
 /**
- * Nine alpha samples across the loop's cross-section. Fixed literal rather than a loop bound so
- * the ramp is visible at the call site and cannot drift from the widths it pairs with.
- */
-const GLOW_PASSES = [1, 0.875, 0.75, 0.625, 0.5, 0.375, 0.25, 0.125, 0];
-/**
- * One entry per active region: centre angle, loop count, how far the arcade spreads along the
- * limb, each loop's own footpoint separation, and the apex heights at the middle and the ends.
+ * One entry per eruption: where on the limb, how many strands, how wide its footprint, how far it
+ * reaches, and how hard it curls. Negative curl leans the other way.
  *
- * Angles use the same convention as the disc: x = 100 + r cos a, y = 100 + r sin a, so 0 is right,
- * 90 is bottom, 180 is left. The heights differ per region on purpose — three identical arcades
- * read as one shape stamped three times.
+ * Angles use the disc's convention — x = 100 + r cos a, y = 100 + r sin a, so 0 is right, 90 is
+ * bottom, 180 is left. Both crops of this sun show the lower-left, so both plumes live there: the
+ * hero cuts the top and right, and the closing band shows only the bottom arc.
  */
-const ARCADES = [
-  { c: 132, n: 6, step: 5, spanMid: 34, spanEnd: 22, scale: 1.25, seed: 0, dur: 13.5, delay: -2.5 },
-  { c: 172, n: 5, step: 5, spanMid: 26, spanEnd: 17, scale: 1.1, seed: 3, dur: 17, delay: -9.5 },
-  { c: 99, n: 4, step: 6, spanMid: 22, spanEnd: 15, scale: 1.0, seed: 6, dur: 21, delay: -15 },
+const PLUMES = [
+  // 138 and 112 rather than 150 and 103, and the reach pulled in from 46 to 42, because at 150 the
+  // plume ran off the left edge of a phone: the sun is 86% of the viewport with a 7% margin, and a
+  // 46-unit reach at that angle puts the tip 24% of the sun's width past the disc — three times the
+  // margin, so the section's clip ate the tip. Lower-left is the one direction with room in all
+  // three crops: the desktop hero cuts top and right, the phone centres the disc, and the closing
+  // band shows only the bottom arc.
+  { c: 138, n: 15, span: 9, len: 42, curl: 20, peak: 1, dur: 14, delay: -3 },
+  { c: 112, n: 12, span: 8, len: 30, curl: -15, peak: 0.78, dur: 19, delay: -11 },
 ];
-type Arcade = (typeof ARCADES)[number];
+type Plume = (typeof PLUMES)[number];
 
 export default function Sun({ className = "" }: { className?: string }) {
   return (
@@ -260,43 +254,39 @@ export default function Sun({ className = "" }: { className?: string }) {
             );
           })}
 
-          {/* The flares. One group per active region, each on its own cycle. */}
-          {ARCADES.map((A, ai) => (
+          {/* The flares. One group per eruption, each on its own cycle. */}
+          {PLUMES.map((P, pi) => (
             <g
-              key={`ar${ai}`}
-              className={`flare${ai === 1 ? " fx-odd" : ""}`}
-              style={{ animationDuration: `${A.dur}s`, animationDelay: `${A.delay}s` }}
+              key={`pl${pi}`}
+              className={`flare${pi === 1 ? " fx-odd" : ""}`}
+              style={{ animationDuration: `${P.dur}s`, animationDelay: `${P.delay}s` }}
             >
-              {/* The envelope goes down first, so everything else sits inside its light. */}
-              {envelope(A).map((e, i) => (
-                <circle key={`en${i}`} className="flare-env" cx={e.cx} cy={e.cy} r={e.r} opacity={e.o} />
+              {flash(P).map((k, i) => (
+                <circle key={`fk${i}`} className={k.cls} cx={k.cx} cy={k.cy} r={k.r} />
               ))}
-              {/* Footpoint ribbons next, so the loops paint over them. A real flare brightens at
-                  its footpoints before the loops fill, and they stay the brightest part of it. */}
-              {footpoints(A).map((p, i) => (
-                <g key={`fp${i}`}>
-                  <circle cx={p.x} cy={p.y} r="4.6" className="flare-foot-halo" />
-                  <circle cx={p.x} cy={p.y} r="1.9" className="flare-foot-mid" />
-                  <circle cx={p.x} cy={p.y} r="0.8" className="flare-foot-core" />
-                </g>
-              ))}
-              {vault(A).map((L, i) =>
-                /* GAUSSIAN CROSS-SECTION OUT OF STACKED STROKES, and the alternatives are both
-                   worse. Three hard strokes — the old prominence recipe — gives a stepped edge
-                   that reads as wire, which is what "hard lines" meant. `filter: blur()` was
-                   tried at 5px and 9px and it does not soften the loops, it erases them: the
-                   structure smears into a formless haze with nothing legible left. Nine passes on
-                   an exp(-3.4u^2) alpha ramp is a real smooth falloff, costs no filter, and stays
-                   sharp at any zoom because it is geometry rather than a raster effect. */
-                GLOW_PASSES.map((u, k) => (
+              {plumeStrands(P).map((S) =>
+                /* Softness out of stacked geometry, not a filter. `filter: blur()` was tried at 5px
+                   and 9px on the previous version and it does not soften plasma, it erases it —
+                   the structure smears into a formless haze. Five passes on an exp(-2.6v^2) ramp
+                   instead, which also stays correct at any zoom. */
+                GLOW_PASSES.map((v, k) => (
                   <path
-                    key={`l${i}-${k}`}
-                    className="flare-loop"
-                    d={L.d}
-                    stroke={u > 0.55 ? "var(--fl-outer)" : u > 0.22 ? "var(--fl-mid)" : "var(--fl-core)"}
-                    strokeWidth={(0.55 + u * 8) * (1 - 0.25 * L.t)}
+                    key={`s${S.j}-${k}`}
+                    className="flare-strand"
+                    d={S.d}
+                    stroke={
+                      v > 0.6
+                        ? "var(--fl-outer)"
+                        : v > 0.3
+                          ? "var(--fl-mid)"
+                          : S.outer
+                            ? "var(--fl-warm)"
+                            : "var(--fl-core)"
+                    }
+                    strokeWidth={(0.45 + v * 5.5) * (S.outer ? 0.8 : 1)}
                     strokeOpacity={
-                      FLARE_PEAK * Math.exp(-3.4 * u * u) * (1 - 0.5 * L.t) * (0.85 + (0.3 * ((i * 5) % 3)) / 2)
+                      FLARE_PEAK * P.peak * Math.exp(-2.6 * v * v) * (S.outer ? 0.45 : 1) *
+                      (0.8 + (0.4 * ((S.j * 11) % 4)) / 3)
                     }
                   />
                 ))
@@ -464,7 +454,7 @@ function pick(c: number, step: number, seed: number) {
 }
 
 /* ── Flare geometry ───────────────────────────────────────────────────────────────────
-   Same angle convention as everything else on the disc: x = 100 + r cos a, y = 100 + r sin a.
+   Same angle convention as everything else on the disc.
    ─────────────────────────────────────────────────────────────────────────────────── */
 
 const LIMB = 99;
@@ -472,96 +462,49 @@ const rad = (a: number) => (a * Math.PI) / 180;
 const onLimb = (a: number, r = LIMB) => [100 + r * Math.cos(rad(a)), 100 + r * Math.sin(rad(a))];
 
 /**
- * One loop, anchored at two footpoints, leaving the surface PERPENDICULAR to it.
+ * One strand: out along the radius, then curling across it.
  *
- * A cubic with both control points pushed straight out along each foot's own radius. That is the
- * whole difference between a loop that reads as anchored and a hoop that reads as floating: with a
- * quadratic through an apex the curve leaves along the chord, dips inside the disc near each foot,
- * and since this layer paints behind the disc those stretches simply disappear. Sampled at 40
- * points, this form never goes below 1.000R.
+ * Control 1 is purely radial, so the strand leaves the surface perpendicular — anything else and
+ * the base looks pasted on rather than rooted. Control 2 and the end point add the tangential curl,
+ * with the end carrying nearly twice the control's offset so the tip keeps turning instead of
+ * straightening out. That is the difference between a tongue of fire and a bent stick.
  */
-function loopPath(f1: number, f2: number, h1: number, h2: number) {
-  const [x0, y0] = onLimb(f1);
-  const [x3, y3] = onLimb(f2);
-  const [u1x, u1y] = [Math.cos(rad(f1)), Math.sin(rad(f1))];
-  const [u2x, u2y] = [Math.cos(rad(f2)), Math.sin(rad(f2))];
+function strandPath(a: number, len: number, curl: number) {
+  const [x0, y0] = onLimb(a);
+  const [urx, ury] = [Math.cos(rad(a)), Math.sin(rad(a))];
+  const [utx, uty] = [-Math.sin(rad(a)), Math.cos(rad(a))];
   const n = (v: number) => v.toFixed(2);
-  return `M${n(x0)} ${n(y0)}C${n(x0 + u1x * h1)} ${n(y0 + u1y * h1)} ${n(x3 + u2x * h2)} ${n(y3 + u2y * h2)} ${n(x3)} ${n(y3)}`;
+  return (
+    `M${n(x0)} ${n(y0)}` +
+    `C${n(x0 + urx * len * 0.4)} ${n(y0 + ury * len * 0.4)} ` +
+    `${n(x0 + urx * len * 0.8 + utx * curl)} ${n(y0 + ury * len * 0.8 + uty * curl)} ` +
+    `${n(x0 + urx * len + utx * curl * 1.9)} ${n(y0 + ury * len + uty * curl * 1.9)}`
+  );
 }
 
-/**
- * The arcade: footpoint pairs marching along the limb, tallest in the middle.
- *
- * `bell` is a half sine across the arcade, which gives it the profile of a real one — loops rise
- * toward the centre of the neutral line and shorten at both ends. It also drives the dimming, so
- * the ends fade rather than stopping abruptly.
- *
- * THE ARCHES ARE ROUGHLY SEMICIRCULAR, and getting that wrong is what made the first version read
- * as coils. It gave each loop a 5.5 degree footpoint span and a 33-unit height: a separation of
- * 9.5 units against a height of 33, so an aspect of 3.5:1 TALL. That is a finger, not an arch, and
- * nine of them side by side is a bundle of fingers. The 10:1-to-200:1 figure from the research is
- * the plasma tube's own thickness, not the shape of the arch — the arch itself is close to
- * semicircular, so its height is about half the distance between its feet. `heightFor` enforces
- * exactly that, and spans went from 5 degrees to 22-34, which is a chord of 38-58 units carrying a
- * 19-29 unit arch. Wide arches overlapping in a fan; that is what a prominence arcade looks like.
- */
-function heightFor(spanDeg: number, scale: number) {
-  const chord = 2 * LIMB * Math.sin(rad(spanDeg) / 2);
-  // /0.71 converts the arch height wanted into the control length that produces it, measured off
-  // the cubic by sampling: h=20 gives 1.14R and h=36 gives 1.26R, so apex height ~= 0.71h.
-  return ((chord / 2) / 0.71) * scale;
-}
-
-function vault(A: Arcade) {
-  return Array.from({ length: A.n }, (_, i) => {
-    const u = A.n === 1 ? 0.5 : i / (A.n - 1);
-    const bell = Math.sin(Math.PI * u);
-    const mid = A.c - (A.step * (A.n - 1)) / 2 + i * A.step;
-    const span = A.spanEnd + (A.spanMid - A.spanEnd) * bell;
-    const h = heightFor(span, A.scale);
-    return { d: loopPath(mid - span / 2, mid + span / 2, h * 0.95, h * 1.05), t: 1 - bell * 0.85 };
-  });
-}
-
-/**
- * The diffuse envelope: three big soft discs over the arcade, under the loops.
- *
- * Without it the loops overlap into something that reads as a spirograph — correct shapes with
- * nothing between them. Real prominence plasma is a translucent VOLUME with threads inside it, so
- * the threads need something to sit in. Circles rather than a blurred shape for the usual reason:
- * a gradient needs an id, this page paints two suns, and duplicate ids are the documented bug at
- * the top of this file.
- */
-function envelope(A: Arcade) {
-  const chord = 2 * LIMB * Math.sin(rad(A.spanMid) / 2);
-  const reach = ((chord / 2) * A.scale) / 2;
-  const [x, y] = onLimb(A.c, LIMB + reach * 0.55);
-  return [
-    { r: (chord * 0.62).toFixed(1), o: 0.020 },
-    { r: (chord * 0.42).toFixed(1), o: 0.028 },
-    { r: (chord * 0.26).toFixed(1), o: 0.034 },
-  ].map((e) => ({ cx: x.toFixed(1), cy: y.toFixed(1), ...e }));
-}
-
-/**
- * Where the loops meet the surface. Two rows of them, one per side of the neutral line — a real
- * flare's footpoints are ribbons along that line, not two isolated dots, and drawing every loop's
- * feet is what makes them read that way.
- *
- * Pulled 0.5 units inside the limb so the halo tucks under the disc's own edge instead of sitting
- * on top of it as a visible bead.
- */
-function footpoints(A: Arcade) {
-  const out: { x: string; y: string }[] = [];
-  for (let i = 0; i < A.n; i += 1) {
-    const u = A.n === 1 ? 0.5 : i / (A.n - 1);
-    const bell = Math.sin(Math.PI * u);
-    const mid = A.c - (A.step * (A.n - 1)) / 2 + i * A.step;
-    const span = A.spanEnd + (A.spanMid - A.spanEnd) * bell;
-    for (const side of [-1, 1]) {
-      const [x, y] = onLimb(mid + (side * span) / 2, LIMB - 0.5);
-      out.push({ x: x.toFixed(2), y: y.toFixed(2) });
-    }
+/** Every strand of one plume, with the stroke it wants. */
+function plumeStrands(P: Plume) {
+  const out: { d: string; outer: boolean; j: number }[] = [];
+  for (let j = 0; j < P.n; j += 1) {
+    const u = P.n === 1 ? 0.5 : j / (P.n - 1);
+    // ^0.75 rather than a plain sine: a plain bell tapers too politely and the plume comes out
+    // leaf-shaped. This holds the middle strands long and drops the edges away faster.
+    const bell = Math.pow(Math.sin(Math.PI * u), 0.75);
+    const a = P.c - P.span / 2 + u * P.span;
+    const outer = j % 2 === 1;
+    const len = P.len * (outer ? 1 : 0.62) * bell * (0.82 + 0.36 * (((j * 7) % 5) / 4));
+    const curl = P.curl * (0.55 + 0.9 * bell) * (0.8 + 0.4 * (((j * 5) % 3) / 2));
+    out.push({ d: strandPath(a, Math.max(3, len), curl), outer, j });
   }
   return out;
+}
+
+/** The flash: the flare itself, a bright kernel where the plume leaves the surface. */
+function flash(P: Plume) {
+  const [x, y] = onLimb(P.c, LIMB - 1);
+  return [
+    { r: 9, cls: "flare-flash-halo" },
+    { r: 4.6, cls: "flare-flash-mid" },
+    { r: 2, cls: "flare-flash-core" },
+  ].map((k) => ({ cx: x.toFixed(2), cy: y.toFixed(2), ...k }));
 }

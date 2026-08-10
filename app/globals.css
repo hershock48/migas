@@ -648,80 +648,75 @@ select.field {
    at that size the sun is also a third of the width, so the missing ones are not
    missed. */
 /* ── Flares ───────────────────────────────────────────────────────────────
-   An arcade of coronal loops per active region. Replaces the two lone prominence
-   arcs, which at 0.28 opacity on 19- and 27-second cycles meant that most of the
-   time there was nothing at the limb at all.
+   A flash and a rising plume, per NASA's own description of an X1.9: "a bright
+   flash of yellow appears, a solar flare, and then a plume of yellow and orange
+   material rises away from the Sun from the same location as the flare."
 
-   THE GLOW IS GEOMETRY, NOT A FILTER, and that was tested rather than assumed.
-   Each loop is nine stacked strokes on an exp(-3.4u^2) alpha ramp, which is a
-   smooth cross-section. Three hard strokes -- the old recipe -- gives a stepped
-   edge that reads as wire. `filter: blur()` was tried at 5px and at 9px and it
-   does not soften these, it erases them: the loops smear into a formless haze
-   with no structure left. Stacking also stays correct at any zoom, because it is
-   shapes rather than a raster effect, and it costs no filter area on an element
-   that animates.
+   This replaces coronal loop arcades, which were structurally what an arcade is
+   and rendered as wire hoops, and before that a spicule fringe, which is a limb
+   texture and not a flare at all. Both were me correcting the brief's vocabulary
+   instead of building what it described. A wick was the right word.
 
-   THE AMPLITUDE WAS CALIBRATED AT TRUE SIZE, which turned out to matter more than
-   anything else here. Judged on a 900px render the loops looked like glowing neon
-   macaroni and I dropped the peak alpha hard; at the size this actually renders --
-   301px on a phone, 560px in the hero -- that same setting was nearly invisible.
-   The sun is never 900px. 0.19 is the value that reads as a prominence at 560. */
+   THE GLOW IS GEOMETRY. Five stacked strokes per strand on an exp(-2.6v^2) alpha
+   ramp. `filter: blur()` was tried at 5px and 9px on the previous version and it
+   does not soften plasma, it erases it -- the structure smears into a formless
+   haze with nothing legible left. Stacking also survives any zoom, because it is
+   shapes rather than a raster effect, and costs no filter area on an element that
+   animates. Nothing in this file carries a filter. */
 .sun-fx .flare {
   --fl-outer: theme("colors.ember.hot");
   --fl-mid: theme("colors.ember.DEFAULT");
-  --fl-core: theme("colors.flare");
+  --fl-warm: theme("colors.flare");
+  --fl-core: theme("colors.hot");
   animation-name: sunFlare;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
-/* The diffuse volume the threads sit in. See envelope() in Sun.tsx. */
-.sun-fx .flare-env {
-  fill: theme("colors.ember.hot");
-}
-.sun-fx .flare-loop {
+.sun-fx .flare-strand {
   fill: none;
   stroke-linecap: round;
 }
-/* Footpoint ribbons. Stacked circles rather than one blurred blob, for the same
-   reason the loops are stacked strokes. */
-.sun-fx .flare-foot-halo {
+/* The flash. Stacked circles rather than one blurred blob, same reason as the
+   strands. `hot` at the core because NASA's colorisation runs orange to yellow
+   and the flare kernel is the yellowest thing in the frame. */
+.sun-fx .flare-flash-halo {
   fill: theme("colors.ember.hot");
-  opacity: 0.07;
-}
-.sun-fx .flare-foot-mid {
-  fill: theme("colors.ember.DEFAULT");
   opacity: 0.16;
 }
-.sun-fx .flare-foot-core {
+.sun-fx .flare-flash-mid {
   fill: theme("colors.flare");
-  opacity: 0.42;
+  opacity: 0.48;
+}
+.sun-fx .flare-flash-core {
+  fill: theme("colors.hot");
+  opacity: 0.9;
 }
 /* A flare is an EVENT: it brightens fast and decays slowly, and it is dark for
-   most of its cycle. The rise is 6% of the period and the decay is the remaining
-   60%, which is the asymmetry every light curve of a real flare has. Holding near
-   zero for the last third is what makes the next one read as an eruption rather
-   than as a pulse -- three arcades on 13.5s, 17s and 21s with negative delays means
-   something is usually active without any two ever peaking together. */
+   most of its cycle. 6% rise against a 60% decay is the asymmetry every real
+   flare light curve has. Holding near zero through the last third is what makes
+   the next one read as an eruption rather than as a pulse -- two plumes on 14s
+   and 19s with negative delays means one is usually up and they never peak
+   together. */
 @keyframes sunFlare {
   0%,
   8% {
-    opacity: 0.06;
+    opacity: 0.04;
   }
   14% {
     opacity: 1;
   }
   30% {
-    opacity: 0.82;
+    opacity: 0.85;
   }
   52% {
-    opacity: 0.45;
+    opacity: 0.5;
   }
   74% {
-    opacity: 0.16;
+    opacity: 0.18;
   }
   88%,
   100% {
-    opacity: 0.06;
+    opacity: 0.04;
   }
 }
 
