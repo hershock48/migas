@@ -104,35 +104,36 @@ a chat window.
 Any mailbox with SMTP works: his own domain mail, Google Workspace, Fastmail, whatever he
 already has. No new account and no new bill.
 
-## Everything he has to supply
+## Before launch
 
-Search for `PLACEHOLDER`. Every one is deliberate and marked in place. In rough order of what
-it costs to leave alone:
+Real unchecked boxes, because a numbered list of caveats reads as commentary and a checklist
+reads as work. Search for `PLACEHOLDER` to find each one in place. Ordered by what it costs
+to leave alone.
 
-1. **An email address.** `SITE.email`. There is no contact address anywhere on the live site.
-   An operator who will not DM a stranger currently has no way to reach him at all.
-2. **Who processes his payments** — and has anyone ever asked them about the cannabis
-   education category? Everything about how money moves depends on this answer.
-3. **His logo, as a file.** `components/Mark.tsx` is a stand-in and says so. The real mark
-   cannot be traced from a screenshot: the letters overhang the sun onto pure black, so the
-   parts that leave the disc are indistinguishable from the background.
-4. **Consulting rates.** `SESSIONS`. He has never published any, so $150/$300/$500 is a
-   proposal built from published comparables in the niche and from the principle that a live
-   hour should cost more than a $200 guide. It should not survive contact with him.
-5. **Review text.** `REVIEWS`. Transcribe the six images on the live site. Highest-return
-   hour on the project — the cards render as visible empty slots until then, because
-   inventing a testimonial is not a placeholder.
-6. **His availability.** `AVAILABILITY.windows`. Currently a plausible shape, not his diary.
-7. **The runoff numbers on the diagram.** `DIAGRAM`. A specific runoff target on a
-   consultant's page reads as his recommendation. Confirm them or the labels go generic.
-8. **The facility name.** `SITE.facility`. The site claims "director of Michigan's top
-   licensed cannabis facility" and never names it — the strongest credibility asset he has,
-   going unused. Plenty of people keep their employer separate from their personal brand
-   deliberately, so ask before filling it in.
-9. **Store product URLs.** `buyUrl` on each guide. The guides already sell today. A URL there
-   turns the request form into a real buy button with no code change.
-10. **Confidentiality, rescheduling, and the guide-credit question.** `FAQ`. Licensed
-    operators will ask about the first before they book.
+- [ ] **An email address.** `SITE.email`. There is no contact address anywhere on the live site.
+      An operator who will not DM a stranger currently has no way to reach him at all.
+- [ ] **Who processes his payments** — and has anyone ever asked them about the cannabis
+      education category? Everything about how money moves depends on this answer.
+- [ ] **His logo, as a file.** `components/Mark.tsx` is a stand-in and says so. The real mark
+      cannot be traced from a screenshot: the letters overhang the sun onto pure black, so the
+      parts that leave the disc are indistinguishable from the background.
+- [ ] **Consulting rates.** `SESSIONS`. He has never published any, so $150/$300/$500 is a
+      proposal built from published comparables in the niche and from the principle that a live
+      hour should cost more than a $200 guide. It should not survive contact with him.
+- [ ] **Review text.** `REVIEWS`. Transcribe the six images on the live site. Highest-return
+      hour on the project — the cards render as visible empty slots until then, because
+      inventing a testimonial is not a placeholder.
+- [ ] **His availability.** `AVAILABILITY.windows`. Currently a plausible shape, not his diary.
+- [ ] **The runoff numbers on the diagram.** `DIAGRAM`. A specific runoff target on a
+      consultant's page reads as his recommendation. Confirm them or the labels go generic.
+- [ ] **The facility name.** `SITE.facility`. The site claims "director of Michigan's top
+      licensed cannabis facility" and never names it — the strongest credibility asset he has,
+      going unused. Plenty of people keep their employer separate from their personal brand
+      deliberately, so ask before filling it in.
+- [ ] **Store product URLs.** `buyUrl` on each guide. The guides already sell today. A URL there
+      turns the request form into a real buy button with no code change.
+- [ ] **Confidentiality, rescheduling, and the guide-credit question.** `FAQ`. Licensed
+      operators will ask about the first before they book.
 
 ## The look
 
@@ -257,5 +258,13 @@ outside.
 1. `app/robots.ts` — allow `/`, add `sitemap`
 2. `next.config.ts` — delete the `headers()` block
 3. `app/layout.tsx` — delete `robots` from the `metadata` export
+
+And a fourth that is easy to miss because it is not about robots at all: **`SITE.url` in
+`lib/site.ts` points at `https://mi-gas.net`.** Every canonical, every Open Graph URL and
+the structured-data `@id`s read from it. While this is a noindexed pitch that is arguably
+the right answer — it disclaims the duplicate rather than competing with it — but the day
+this deploy *becomes* the site, or the day it moves to a demo host that should own its own
+canonicals, that constant has to be whatever host is actually serving it. The same fault is
+open on `chism-chicken-ranch` right now, pointing at a `.vercel.app` host.
 
 Then: set the SMTP variables, fill in the `PLACEHOLDER` list above, and point the domain.
