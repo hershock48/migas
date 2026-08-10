@@ -147,11 +147,16 @@ select.field {
   /* Without this, a letter mid-overshoot can nudge its neighbours and the word
      shuffles as it grows. */
   will-change: transform;
-  animation: growUp 820ms cubic-bezier(0.22, 1.35, 0.36, 1) both;
+  animation: growUp 1150ms cubic-bezier(0.2, 1.28, 0.32, 1) both;
 }
 @keyframes growUp {
   from {
-    transform: scaleY(0.05) scaleX(0.82) rotate(var(--lean, 0deg));
+    /* TINY AND PROPORTIONAL, not a squashed sliver. The first version scaled Y to 0.05
+       and X to 0.82, so each letter started as a flattened smear and stretched upward.
+       He asked for it to start tiny and grow to full size, which is a uniform scale --
+       the letter is legibly itself the whole way up, just small. Still anchored at the
+       baseline, so it grows up out of the line rather than swelling from its middle. */
+    transform: scale(0.08) rotate(var(--lean, 0deg));
     opacity: 0;
     color: theme("colors.ember.DEFAULT");
   }
@@ -317,42 +322,117 @@ select.field {
   border-radius: 50%;
   background: radial-gradient(
     closest-side circle,
-    transparent 52%,
-    rgba(255, 239, 168, 0.1) 58%,
-    rgba(245, 168, 60, 0.42) 61.5%,
-    rgba(217, 94, 39, 0.2) 71%,
-    rgba(142, 44, 17, 0.09) 85%,
+    transparent 50%,
+    /* The disc's edge sits at 59.5% of this box (100/168), so these three stops are the
+       bloom immediately OUTSIDE it, carrying the white-hot rim outward instead of letting
+       it stop dead at the mask. Much brighter and whiter than before, because in his
+       reference the glow just off the limb is nearly as hot as the rim itself. */
+    rgba(255, 240, 200, 0.3) 57%,
+    rgba(255, 246, 220, 0.62) 60%,
+    rgba(245, 168, 60, 0.45) 64%,
+    rgba(217, 94, 39, 0.22) 74%,
+    rgba(142, 44, 17, 0.1) 87%,
     transparent 100%
   );
   animation: sunBreathe 11s ease-in-out infinite;
 }
 
-/* Radial streaks in the corona — his sun has them, and they are what stops the
-   halo reading as an airbrushed glow. Masked to a ring so they only exist
-   outside the disc, and rotating slowly enough that you never catch it moving
-   but the composition is never quite the same twice. */
-.sun-spokes {
+
+
+/* ── The fire outside the limb ────────────────────────────────────────────
+   The same turbulent tiles as the surface, masked to a ring so they exist only beyond
+   the disc.
+
+   This replaces the radial-streak layer: two repeating conic gradients throwing straight
+   rays out from the centre. Zoomed in on a phone they read as ruled pencil lines, and
+   being low-alpha warm grey over near-black they averaged to a dull olive that turned the
+   whole outside of the sun grey-green. His reference has no straight line anywhere in it
+   — outside the limb is the SAME churning filamentary fire as the surface, blazing where
+   it meets the edge and thinning outward.
+
+   THE MASK IS THE WHOLE TRICK. Transparent through 58%, which is where the disc ends
+   inside this 168%-wide box (100/168 = 59.5%), then straight to full just outside it and
+   a long fall to nothing by 96%. The fire hugs the limb and dissolves into the page with
+   no edge of its own.
+
+   Composited normally rather than with `screen`: bright fire over a near-black page is
+   already additive to the eye, and a blend layer here would spend from the same budget
+   the disc's churn uses. The two drift in opposite directions at scales and periods
+   sharing no factor, so the flow never resolves into one sheet sliding. */
+.sun-flame {
   inset: -34%;
   border-radius: 50%;
-  /* Two gradients at periods with no common factor — 3.8deg and 9.3deg — so the
-     rays interfere into something irregular. A single repeating-conic-gradient
-     at one period is a sunburst clip-art badge, which is what the first attempt
-     looked like: perfectly even hard-edged spokes, nothing like the ragged
-     streaks in his photograph. Alpha is a quarter of what it was, too. */
-  background:
-    repeating-conic-gradient(
-      from 0deg,
-      rgba(255, 208, 138, 0.055) 0deg 0.55deg,
-      transparent 0.55deg 3.8deg
-    ),
-    repeating-conic-gradient(
-      from 11deg,
-      rgba(245, 168, 60, 0.038) 0deg 1.5deg,
-      transparent 1.5deg 9.3deg
-    );
-  -webkit-mask-image: radial-gradient(closest-side circle, transparent 58%, #000 72%, transparent 96%);
-  mask-image: radial-gradient(closest-side circle, transparent 58%, #000 72%, transparent 96%);
-  animation: sunSpin 300s linear infinite;
+  background-repeat: repeat;
+  /* SCREEN, and this was the other reason the outside looked wrong. Composited normally at
+     0.85 opacity, the tile's dark regions -- which are most of its area -- painted OVER the
+     corona's bloom and subtracted from it, leaving a dark gap between the disc and the fire
+     beyond it. Glowing material has to be additive: screened, the dark threads contribute
+     nothing and only the bright ones build up, so the flame field lies on top of the bloom
+     instead of blotting it out. Two blend layers here, but on `.sun` rather than inside
+     `.sun-disc`, so it is not spending the disc's measured budget. */
+  -webkit-mask-image: radial-gradient(
+    closest-side circle,
+    transparent 58%,
+    #000 62%,
+    rgba(0, 0, 0, 0.85) 72%,
+    rgba(0, 0, 0, 0.35) 85%,
+    transparent 96%
+  );
+  mask-image: radial-gradient(
+    closest-side circle,
+    transparent 58%,
+    #000 62%,
+    rgba(0, 0, 0, 0.85) 72%,
+    rgba(0, 0, 0, 0.35) 85%,
+    transparent 96%
+  );
+}
+.sun-flame-a {
+  mix-blend-mode: screen;
+  opacity: 0.85;
+  background-image: url("/noise/plasma-a.png");
+  background-size: 60% 60%;
+  animation: sunFlameA 26s linear infinite;
+}
+/* A DIFFERENT MASK ON THE SECOND LAYER, on purpose. With both sharing one radial mask the
+   fire ended at a single clean radius and read as a doughnut — a halo ring rather than flame
+   streaming off. Giving B a wider, longer falloff makes the outer boundary the sum of two
+   different curves, so it thins out unevenly and has no edge of its own. */
+.sun-flame-b {
+  -webkit-mask-image: radial-gradient(
+    closest-side circle,
+    transparent 57%,
+    rgba(0, 0, 0, 0.9) 64%,
+    rgba(0, 0, 0, 0.55) 80%,
+    rgba(0, 0, 0, 0.2) 92%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    closest-side circle,
+    transparent 57%,
+    rgba(0, 0, 0, 0.9) 64%,
+    rgba(0, 0, 0, 0.55) 80%,
+    rgba(0, 0, 0, 0.2) 92%,
+    transparent 100%
+  );
+}
+.sun-flame-b {
+  mix-blend-mode: screen;
+  opacity: 0.6;
+  background-image: url("/noise/plasma-b.png");
+  background-size: 38% 38%;
+  animation: sunFlameB 17s linear infinite;
+}
+/* Each translates by exactly one tile so the loop has no seam. */
+@keyframes sunFlameA {
+  to {
+    transform: translate(-60%, 60%);
+  }
+}
+@keyframes sunFlameB {
+  to {
+    transform: translate(38%, 38%);
+  }
 }
 
 /* ── Disc ────────────────────────────────────────────────────────────────── */
@@ -382,30 +462,68 @@ select.field {
   border-radius: 50%;
   overflow: hidden;
   isolation: isolate;
-  -webkit-mask-image: radial-gradient(closest-side circle, #000 99.6%, transparent 100%);
-  mask-image: radial-gradient(closest-side circle, #000 99.6%, transparent 100%);
+  /* A HARD edge, not a 0.4% ramp. The ramp was there so the mask could not leave a pale
+     ring of its own — which was right when the outside of the sun was near-black. Now that
+     the flame field is bright out there, a half-transparent last half-percent of the disc
+     let that brightness through as a grey hairline tracing the whole circumference: it read
+     as a pencil outline drawn between the disc and the glow, and it survived two attempts to
+     fix the rim because the rim was never the thing making it. The border-radius already
+     antialiases the boundary, so the ramp buys nothing and costs that line. */
+  -webkit-mask-image: radial-gradient(closest-side circle, #000 100%, #000 100%);
+  mask-image: radial-gradient(closest-side circle, #000 100%, #000 100%);
 }
 .sun-disc > * {
   position: absolute;
   display: block;
 }
+/* Both of these fill the disc. This grouped rule was accidentally SPLIT by an earlier edit
+   that inserted a comment between the two selectors, which handed the limb's background to the
+   pair and deleted the `inset: 0` they shared. Both elements silently became 0x0. Nothing
+   looked wrong in the file, no build failed, and the disc simply lost its ground gradient and
+   its rim entirely — so three separate attempts to fix the limb were editing an element with no
+   area, and brightening the base did nothing for the same reason. Caught by asking the browser
+   for the box: 0x0 inside a 380x380 disc. */
 .sun-base,
-/* THE BLAZING LIMB, which is the single most striking thing in his reference and was
-   missing entirely. Its brightest 3% of pixels measure #EAE8D4 -- near-white, faintly
-   warm -- and they are almost all in a narrow crescent at the edge. A star's limb is
-   bright because you are looking along a tangent, through far more glowing gas than at
-   the centre, so this is physically why it happens and not a stylistic flourish.
-   Three stops rather than one: a thin white-hot core at the very edge, flare just
-   inside it, and a fast fall to nothing by 88% so it stays a RIM and does not wash the
-   disc. Painted last of the disc layers so nothing sits over it. */
+.sun-limb {
+  inset: 0;
+}
+/* THE BLAZING LIMB, and it needed to be far louder than my first attempt.
+   In his reference this is a thick brilliant white-yellow crescent, the loudest thing in
+   the frame: its brightest 3% measures #EAE8D4 and nearly all of those pixels are here.
+   Physically it happens because at the edge you look along a tangent, through vastly more
+   glowing gas than at the centre.
+   My first version peaked at 0.72 alpha across only the last 4% of the radius, which at
+   real size was a thin dull line — visible in his screenshot as a muddy olive edge. This
+   runs white-hot from 95% out and holds opaque to the edge, so it meets the flame field
+   outside instead of stopping dead. Painted last of the disc layers so nothing sits over
+   it. */
 .sun-limb {
   background: radial-gradient(
     closest-side circle,
-    transparent 78%,
-    rgba(217, 94, 39, 0.28) 88%,
-    rgba(245, 168, 60, 0.72) 95.5%,
-    rgba(234, 232, 212, 0.95) 99%,
-    rgba(234, 232, 212, 0.6) 100%
+    /* THE RAMP STARTS AT 48%, NOT 66%, and this is what finally made the rim read as hot.
+       Brightening the base gradient did nothing, because the base is the bottom layer under
+       a texture at 0.82 opacity plus two washes above that — its contribution is attenuated
+       to almost nothing. This layer is the only one painted above all of them, so the climb
+       into the limb has to live here. Measured before the change: luminance ran flat at ~79
+       from r=0.80 through r=0.95 and then jumped to 119 at the edge. That is a bright line on
+       a dark field, which is an outline. A rim only looks hot when it is the peak of a rise. */
+    transparent 48%,
+    rgba(178, 62, 26, 0.14) 62%,
+    rgba(206, 84, 32, 0.3) 74%,
+    rgba(232, 122, 44, 0.5) 84%,
+    rgba(255, 190, 104, 0.74) 90%,
+    /* Peak at 95.5, not 98.5. The disc is masked at 99.6% (see .sun-disc), so a band that
+       only reaches full white in the last 1.5% of the radius gets clipped and antialiased
+       away to nothing -- which is exactly why the first version showed as a thin muddy
+       edge in his screenshot rather than as a crescent. Peaking three points earlier gives
+       it about 4% of the radius to be white in, which is a band you can see. */
+    /* WARM white, not neutral. rgba(255,251,240) over orange read as a grey hairline — a
+       pencil outline separating the disc from the glow rather than a hot edge. Pulling the
+       blue down and widening the band from 4% of the radius to 10% gives a crescent with
+       colour in it. */
+    rgba(255, 238, 186, 1) 94%,
+    rgba(255, 246, 214, 1) 97.5%,
+    rgba(255, 240, 198, 0.9) 100%
   );
 }
 
@@ -426,11 +544,18 @@ select.field {
     #3a0e05 0%,
     #2b0803 18%,
     #1d0502 40%,
-    #260602 58%,
-    #401006 76%,
-    #5e1b0a 88%,
-    #2a0803 96%,
-    #140301 100%
+    #2c0803 58%,
+    /* BRIGHTENING INTO THE LIMB, which is his logo's signature and which I had broken.
+       When I darkened this gradient to match the reference's tone I made the disc DARKEST
+       at its edge — 88% went to #5e1b0a and 100% to #140301. That is why the blazing rim
+       kept reading as a pale outline instead of a hot edge, through three attempts at the
+       rim itself: a bright band only looks hot if it is the PEAK of a rising gradient. On
+       a dark field it is just a line drawn round a circle. Brightness climbs from here to
+       the edge now, so the white-hot rim caps a glow instead of interrupting a shadow. */
+    #6b1f0b 74%,
+    #a63a16 86%,
+    #cf5a22 94%,
+    #e07a2c 100%
   );
 }
 
@@ -517,16 +642,11 @@ select.field {
    rather than a stop in the base gradient, because the corona sits *behind* the
    disc and so cannot light its edge — without this the disc terminates in its own
    dark rim and reads as a marble with a halo behind it rather than as a star. */
-.sun-limb {
-  background: radial-gradient(
-    closest-side circle,
-    transparent 80%,
-    rgba(255, 231, 158, 0.16) 89%,
-    rgba(255, 226, 150, 0.3) 96%,
-    rgba(255, 198, 118, 0.22) 99%,
-    transparent 100%
-  );
-}
+/* The second, dimmer .sun-limb that used to live here is deleted. There were TWO rules
+   for this selector and the later one won, so both of my attempts at a blazing rim were
+   silently overridden by a 0.3-alpha wash -- which is why his zoomed screenshot showed a
+   muddy olive edge and no crescent at all, twice. Nothing in the markup or the intended
+   gradient looked wrong; the cascade was eating it. One rule now, up at .sun-limb. */
 
 /* The static fine-grain layer that used to sit here has been DELETED, and it is
    worth knowing why rather than wondering where the texture went. It was a ninth
@@ -686,102 +806,7 @@ select.field {
   overflow: visible;
 }
 
-/* Tongues around the limb. transform-origin at the bottom of each path's own box
-   is the whole trick: the base of the shape sits on the limb, so scaling from
-   there grows the flame outward instead of stretching it in place. Requires
-   `transform-box: fill-box`, or the origin is measured from the viewBox corner. */
-.sun-fx .spicules {
-  stroke: theme("colors.flare");
-  fill: none;
-  /* Round caps: a plasma jet is a tube, and at sub-pixel widths a round cap is what
-     stops the tip reading as a cut-off rectangle. */
-  stroke-linecap: round;
-  /* NO FILTER, which is both more faithful and cheaper than what this replaces.
 
-     The flames carried blur(2.2px) because a solid fill cannot fall off along its own
-     length, and falloff was the only thing stopping them reading as thorns. A spicule
-     genuinely is a crisp thin jet, so it wants no softening: the fringe reads as soft
-     because it is DENSE and varied, which is exactly how H-alpha limb photographs
-     look — individually sharp, collectively feathery. Softness is a property of the
-     population here, not of any one stroke, which is why the density mattered more
-     than the shapes did.
-
-     And it is less work. The old fringe blurred 14 shapes at roughly 30x80 units,
-     about 33,600 unit^2 of filter area per sun. The turf is 960 hairlines at 0.34-0.58
-     by 2.5-9.5 units, roughly 2,900 unit^2, none of it filtered. A filter costs its
-     area, so this is the rare change that is more accurate AND faster. */
-  transform-box: fill-box;
-  /* The base of the tuft. It grows out of the surface, so it must not scale from its
-     middle — transform-origin at the centre would sink half the turf into the disc. */
-  transform-origin: 50% 100%;
-  animation-name: sunSpicule;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-/* The long sparse population runs COOLER than the short dense one, and this is the other
-   half of the falloff.
-
-   At flare gold end to end the fringe read as gold pins pushed into a red-orange limb —
-   a visible hue seam right where the two meet, which is the giveaway that one was drawn
-   on top of the other rather than coming out of it. Physically the base of a jet is the
-   hot dense end and the tip is the cool thin one, so the tips wanting the limb's own
-   red-orange is not a compromise, it is the correct direction. Combined with the short
-   blades being the bright ones, the fringe now goes gold at the surface to ember at the
-   reach, with no seam anywhere. */
-.sun-fx .spicules.sp-far {
-  stroke: theme("colors.ember.hot");
-}
-/* Rises fast, hangs, thins, dies.
-
-   WHAT REDUCED MOTION ACTUALLY LEAVES, measured rather than reasoned about. The comment this
-   replaces claimed the cycle ends at zero opacity so that a frozen last frame shows a clean
-   limb. That reasoning does not hold: the reduce rule sets animation-duration to 0.001ms with
-   no animation-fill-mode, and without `forwards` an element does NOT hold its final keyframe —
-   it reverts to its unanimated base style the moment the run ends. Nothing is ever frozen
-   mid-keyframe, so the 100% stop has no bearing on the still frame at all.
-
-   Which is lucky, because the real behaviour is the better one: transform reverts to none and
-   opacity to 1, so every tuft renders at its full authored length and its own stroke-opacity.
-   Reduced motion gets the complete turf, standing still. Verified in a reduce-emulating
-   browser rather than assumed — transform: none, opacity: 1. */
-@keyframes sunSpicule {
-  /* A PARABOLA, because that is the measured trajectory: spicules accelerate upward,
-     decelerate uniformly to a maximum height, then descend symmetrically back to where
-     they started. Not a flicker, not a fade — a rise and a fall.
-
-     The height samples are literally 4t(1-t), the parabola through (0,0) and (1,0)
-     peaking at 1: t=0.25 and t=0.75 both give 0.75, t=0.5 gives 1. Taking those off the
-     equation rather than eyeballing keyframes is what makes the rise and the fall mirror
-     each other exactly, which is the part the eye notices when it is wrong.
-
-     Opacity is deliberately NOT symmetric with height. It comes up fast and lingers, so
-     the jet is visible across its whole arc and dies only at the very end. A jet that
-     dims as it descends reads as smoke drifting off, which is the fire idiom this entire
-     layer exists to get away from. */
-  0% {
-    opacity: 0;
-    transform: scaleY(0);
-  }
-  10% {
-    opacity: 1;
-  }
-  25% {
-    transform: scaleY(0.75);
-  }
-  50% {
-    transform: scaleY(1);
-  }
-  75% {
-    transform: scaleY(0.75);
-  }
-  90% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-    transform: scaleY(0);
-  }
-}
 
 
 /* Half the tongues and half the embers on a phone. Thirty animated nodes is fine
@@ -890,11 +915,7 @@ select.field {
     opacity: 1;
   }
 }
-@keyframes sunSpin {
-  to {
-    transform: rotate(360deg);
-  }
-}
+
 
 /* Each cell ends exactly where it began, so the loop has no seam and a frozen
    last frame — which is what reduced motion leaves you with — is the same
