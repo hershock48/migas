@@ -82,6 +82,19 @@ export default function Home() {
             />
           </div>
         </div>
+        {/* Same emergence as the closing band, and needed for the same reason: at lg the sun
+            goes `absolute -top-[24%]`, which puts 163px of a 512px disc above this section's
+            clip and leaves a 477px-wide flat chord across it, directly under the header. Below
+            lg the sun sits in the flow beneath the copy and nothing is cut, so this is lg-only
+            rather than a fade applied where there is no edge to hide.
+            Sibling of the grid rather than a child of it, so it is positioned against the
+            section — the section owns the clip, so the section owns the fade. `-z-10` matches
+            the sun's own layer and it comes later in the DOM, so it paints over the sun; the
+            copy is at the default z and stays crisp above both. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 hidden h-[124px] bg-gradient-to-b from-ink via-ink/45 to-transparent lg:-z-10 lg:block"
+        />
       </section>
 
       {/* Credibility, as three flat statements. No badges, no fake logos. */}
@@ -251,6 +264,25 @@ export default function Home() {
         <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
           <Sun className="w-[600px] shrink-0 -translate-y-[85%] sm:w-[1100px] sm:-translate-y-[83%]" />
         </div>
+        {/* THE SUN HAS TO EMERGE FROM THE DARK RATHER THAN BE CUT OUT OF IT.
+            This section clips — it has to, a 600px disc inside a 375px phone would push the
+            page sideways, and CSS will not let you clip one axis and not the other, since
+            `overflow-y: visible` computes to `auto` the moment overflow-x is hidden. So the
+            clip stays and instead nothing bright is allowed to touch it.
+            Measured before this existed: the disc's top met the section's edge as a
+            dead-straight chord 826px wide across a 1280px viewport, and an edge detector run
+            over the whole page ranked it the second-strongest horizontal edge on the page —
+            stronger than any real border. That flat line across a sphere is what made the sun
+            read as a picture sitting in a box.
+            A gradient of the page's own ink over the top of the arc turns that step into a
+            ramp. Height is set against the visible arc, not guessed: the disc bottom lands
+            90px into the section on mobile and 187px at sm, so the fade finishes at roughly
+            two thirds of the way down the arc and leaves the limb and its spicule fringe —
+            the part worth seeing — at full strength. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-[62px] bg-gradient-to-b from-ink via-ink/80 to-transparent sm:h-[128px]"
+        />
         {/* The horizon. A hairline where the disc meets the copy, so the crop reads as a
             deliberate edge rather than as an image running out. */}
         <div
