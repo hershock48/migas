@@ -520,60 +520,96 @@ select.field {
    is the whole trick: the base of the shape sits on the limb, so scaling from
    there grows the flame outward instead of stretching it in place. Requires
    `transform-box: fill-box`, or the origin is measured from the viewBox corner. */
-.sun-fx .flame {
-  fill: theme("colors.flare");
-  /* A CSS blur, and this is the exception to "no filters on anything that moves".
-     A solid fill cannot fall off along its own length, and falloff is the single
-     quality that separates a flame from a spike — without it these rendered as a
-     ring of thorns however the silhouette was redrawn. A gradient fill would need
-     a <linearGradient id>, and an id in a component that renders twice on a page
-     is the bug documented above.
+.sun-fx .spicules {
+  stroke: theme("colors.flare");
+  fill: none;
+  /* Round caps: a plasma jet is a tube, and at sub-pixel widths a round cap is what
+     stops the tip reading as a cut-off rectangle. */
+  stroke-linecap: round;
+  /* NO FILTER, which is both more faithful and cheaper than what this replaces.
 
-     The cost objection does not apply at this size. A filter costs its AREA, and
-     each tongue is roughly 30 by 80 device pixels — fourteen of them is about
-     33,000 pixels per sun, against the 300,000+ of one full-disc filter. The rule
-     is not "never blur something that moves", it is "never blur something LARGE
-     that moves".
+     The flames carried blur(2.2px) because a solid fill cannot fall off along its own
+     length, and falloff was the only thing stopping them reading as thorns. A spicule
+     genuinely is a crisp thin jet, so it wants no softening: the fringe reads as soft
+     because it is DENSE and varied, which is exactly how H-alpha limb photographs
+     look — individually sharp, collectively feathery. Softness is a property of the
+     population here, not of any one stroke, which is why the density mattered more
+     than the shapes did.
 
-     Bases are wide enough that neighbours nearly touch, so blurred they merge into
-     one restless fringe rather than reading as fourteen separate objects. */
-  filter: blur(2.2px);
-  /* Peak opacity is set in the keyframes and is deliberately low. These are drawn
-     BEHIND the disc (see Sun.tsx), so only the length past the limb is ever
-     visible. */
+     And it is less work. The old fringe blurred 14 shapes at roughly 30x80 units,
+     about 33,600 unit^2 of filter area per sun. The turf is 960 hairlines at 0.34-0.58
+     by 2.5-9.5 units, roughly 2,900 unit^2, none of it filtered. A filter costs its
+     area, so this is the rare change that is more accurate AND faster. */
   transform-box: fill-box;
+  /* The base of the tuft. It grows out of the surface, so it must not scale from its
+     middle — transform-origin at the centre would sink half the turf into the disc. */
   transform-origin: 50% 100%;
-  opacity: 0;
-  animation-name: sunFlame;
+  animation-name: sunSpicule;
   animation-timing-function: linear;
   animation-iteration-count: infinite;
 }
-/* Rises fast, hangs, thins, dies. Ends at zero opacity so a frozen last frame —
-   which is what reduced motion leaves — shows a clean limb rather than fourteen
-   half-formed tongues. */
-@keyframes sunFlame {
+/* The long sparse population runs COOLER than the short dense one, and this is the other
+   half of the falloff.
+
+   At flare gold end to end the fringe read as gold pins pushed into a red-orange limb —
+   a visible hue seam right where the two meet, which is the giveaway that one was drawn
+   on top of the other rather than coming out of it. Physically the base of a jet is the
+   hot dense end and the tip is the cool thin one, so the tips wanting the limb's own
+   red-orange is not a compromise, it is the correct direction. Combined with the short
+   blades being the bright ones, the fringe now goes gold at the surface to ember at the
+   reach, with no seam anywhere. */
+.sun-fx .spicules.sp-far {
+  stroke: theme("colors.ember.hot");
+}
+/* Rises fast, hangs, thins, dies.
+
+   WHAT REDUCED MOTION ACTUALLY LEAVES, measured rather than reasoned about. The comment this
+   replaces claimed the cycle ends at zero opacity so that a frozen last frame shows a clean
+   limb. That reasoning does not hold: the reduce rule sets animation-duration to 0.001ms with
+   no animation-fill-mode, and without `forwards` an element does NOT hold its final keyframe —
+   it reverts to its unanimated base style the moment the run ends. Nothing is ever frozen
+   mid-keyframe, so the 100% stop has no bearing on the still frame at all.
+
+   Which is lucky, because the real behaviour is the better one: transform reverts to none and
+   opacity to 1, so every tuft renders at its full authored length and its own stroke-opacity.
+   Reduced motion gets the complete turf, standing still. Verified in a reduce-emulating
+   browser rather than assumed — transform: none, opacity: 1. */
+@keyframes sunSpicule {
+  /* A PARABOLA, because that is the measured trajectory: spicules accelerate upward,
+     decelerate uniformly to a maximum height, then descend symmetrically back to where
+     they started. Not a flicker, not a fade — a rise and a fall.
+
+     The height samples are literally 4t(1-t), the parabola through (0,0) and (1,0)
+     peaking at 1: t=0.25 and t=0.75 both give 0.75, t=0.5 gives 1. Taking those off the
+     equation rather than eyeballing keyframes is what makes the rise and the fall mirror
+     each other exactly, which is the part the eye notices when it is wrong.
+
+     Opacity is deliberately NOT symmetric with height. It comes up fast and lingers, so
+     the jet is visible across its whole arc and dies only at the very end. A jet that
+     dims as it descends reads as smoke drifting off, which is the fire idiom this entire
+     layer exists to get away from. */
   0% {
     opacity: 0;
-    transform: scale(0.55, 0.1);
-    animation-timing-function: cubic-bezier(0.15, 0.7, 0.3, 1);
+    transform: scaleY(0);
   }
-  15% {
-    opacity: 0.52;
-    transform: scale(1.02, 0.74);
-    animation-timing-function: ease-in-out;
+  10% {
+    opacity: 1;
   }
-  40% {
-    opacity: 0.46;
-    transform: scale(0.86, 1);
-    animation-timing-function: ease-in;
+  25% {
+    transform: scaleY(0.75);
   }
-  68% {
-    opacity: 0.22;
-    transform: scale(0.64, 0.86);
+  50% {
+    transform: scaleY(1);
+  }
+  75% {
+    transform: scaleY(0.75);
+  }
+  90% {
+    opacity: 1;
   }
   100% {
     opacity: 0;
-    transform: scale(0.42, 0.52);
+    transform: scaleY(0);
   }
 }
 
@@ -624,7 +660,19 @@ select.field {
    at that size the sun is also a third of the width, so the missing ones are not
    missed. */
 @media (max-width: 640px) {
-  .sun-fx .fx-odd {
+  /* Halve the animated nodes on a phone. The embers drop every other one, which is fine
+     because they are scattered points and nobody counts them.
+
+     THE FRINGE CANNOT BE THINNED THAT WAY. Hiding every other cluster leaves 12 tufts on a
+     30 deg pitch against 20.5 deg of coverage, which is 9.5 deg of bare limb between each
+     one -- the clumping the coverage ratio was set to prevent, reintroduced on the devices
+     least able to hide it. Dropping the long sparse population instead halves both the
+     nodes and the blades while the ring stays continuous, and the 480 that remain sit 1.22
+     device px apart on a 187px sun, which is TIGHTER than the 1.83px of all 960 on a 560px
+     one. Denser and cheaper at the same time. The fringe also comes out shorter, which is
+     what it wants at a third the width. */
+  .sun-fx .fx-odd,
+  .sun-fx .spicules.sp-far {
     display: none;
   }
 }
