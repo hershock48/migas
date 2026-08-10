@@ -6,4 +6,13 @@ out
 .DS_Store
 *.tsbuildinfo
 next-env.d.ts
-/*.mjs
+# NO BLANKET *.mjs RULE HERE. There used to be `/*.mjs`, meant to keep the scratch
+# harnesses I write at the repo root out of history. It also swallowed
+# postcss.config.mjs, which meant Vercel cloned a repo with no PostCSS config, ran its
+# default minify-only pipeline, and never loaded the Tailwind plugin. The deployed CSS
+# shipped with `@tailwind base;` and `@apply ...` as literal text -- invalid CSS the
+# browser silently drops -- so every utility class on the site had nothing behind it
+# while the hand-written rules kept working. It looked like a broken stylesheet, or a
+# CDN problem, or deployment protection. It was one line in this file.
+#
+# Ignore scratch scripts by name if they turn up. Never by extension.
