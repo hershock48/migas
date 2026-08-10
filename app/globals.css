@@ -1,0 +1,251 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-ink text-bone font-sans antialiased;
+  /* A faint bloom from the top of the page, like a room with the lights on above the
+     canopy. Fixed rather than scrolling so it reads as ambient light, not an object. */
+  background-image: radial-gradient(120% 60% at 50% -10%, rgba(124, 224, 75, 0.09), transparent 60%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3 {
+  /* Font family only. Deliberately no colour here: an explicit colour on a heading
+     beats a colour inherited from a section wrapper, which is how a whole site ends
+     up with dark-on-dark headings inside light panels. Set colour at the section. */
+  @apply font-display font-semibold tracking-tight;
+}
+
+/* Focus is visible everywhere, and uses `edge`-family contrast rather than the
+   decorative `line` token, because a focus ring has to be findable. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid theme("colors.gas.DEFAULT");
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.wrap {
+  @apply mx-auto w-full max-w-content px-5 sm:px-8;
+}
+
+.eyebrow {
+  @apply text-[11px] font-semibold uppercase tracking-[0.2em] text-gas;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold
+         transition-colors duration-150;
+}
+.btn-primary {
+  @apply btn bg-gas text-ink hover:bg-gas-dim;
+}
+.btn-ghost {
+  @apply btn border border-edge text-bone hover:border-gas hover:text-gas;
+}
+
+.card {
+  @apply rounded-xl2 border border-line bg-ink-panel;
+}
+
+.field {
+  @apply w-full rounded-lg border border-edge bg-ink px-4 py-3 text-bone
+         placeholder:text-muted focus:border-gas;
+}
+/* Native select arrows render as a light triangle on a dark field in some engines and
+   vanish. Draw one, and reserve room for it so a long option label never sits under it. */
+select.field {
+  appearance: none;
+  padding-right: 2.75rem;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%239BA697' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' d='M1 1.9 6 6.1 11 1.9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 12px 8px;
+}
+
+/* The booking wizard hides the steps it is not showing. See components/Booking.tsx —
+   the <noscript> block there overrides this with !important, so with no script every
+   step is visible and the form is one long page that still submits. */
+.bk-hide {
+  display: none;
+}
+
+/* Reveal-on-scroll. The un-animated state is the FINISHED state — JS adds .r-armed to
+   hide things, so with the script blocked the page renders complete rather than
+   blank. Reduced motion never arms it at all. */
+.r-armed .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+.r-armed .reveal.is-in {
+  opacity: 1;
+  transform: none;
+}
+
+/* ───────────────────────────────────────────────────────────────────────────
+   The feed rig. See components/FeedRig.tsx for what it is and why it exists.
+
+   The keyframes are written here, next to the rules that use them, and that is a
+   correctness requirement rather than a filing preference: Tailwind only emits a
+   @keyframes block when the matching `animate-*` utility appears in scanned markup,
+   so keyframes declared in tailwind.config.ts and referenced by a plain CSS rule get
+   purged. `animation` then points at nothing. The failure looks healthy — play-state
+   reads "running", duration reads correctly — and the transform simply never changes.
+
+   Every animation below rests on a finished frame, so the reduced-motion block at the
+   bottom of this file (which freezes everything on its last keyframe) leaves a clean
+   diagram: no drops in mid-air, cube part-wet, tray holding runoff.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+.mg-rig {
+  /* The whole cycle. Every duration below is this or an exact third of it, so the
+     four movements stay in phase: pressure, drop, wet front, runoff. */
+  --rig-cycle: 4.4s;
+  --rig-beat: 1.4667s; /* one drop per beat, three beats per cycle */
+}
+.mg-rig svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.mg-rig .rig-eyebrow {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  fill: theme("colors.muted");
+}
+.mg-rig .rig-value {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  fill: theme("colors.bone");
+}
+
+/* Flow as travelling dashes. Cheaper than a moving highlight, reads instantly, and
+   its rest state — a static dashed line — still says "this carries something". */
+.mg-rig .rig-flow {
+  stroke-dasharray: 5 7;
+  animation: rigFlow 0.9s linear infinite;
+}
+@keyframes rigFlow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* fill-box, on every transformed SVG child. Without it the transform is measured from
+   the viewBox origin and `transform-origin: 50% 50%` means the middle of the whole
+   drawing rather than the middle of this drop. */
+.mg-rig .rig-drop {
+  transform-box: fill-box;
+  transform-origin: 50% 50%;
+  opacity: 0;
+  animation-name: rigDrop;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.mg-rig .rig-feed .rig-drop {
+  --fall: 68px;
+  animation-duration: var(--rig-cycle);
+}
+.mg-rig .rig-drop-1 { animation-delay: 1.4667s; }
+.mg-rig .rig-drop-2 { animation-delay: 2.9333s; }
+
+/* Runoff trails the impact by a fifth of a second, which is the difference between
+   "water went through the slab" and "two unrelated animations". */
+.mg-rig .rig-run-0,
+.mg-rig .rig-run-1 {
+  --fall: 32px;
+  animation-duration: var(--rig-beat);
+}
+.mg-rig .rig-run-0 { animation-delay: 1.25s; }
+.mg-rig .rig-run-1 { animation-delay: 1.42s; }
+
+/* Easing is per segment, inside the keyframes, not one curve across the whole thing.
+   A drop falls under gravity: it must accelerate into the impact and stop dead. One
+   ease-out across the lot puts almost all the travel in the first half and leaves the
+   drop creeping the last few units. */
+@keyframes rigDrop {
+  0%, 4% {
+    transform: translateY(0) scale(0.45, 0.3);
+    opacity: 0;
+  }
+  9% {
+    transform: translateY(0) scale(1, 0.92);
+    opacity: 1;
+  }
+  13% {
+    transform: translateY(0) scale(0.92, 1.12);
+    opacity: 1;
+    animation-timing-function: cubic-bezier(0.42, 0, 0.9, 0.62);
+  }
+  36% {
+    transform: translateY(var(--fall)) scale(0.8, 1.5);
+    opacity: 1;
+    animation-timing-function: ease-out;
+  }
+  41% {
+    transform: translateY(var(--fall)) scale(1.7, 0.22);
+    opacity: 0.45;
+  }
+  /* Ends invisible, so a frozen last frame shows no drop at all. */
+  48%, 100% {
+    transform: translateY(var(--fall)) scale(2, 0.1);
+    opacity: 0;
+  }
+}
+
+/* The wet front moves DOWN from the top surface, because rockwool saturates downward
+   rather than filling like a glass. transform-origin at the top edge is the whole
+   difference between those two readings. */
+.mg-rig .rig-wet {
+  transform-box: fill-box;
+  transform-origin: 50% 0%;
+  transform: scaleY(0.42);
+  animation: rigWet var(--rig-beat) linear 0.95s infinite;
+}
+@keyframes rigWet {
+  0% {
+    transform: scaleY(0.42);
+  }
+  22% {
+    transform: scaleY(0.42);
+    animation-timing-function: cubic-bezier(0.2, 0.8, 0.3, 1);
+  }
+  46% {
+    transform: scaleY(1);
+    animation-timing-function: ease-in-out;
+  }
+  /* Same value as 0%, so the loop has no seam and the resting cube is part-wet. */
+  100% {
+    transform: scaleY(0.42);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  .r-armed .reveal { opacity: 1 !important; transform: none !important; }
+}
