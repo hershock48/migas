@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { NAV } from "@/lib/site";
-import { Mark } from "./Mark";
+import { Graffiti } from "./brand";
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
@@ -14,8 +14,16 @@ export default function Nav() {
   return (
     <header className="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur">
       <div className="wrap flex h-[68px] items-center justify-between">
-        <Link href="/" className="text-xl" aria-label="MI Gas home">
-          <Mark />
+        {/* The graffiti mark rather than the mirrored lockup, and the reason is size. A
+            reflected lockup at nav scale puts each row under 14px and the reflection turns to
+            mush -- that is what the primary-mark / horizontal-lockup split exists for. This one
+            is a single row at 3.15:1, so it holds -- but only above a floor, and the floor was
+            measured on a size ladder rather than picked. Its letters are HOLES in the ink and
+            its outlines are about 2px in an 867px-wide source, so they scale to nothing: at
+            28px the crown and the bursts are indistinguishable noise and MIGAS is a smudge. It
+            resolves at 32px and is clean at 40, which fits a 68px bar with room to spare. */}
+        <Link href="/" className="flex items-center" aria-label="MI Gas home">
+          <Graffiti className="h-10 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main">

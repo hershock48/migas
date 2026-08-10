@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import Sun from "@/components/Sun";
-import { Mark } from "@/components/Mark";
+import { MirrorLockup } from "@/components/brand";
 import { GuideCard, ReviewCard, SessionCard } from "@/components/cards";
 import {
   BUNDLE,
@@ -76,10 +76,7 @@ export default function Home() {
                 name", which is the one place on this site where laying type over a gradient is
                 not a machine-checkable-contrast problem being waved away. Everything that is
                 actually text still sits on flat ground. */}
-            <Mark
-              stacked
-              className="absolute left-1/2 top-[47%] -translate-x-1/2 -translate-y-1/2 text-[min(17vw,66px)] text-ink lg:hidden"
-            />
+            <MirrorLockup className="absolute left-1/2 top-[47%] w-[62%] -translate-x-1/2 -translate-y-1/2 text-ink lg:hidden" />
           </div>
         </div>
         {/* Same emergence as the closing band, and needed for the same reason: at lg the sun

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { NAV, SITE } from "@/lib/site";
-import { Mark } from "./Mark";
+import { Graffiti } from "./brand";
 import GlazedPlate from "./GlazedPlate";
 
 export default function Footer() {
@@ -8,7 +8,7 @@ export default function Footer() {
     <footer className="mt-24 border-t border-line bg-ink-panel">
       <div className="wrap grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-2">
-          <Mark className="text-xl" />
+          <Graffiti className="h-12 w-auto" />
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-muted">{SITE.blurb}</p>
         </div>
 
