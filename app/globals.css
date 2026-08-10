@@ -857,9 +857,7 @@ select.field {
 }
 
 /* ── Flames, embers and prominences ──────────────────────────────────────── */
-.sun-fx {
-  overflow: visible;
-}
+
 
 
 
@@ -868,79 +866,6 @@ select.field {
    on a laptop and is not what a mid-range Android should be spending a frame on;
    at that size the sun is also a third of the width, so the missing ones are not
    missed. */
-/* ── Flares ───────────────────────────────────────────────────────────────
-   A flash and a rising plume, per NASA's own description of an X1.9: "a bright
-   flash of yellow appears, a solar flare, and then a plume of yellow and orange
-   material rises away from the Sun from the same location as the flare."
-
-   This replaces coronal loop arcades, which were structurally what an arcade is
-   and rendered as wire hoops, and before that a spicule fringe, which is a limb
-   texture and not a flare at all. Both were me correcting the brief's vocabulary
-   instead of building what it described. A wick was the right word.
-
-   THE GLOW IS GEOMETRY. Five stacked strokes per strand on an exp(-2.6v^2) alpha
-   ramp. `filter: blur()` was tried at 5px and 9px on the previous version and it
-   does not soften plasma, it erases it -- the structure smears into a formless
-   haze with nothing legible left. Stacking also survives any zoom, because it is
-   shapes rather than a raster effect, and costs no filter area on an element that
-   animates. Nothing in this file carries a filter. */
-.sun-fx .flare {
-  --fl-outer: theme("colors.ember.hot");
-  --fl-mid: theme("colors.ember.DEFAULT");
-  --fl-warm: theme("colors.flare");
-  --fl-core: theme("colors.hot");
-  animation-name: sunFlare;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-}
-.sun-fx .flare-strand {
-  fill: none;
-  stroke-linecap: round;
-}
-/* The flash. Stacked circles rather than one blurred blob, same reason as the
-   strands. `hot` at the core because NASA's colorisation runs orange to yellow
-   and the flare kernel is the yellowest thing in the frame. */
-.sun-fx .flare-flash-halo {
-  fill: theme("colors.ember.hot");
-  opacity: 0.16;
-}
-.sun-fx .flare-flash-mid {
-  fill: theme("colors.flare");
-  opacity: 0.48;
-}
-.sun-fx .flare-flash-core {
-  fill: theme("colors.hot");
-  opacity: 0.9;
-}
-/* A flare is an EVENT: it brightens fast and decays slowly, and it is dark for
-   most of its cycle. 6% rise against a 60% decay is the asymmetry every real
-   flare light curve has. Holding near zero through the last third is what makes
-   the next one read as an eruption rather than as a pulse -- two plumes on 14s
-   and 19s with negative delays means one is usually up and they never peak
-   together. */
-@keyframes sunFlare {
-  0%,
-  8% {
-    opacity: 0.04;
-  }
-  14% {
-    opacity: 1;
-  }
-  30% {
-    opacity: 0.85;
-  }
-  52% {
-    opacity: 0.5;
-  }
-  74% {
-    opacity: 0.18;
-  }
-  88%,
-  100% {
-    opacity: 0.04;
-  }
-}
-
 @media (max-width: 640px) {
   /* Halve the animated nodes on a phone. The embers drop every other one, which is fine
      because they are scattered points and nobody counts them.
@@ -953,8 +878,10 @@ select.field {
      device px apart on a 187px sun, which is TIGHTER than the 1.83px of all 960 on a 560px
      one. Denser and cheaper at the same time. The fringe also comes out shorter, which is
      what it wants at a third the width. */
-  .sun-fx .fx-odd,
-  .sun-fx .spicules.sp-far {
+  /* Nothing left to thin here. This used to hide every other ember and half the spicule
+     fringe; both are gone, and the flame field's cost is three background layers rather
+     than hundreds of nodes, so there is nothing per-element to drop. */
+  .sun-flame-fx.ff-3 {
     display: none;
   }
 }
