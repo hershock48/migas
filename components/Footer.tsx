@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { NAV, SITE } from "@/lib/site";
 import { Mark } from "./Mark";
-import GlazedCredit from "./GlazedCredit";
+import GlazedPlate from "./GlazedPlate";
 
 export default function Footer() {
   return (
@@ -64,9 +64,11 @@ export default function Footer() {
               institutional buyer it is very slightly off-message. It is also our joke sitting
               in his footer, so the downside lands on him rather than on us, which makes it his
               call rather than ours. On the before-launch list. */}
-          <GlazedCredit line="Baked by" />
         </div>
       </div>
+
+      {/* Glazed Web signs off below the client's footer, not inside it. */}
+      <GlazedPlate line="Baked by" />
     </footer>
   );
 }
