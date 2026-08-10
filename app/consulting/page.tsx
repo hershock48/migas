@@ -27,7 +27,7 @@ export default function Consulting() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Consulting</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            A call that starts at the <span className="text-flare">diagnosis</span>.
+            A call that starts at the <span className="text-flare">diagnosis</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Most paid consults spend their first twenty minutes on questions a form could
@@ -50,7 +50,7 @@ export default function Consulting() {
       <section id="how" className="wrap mt-24 scroll-mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Before, during, after</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">The call is the middle of it.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">The call is the middle of it</h2>
         </div>
         <ol className="reveal mt-12 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line md:grid-cols-3">
           {PROCESS.map((p, i) => (
@@ -69,7 +69,7 @@ export default function Consulting() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Sessions</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Three lengths.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">How long do you need?</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
             A room on fire and a facility writing its SOPs are not the same conversation,
             and pricing them the same serves neither.
@@ -86,10 +86,10 @@ export default function Consulting() {
       <section id="book" className="wrap mt-24 scroll-mt-20 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Book</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Bring the room with you.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Bring the room with you</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            Four steps. The middle two are the ones that matter &mdash; they are what he
-            reads before you speak.
+            Four steps. The middle two are the ones that matter &mdash; they are what we
+            read before you speak.
           </p>
         </div>
         <div className="reveal mt-10">
@@ -102,7 +102,7 @@ export default function Consulting() {
         <div className="reveal grid gap-10 rounded-xl2 border border-line bg-ink-panel p-7 sm:p-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
             <p className="eyebrow">Have it ready</p>
-            <h2 className="mt-4 text-2xl sm:text-3xl">Five minutes now saves twenty on the call.</h2>
+            <h2 className="mt-4 text-2xl sm:text-3xl">Five minutes now saves twenty on the call</h2>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">
               None of this is required to book. All of it makes the hour worth more.
             </p>
@@ -128,7 +128,7 @@ export default function Consulting() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Before you ask</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">The questions everybody asks.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Questions we get asked</h2>
         </div>
         <div className="reveal mt-10 divide-y divide-line border-y border-line">
           {FAQ.map((f) => (
@@ -153,7 +153,7 @@ export default function Consulting() {
           Times shown across the site are {AVAILABILITY.timeZoneLabel}. Something not
           covered?{" "}
           <Link href="/connect" className="text-flare hover:underline">
-            Ask him directly
+            Ask us directly
           </Link>
           .
         </p>

@@ -7,7 +7,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Connect",
   description:
-    "Ask a question, join the Patreon, or book a consult. One form that reaches him, and it tells you what it is for.",
+    "Ask a question, join the Patreon, or book a consult. One form that reaches us, and it tells you what it is for.",
 };
 
 /**
@@ -43,7 +43,7 @@ export default function Connect() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Connect</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            Reach him <span className="text-flare">properly</span>.
+            A route that <span className="text-flare">actually reaches</span> us
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Booking a consult? Go through{" "}

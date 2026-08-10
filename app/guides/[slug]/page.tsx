@@ -116,7 +116,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                       replaced by a real buy button. */}
                   <p className="text-sm font-semibold text-bone">Request it</p>
                   <p className="mt-2 text-xs leading-relaxed text-muted">
-                    Checkout is not wired up on this build. Leave your details and he sends
+                    Checkout is not wired up on this build. Leave your details and we send
                     the invoice and the download.
                   </p>
                   <MiniForm

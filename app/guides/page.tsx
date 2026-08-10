@@ -20,7 +20,7 @@ export default function Guides() {
         <div className="reveal">
           <p className="eyebrow">Programs</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            The system, <span className="text-flare">written down</span>.
+            The system, <span className="text-flare">written down</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Four programs covering clone to harvest, the runoff SOP underneath all of them,
@@ -82,7 +82,7 @@ export default function Guides() {
           <div className="text-[15px] leading-relaxed text-muted">
             <p>
               If you want to run the whole thing properly, start with a program &mdash; it is
-              the same system, for a fraction of an hour of his time, and you keep it.
+              the same system, for a fraction of an hour of our time, and you keep it.
             </p>
             <p className="mt-4">
               If something is going wrong <em>this week</em>, a program is the slow route.

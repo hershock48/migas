@@ -166,9 +166,9 @@ export default function Booking({ days }: Props) {
     }
     if (which === 2 && !get("slot")) bad.slot = "Pick a time.";
     if (which === 3) {
-      if (get("name").length < 2) bad.name = "Your name, so he knows who he is talking to.";
+      if (get("name").length < 2) bad.name = "Your name, so we know who we are talking to.";
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(get("email")))
-        bad.email = "An email address he can send the invite to.";
+        bad.email = "An email address we can send the invite to.";
     }
     return bad;
   }
@@ -193,9 +193,9 @@ export default function Booking({ days }: Props) {
     return (
       <div ref={doneRef} className="card p-8 sm:p-10" aria-live="polite">
         <p className="eyebrow">Request sent</p>
-        <h3 className="mt-4 text-3xl">He has your room, not just your name.</h3>
+        <h3 className="mt-4 text-3xl">We have your room before you dial in</h3>
         <p className="mt-4 max-w-xl leading-relaxed text-muted">
-          Your intake is with him now. He reads it before the call, and confirms the time by
+          Your intake is with us now. We read it before the call, and confirm the time by
           email &mdash; along with the invoice to settle beforehand.
         </p>
         {state.summary && state.summary.length > 0 && (
@@ -287,7 +287,7 @@ export default function Booking({ days }: Props) {
         <fieldset className={`bk-step mt-8 ${step === 0 ? "" : "bk-hide"}`}>
           <legend className="text-xl text-bone">How much time do you need?</legend>
           <p className="mt-2 text-sm text-muted">
-            Rates are a proposal, not published prices. He invoices before the call.
+            Rates are a proposal, not published prices. We invoice before the call.
           </p>
           <div className="mt-6 grid gap-3">
             {SESSIONS.map((s) => (
@@ -332,9 +332,9 @@ export default function Booking({ days }: Props) {
 
         {/* ── 2. The room ────────────────────────────────────────────────── */}
         <fieldset className={`bk-step mt-8 ${step === 1 ? "" : "bk-hide"}`}>
-          <legend className="text-xl text-bone">Tell him about the room.</legend>
+          <legend className="text-xl text-bone">Tell us about the room</legend>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-            This is the part that makes the call worth what it costs. He reads it
+            This is the part that makes the call worth what it costs. We read it
             beforehand, so you spend the time on the answer instead of the background.
           </p>
 
@@ -524,14 +524,14 @@ export default function Booking({ days }: Props) {
 
         {/* ── 4. Details ─────────────────────────────────────────────────── */}
         <fieldset className={`bk-step mt-8 ${step === 3 ? "" : "bk-hide"}`}>
-          <legend className="text-xl text-bone">Where does he send the invite?</legend>
+          <legend className="text-xl text-bone">Where do we send the invite?</legend>
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             <Field id="name" label="Name" autoComplete="name" state={state} error={errors.name} required />
             <Field id="email" label="Email" type="email" autoComplete="email" state={state} error={errors.email} required />
             <Field id="phone" label="Phone" type="tel" autoComplete="tel" state={state} error={errors.phone} />
             <Field id="company" label="Operation or licence name" state={state} error={errors.company} />
             <div className="sm:col-span-2">
-              <Field id="heard" label="How did you find him?" state={state} error={errors.heard} />
+              <Field id="heard" label="How did you find us?" state={state} error={errors.heard} />
             </div>
           </div>
 
@@ -570,7 +570,7 @@ export default function Booking({ days }: Props) {
             {pending ? "Sending…" : "Send booking request"}
           </button>
           <p className="mt-4 max-w-xl text-xs leading-relaxed text-muted">
-            No card taken here. He confirms the time by email and sends an invoice to
+            No card taken here. We confirm the time by email and send an invoice to
             settle before the call.
           </p>
         </div>

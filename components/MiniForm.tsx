@@ -53,7 +53,7 @@ export default function MiniForm({
       <div className={`rounded-xl2 border border-ember/60 bg-ember/[0.07] p-6 ${className}`} aria-live="polite">
         <p className="eyebrow">Done</p>
         <p className="mt-3 text-[15px] leading-relaxed text-bone">
-          {state.summary?.[0] ?? "Sent. He will be in touch."}
+          {state.summary?.[0] ?? "Sent. We will be in touch."}
         </p>
       </div>
     );

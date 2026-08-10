@@ -6,11 +6,57 @@
  * a correction is one edit.
  *
  * WHAT IS REAL AND WHAT IS NOT. Anything marked PLACEHOLDER was invented or inferred
- * and has to be confirmed before this goes live. The guide names, descriptions and
- * prices, the merch and its prices, and the social links were all read off
- * mi-gas.net directly and are his. The consulting session types and rates are a
- * proposal — he has never published rates, so somebody has to invent a starting
- * point and it should not survive contact with him.
+ * and has to be confirmed before this goes live. The guide names and prices, the merch
+ * and its prices, and the social links were all read off mi-gas.net directly and are
+ * his. The consulting session types and rates are a proposal — he has never published
+ * rates, so somebody has to invent a starting point and it should not survive contact
+ * with him.
+ *
+ * ONE ATTRIBUTION TO RE-CHECK. The four guide `blurb` strings were recorded here as read
+ * verbatim off his site, and they do not read like his site. His published voice is
+ * all-lowercase and loose; these are ours. Either they came off a product page written in
+ * a different register, or the attribution is wrong. A later attempt to re-verify failed —
+ * his /guides page is not fetchable and his subpages are not indexed — so this is flagged
+ * rather than resolved. Confirm with him before launch: publishing our words as his is a
+ * worse fault than a blurb that needs rewriting.
+ *
+ * ── HOUSE VOICE ──────────────────────────────────────────────────────────────────────
+ * Measured against his own site, because "does it match?" deserves a count rather than an
+ * impression. His homepage is ~100 words, every heading lowercase with no full stop, no
+ * em-dashes, and it is first person plural: "grow with us", "shop mi gas gear", "follow us
+ * on instagram", "teaching, training and advising for indoor cultivators around the world".
+ * Warm, and it invites you in alongside him.
+ *
+ * Ours was none of that, and three habits were doing the damage:
+ *
+ *   1. FIRST PERSON, ALWAYS. Copy here said "he" 21 times — "He has read your intake",
+ *      "Tell him about the room", "How did you find him?". Third person is how an agency
+ *      describes a client, which is why the site could read as a case study about him
+ *      instead of his own shop. It is now "we" throughout. The only third person left is
+ *      in the dashed-border build notes and the PLACEHOLDER answers, which are addressed
+ *      to us about him and come off at launch.
+ *
+ *   2. NO FULL STOP ON A HEADING FRAGMENT. 18 of 27 headings ended in one: "Start where
+ *      you actually are." / "Three lengths." / "Between runs." A period on a fragment makes
+ *      a line land like a verdict, which is a real device and a good one — until it is the
+ *      only device, at which point the reader hears the rhythm instead of the content. Down
+ *      to 3, and all three are complete sentences that earn it: the h1, the closing line,
+ *      and "A program teaches. A call answers."
+ *
+ *   3. ANTITHESIS IS RATIONED. Nine "X, not Y" constructions: "not a forum thread", "not a
+ *      highlight reel", "not the calendar", "not the introduction", "not a tip", "not a
+ *      recording nobody rewatches". One is sharp. Nine is a tic, and it frames every claim
+ *      against what somebody else does badly, which reads defensive on a site with real
+ *      credentials. Down to three, each doing work a positive statement could not: a
+ *      technical instruction ("day and night numbers, not averages"), a factual correction
+ *      ("a proposal, not published prices"), and one joke ("Here for the growing, not the
+ *      hoodie?").
+ *
+ * What deliberately did NOT change: the specificity. "Every call starts with an
+ * eight-question room intake and your photos, read before you dial in" sells the actual
+ * differentiator, and his own site never explains what a buyer gets. Sounding more like him
+ * was never the goal — sounding like him on a better day was.
+ * ─────────────────────────────────────────────────────────────────────────────────────
  */
 
 export const SITE = {
@@ -21,7 +67,7 @@ export const SITE = {
   // hobbyist. The site now leads with the commercial framing.
   tagline: "Commercial cannabis cultivation advice, SOPs and instruction",
   blurb:
-    "Teaching, training and advising for indoor cultivators — from a working commercial facility, not a forum thread.",
+    "Teaching, training and advising for indoor cultivators worldwide, from inside a working commercial facility.",
   // PLACEHOLDER. There is no email address anywhere on the current site; the only
   // route to him is an Instagram DM. This is the single biggest fix on the whole
   // build, and the address has to come from him. Everything that says "email" reads
@@ -78,12 +124,12 @@ export const GUIDES: Guide[] = [
     name: "Flower Guide",
     price: 200,
     blurb:
-      "How MI Gas runs his entire flower program, flip to harvest. Methods and practices that apply to gardens of any size.",
+      "The entire flower program as MI Gas runs it, flip to harvest. Methods and practices that apply to gardens of any size.",
     includes: ["Guide video library", "Downloadable PDF"],
     covers: "Flip to harvest",
     buyUrl: null,
     detail: [
-      "The flower program as it is actually run in a licensed room, week by week from flip to chop — not a summary of what ought to work.",
+      "The flower program as it is actually run in a licensed room, week by week from flip to chop.",
       "Video alongside the written guide, because a technique you can watch once is worth more than three paragraphs describing it.",
       "Written for scale independence. The same decisions apply to a tent and to a flower room; the numbers move, the reasoning does not.",
     ],
@@ -113,7 +159,7 @@ export const GUIDES: Guide[] = [
     covers: "Every growth phase",
     buyUrl: null,
     detail: [
-      "A standard operating procedure, not a tip. Runoff is the only direct read you get on what the root zone is doing, and most rooms never take it.",
+      "A standard operating procedure, written to be followed. Runoff is the only direct read you get on what the root zone is doing, and most rooms never take it.",
       "Developed across years of trials in different rooms, medias and nutrient lines — which is why it survives being applied to yours.",
       "The one program that makes the other two easier. Start here if you are choosing a single guide.",
     ],
@@ -389,21 +435,25 @@ export const AVAILABILITY = {
 export const PROCESS = [
   {
     step: "Before",
-    title: "You fill the room in, not the calendar",
+    title: "The room comes before the calendar",
     body:
-      "Stage, canopy, media, feed, lights, runoff numbers, and photos of the problem. Eight questions, two minutes, and they are the questions he would have spent the first twenty minutes of the call asking you.",
+      "Stage, canopy, media, feed, lights, runoff numbers, and photos of the problem. Eight questions, two minutes, and they are the questions we would otherwise spend the first twenty minutes of your call asking.",
   },
   {
     step: "The call",
-    title: "Starts at the diagnosis, not the introduction",
+    // Deliberately NOT "the call opens at the diagnosis", which was the first rewrite: this
+    // step sits on the consulting page directly under an h1 reading "A call that starts at the
+    // diagnosis", and the two said the same thing twice within one screen. A step title should
+    // add the next fact, not restate the heading above it.
+    title: "Straight into the problem",
     body:
-      "He has read your intake and looked at your photos before you dial in. A 30-minute triage call that skips the setup is worth more than an hour that does not.",
+      "We have read your intake and looked at your photos before you dial in. Thirty minutes that skip the setup are worth more than an hour that does not.",
   },
   {
     step: "After",
     title: "Written actions you can hand to a grower",
     body:
-      "Not a recording nobody rewatches. A short written set of next actions, in order, that somebody on your team can execute on Monday without having been on the call.",
+      "A short written set of next actions, in order, that somebody on your team can execute on Monday without having been on the call.",
   },
 ];
 
@@ -420,11 +470,11 @@ export const FAQ = [
     // marijuana", and Calendly, Acuity and Setmore all settle through Stripe, Square
     // or PayPal. This is the single biggest open question on the build and the reason
     // the booking flow deliberately stops before taking a card.
-    a: "PLACEHOLDER — payment route to be confirmed. Right now a booking request reaches him and he sends you an invoice to settle before the call.",
+    a: "PLACEHOLDER — payment route to be confirmed. Right now a booking request reaches us and we send you an invoice to settle before the call.",
   },
   {
     q: "What if I need to move it?",
-    a: "PLACEHOLDER — reply to your confirmation and he will move it, up to 24 hours before. Inside 24 hours the slot is held.",
+    a: "PLACEHOLDER — reply to your confirmation and we will move it, up to 24 hours before. Inside 24 hours the slot is held.",
   },
   {
     q: "Is what I tell you confidential?",
@@ -432,7 +482,7 @@ export const FAQ = [
   },
   {
     q: "Will you look at photos before the call?",
-    a: "Yes, and that is the point of the intake. Photos of the room, the canopy and whatever is going wrong go up with your booking, and he reads them before you speak.",
+    a: "Yes, and that is the point of the intake. Photos of the room, the canopy and whatever is going wrong go up with your booking, and we read them before you speak.",
   },
   {
     q: "Do you consult outside Michigan?",

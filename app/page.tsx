@@ -39,8 +39,8 @@ export default function Home() {
               like a <span className="text-flare">facility</span>.
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-              Consulting, SOPs and full grow programs from a working commercial cultivator
-              &mdash; not a forum thread, not a highlight reel.
+              Consulting, SOPs and full grow programs from a cultivator who runs a licensed
+              Michigan facility. The same system, written down for your room.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -105,7 +105,7 @@ export default function Home() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Consulting</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Start where you actually are.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Every call starts with your room</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
             Three lengths, because a room on fire and a facility writing its SOPs are not
             the same conversation. Pick one and the intake adapts to it.
@@ -132,7 +132,7 @@ export default function Home() {
         <div className="reveal flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
             <p className="eyebrow">Programs</p>
-            <h2 className="mt-4 text-3xl sm:text-4xl">The whole system, written down.</h2>
+            <h2 className="mt-4 text-3xl sm:text-4xl">Four programs, clone to harvest</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
               Four programs covering clone to harvest, the runoff SOP behind all of them,
               and the transition off hand-watering. Video and PDF.
@@ -177,7 +177,7 @@ export default function Home() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">In their words</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">What growers say after.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Growers on the programs</h2>
         </div>
         {/* Three identical "to supply" cards side by side read as a rendering fault rather
             than as a gap. While there is no real review text, this is one panel; the moment
@@ -218,7 +218,7 @@ export default function Home() {
           <div className="max-w-xl">
             <p className="eyebrow">Merch</p>
             <h2 className="mt-3 text-2xl text-bone">
-              {MERCH.length} designs, all between runs.
+              {MERCH.length} designs, all between runs
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
               Hoodies, tees and the camo trucker are out of stock. Leave an address and
@@ -263,7 +263,7 @@ export default function Home() {
           <h2 className="reveal mt-5 text-3xl sm:text-5xl">Every room has one.</h2>
           <p className="reveal mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
             Yours has a switch, a schedule and a feed chart. Bring it to the call &mdash;
-            eight questions, your photos, and he has read both before you speak.
+            eight questions, your photos, and we have read both before you speak.
           </p>
           <div className="reveal mt-9 flex flex-wrap justify-center gap-3">
             <Link href="/consulting#book" className="btn-primary">

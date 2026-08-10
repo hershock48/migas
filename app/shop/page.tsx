@@ -29,7 +29,7 @@ export default function Shop() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Merch</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            Between <span className="text-flare">runs</span>.
+            Between <span className="text-flare">runs</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             {allOut
@@ -40,7 +40,7 @@ export default function Shop() {
 
         <div className="reveal mt-10 max-w-xl rounded-xl2 border border-ember/60 bg-ink-panel p-7">
           <p className="eyebrow">Restock list</p>
-          <h2 className="mt-3 text-xl text-bone">Hear about the drop first.</h2>
+          <h2 className="mt-3 text-xl text-bone">Hear about the drop first</h2>
           <MiniForm
             className="mt-5"
             action={notifyRestock}

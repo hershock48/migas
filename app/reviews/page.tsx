@@ -30,11 +30,11 @@ export default function Reviews() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Reviews</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            What growers say <span className="text-flare">after</span>.
+            What growers say <span className="text-flare">after</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Published as text rather than screenshots &mdash; so a search engine can index
-            them, a screen reader can read them, and you can quote one back at him.
+            them, a screen reader can read them, and you can quote one back at us.
           </p>
         </div>
       </section>
@@ -61,7 +61,7 @@ export default function Reviews() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal flex flex-col gap-6 rounded-xl2 border border-line bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9">
           <div className="max-w-xl">
-            <h2 className="text-2xl text-bone">Worked with him?</h2>
+            <h2 className="text-2xl text-bone">Worked with us?</h2>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
               Say so, and say what changed. Specific beats glowing.
             </p>
