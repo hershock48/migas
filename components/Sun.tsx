@@ -297,16 +297,22 @@ export default function Sun({ className = "" }: { className?: string }) {
 
         <span className="sun-disc">
           <span className="sun-base" />
-          {/* Slow structure. */}
+          {/* TEXTURE FIRST, THEN THE LARGE-SCALE LIGHT AND SHADE OVER IT. The order was the
+              other way round and it was wrong: the cells and spots painted underneath a
+              texture layer at 0.82 opacity, so they were buried and the disc came out as
+              uniform carpet. The reference has both scales at once — fine threads AND big
+              dark voids with bright regions between them — and the threads come from the
+              tiles while everything larger has to come from these gradients, because putting
+              features that big back into a tile is what makes the repeat visible as a grid.
+              So they sit on top now and modulate the fire instead of hiding behind it. */}
+          <span className="sun-churn sun-churn-a" />
+          <span className="sun-churn sun-churn-b" />
+          {/* Slow structure, over the fire: bright plage and dark voids. */}
           <span className="sun-cell sun-cell-1" />
           <span className="sun-cell sun-cell-2" />
           <span className="sun-cell sun-cell-3" />
           <span className="sun-spot sun-spot-1" />
           <span className="sun-spot sun-spot-2" />
-          {/* Fast structure: two noise tiles at different scales sliding in different
-              directions. This is the layer whose absence made the first version a lava lamp. */}
-          <span className="sun-churn sun-churn-a" />
-          <span className="sun-churn sun-churn-b" />
           {/* Combustion flicker across the whole disc, on an irregular schedule. */}
           <span className="sun-flicker" />
           <span className="sun-limb" />

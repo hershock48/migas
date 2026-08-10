@@ -390,26 +390,47 @@ select.field {
   display: block;
 }
 .sun-base,
+/* THE BLAZING LIMB, which is the single most striking thing in his reference and was
+   missing entirely. Its brightest 3% of pixels measure #EAE8D4 -- near-white, faintly
+   warm -- and they are almost all in a narrow crescent at the edge. A star's limb is
+   bright because you are looking along a tangent, through far more glowing gas than at
+   the centre, so this is physically why it happens and not a stylistic flourish.
+   Three stops rather than one: a thin white-hot core at the very edge, flare just
+   inside it, and a fast fall to nothing by 88% so it stays a RIM and does not wash the
+   disc. Painted last of the disc layers so nothing sits over it. */
 .sun-limb {
-  inset: 0;
+  background: radial-gradient(
+    closest-side circle,
+    transparent 78%,
+    rgba(217, 94, 39, 0.28) 88%,
+    rgba(245, 168, 60, 0.72) 95.5%,
+    rgba(234, 232, 212, 0.95) 99%,
+    rgba(234, 232, 212, 0.6) 100%
+  );
 }
 
-/* Sampled off his logo, including the part that looks wrong written down: the
-   disc dips DARKER through the middle and comes back up to its brightest at
-   88%, just inside the limb. A conventional hot-centre sun does not look like
-   his. The hot spot is nudged off-centre so the sphere reads as lit rather than
-   as a target. */
+/* THE GROUND UNDER THE FIRE, and it is much darker than it was.
+   This used to paint the whole disc: a bright orange radial gradient sampled off his
+   logo, #F78436 through #C8461B. That was right when the churn tiles were grey noise
+   modulating it, and wrong now the tiles are the fire themselves -- a bright ground
+   under bright texture flattens both, and the reference's disc is a quarter near-black
+   by pixel count. So this is now the deep ground the threads sit in, in the reference's
+   own void and shadow tones.
+   His logo's signature survives and is the reason for the stop at 88%: his sun is
+   brightest just INSIDE its own limb rather than at the centre. Get that backwards and
+   it reads as a beach ball. The hot spot stays nudged off-centre so the sphere reads as
+   lit rather than as a target. */
 .sun-base {
   background: radial-gradient(
     closest-side circle at 46% 43%,
-    #f78436 0%,
-    #e5591d 15%,
-    #c8461b 36%,
-    #d15524 57%,
-    #e46e28 76%,
-    #f28430 88%,
-    #b03a13 96%,
-    #8a2a0c 100%
+    #3a0e05 0%,
+    #2b0803 18%,
+    #1d0502 40%,
+    #260602 58%,
+    #401006 76%,
+    #5e1b0a 88%,
+    #2a0803 96%,
+    #140301 100%
   );
 }
 
@@ -429,12 +450,16 @@ select.field {
    because contrast modulation is the whole point of them, and everything else
    here composites normally with its colour re-tuned to match what `screen` and
    `multiply` were doing. */
+/* Bright plage. Stronger than it was, because it now has to lift a textured surface
+   rather than tint a plain gradient, and softer at the edge so it reads as a region of
+   the fire being hotter and not as a lens flare laid on top. */
 .sun-cell {
   background: radial-gradient(
     closest-side circle,
-    rgba(255, 216, 140, 0.55),
-    rgba(255, 176, 92, 0.2) 52%,
-    transparent 76%
+    rgba(255, 214, 150, 0.34),
+    rgba(245, 150, 70, 0.16) 46%,
+    rgba(217, 94, 39, 0.05) 70%,
+    transparent 88%
   );
 }
 .sun-cell-1 {
@@ -458,12 +483,17 @@ select.field {
   height: 44%;
   animation: sunCellC 17s ease-in-out infinite;
 }
+/* The dark voids, and they do most of the work. A quarter of the reference's pixels sit
+   in its darkest tenth, almost all of it in large cool patches with the threads running
+   between them. Near-opaque at the core in the reference's own void tone, falling away
+   slowly, so the texture underneath survives at the edges and vanishes in the middle. */
 .sun-spot {
   background: radial-gradient(
     closest-side circle,
-    rgba(112, 32, 12, 0.72),
-    rgba(134, 44, 18, 0.34) 54%,
-    transparent 78%
+    rgba(20, 3, 1, 0.82),
+    rgba(38, 6, 2, 0.58) 40%,
+    rgba(45, 9, 3, 0.26) 66%,
+    transparent 86%
   );
 }
 .sun-spot-1 {
@@ -537,42 +567,74 @@ select.field {
    At `inset: -50%` the element is 200% of the sun and every tile below travels
    less than 50% of it, so the rule holds in both axes and for either sign. Keep
    `margin >= travel` if these numbers are ever retuned. */
+/* THE TILES ARE THE FIRE NOW, not noise modulating a gradient.
+   Regenerated from measurements taken off the reference he sent: mean luminance 68.9,
+   sd 55.9, and a tone histogram where a quarter of all pixels sit in the darkest
+   tenth. My old tiles were mean 127 with a fine/coarse detail ratio of 0.61-0.84 --
+   grey blobs, centred on mid-grey, which is why the disc read as a smooth ball with
+   a haze on it rather than as something burning.
+
+   HOW THEY ARE MADE, in scripts run once rather than at request time. Fractal noise
+   built by FFT-filtering white noise, which is periodic by construction, so the tile
+   wraps with no seam and no mirroring -- measured, the wrap join differs less than
+   two adjacent rows do. Then two transforms that matter more than the noise itself:
+   RIDGED, 1-|2n-1| raised to a power, which turns smooth blobs into creases and then
+   thins the creases into threads; and DOMAIN WARPED, sampling the field at
+   coordinates pushed around by two more noise fields, which is what makes the threads
+   CURL instead of running straight. Six octaves each.
+
+   The fire palette is baked into the pixels, sampled off his reference: #140301 in the
+   voids, #260502 through the dark 30%, #812312 at the midpoint, then ember, flare, and
+   #EAE8D4 at the hottest threads. The tone curve was SOLVED rather than eyeballed --
+   swept gamma until the tile's mean luminance hit the reference's 68.9, which landed
+   at 0.60 and 0.58.
+
+   Indexed to 128 colours, which costs a mean error of 0.36/255 and halves the file,
+   because an image whose colours all lie along one ramp does not need 24-bit.
+
+   COMPOSITING CHANGED WITH THEM. `overlay` and `soft-light` were right for modulating
+   a base and wrong for tiles that are already the subject: A now composites NORMALLY
+   and carries the disc, B uses `screen` to add its brighter threads on top. That is
+   ONE blend layer where there used to be two, which the measured budget on this disc
+   likes. */
 .sun-churn {
   inset: -50%;
   background-repeat: repeat;
-  /* `will-change: transform` was here and is deliberately gone. It bought nothing — a
-     transform animation is handed to the compositor anyway — and it is the most aggressive
-     promotion hint in this file, on the element that also carries a blend mode and is twice
-     the disc's size. That combination is what escaped the circular clip on iOS and drew the
-     grey square. Removing the hint does not fix that on its own, which is why the disc is
-     masked, but there is no reason to keep asking for the promotion that made it worst. */
 }
 .sun-churn-a {
-  mix-blend-mode: overlay;
-  opacity: 0.38;
+  opacity: 0.82;
   background-image: url("/noise/plasma-a.png");
-  /* 21% of a 200%-wide element is 42% of the sun. */
-  background-size: 21% 21%;
-  animation: sunChurnA 2.7s linear infinite;
+  /* 9% of a 200%-wide element is 18% of the sun, so the tile repeats about five times
+     across the disc. The old 21% put one tile across 42% of the sun and the tendrils
+     came out 4-7% of its width; the reference's are 1-2%. */
+  /* 50% of a 200%-wide element is 100% of the sun, so ONE tile covers the disc and
+     barely repeats. That is the whole reason it can carry low frequencies again: a
+     band-passed tile has structure in one narrow band and rendered as felt, while the
+     reference is multifractal — structure at every scale from a thread to a continent.
+     Measured, this tile puts 27.5% of its pixels in the darkest tenth against the
+     reference's 24.6%, where the felt version managed 4.8%.
+     And it drifts over 48 SECONDS, not 3.4. At disc scale a fast translate reads as the
+     whole surface sliding sideways. Large convection cells drift slowly and fine
+     structure changes fast, which is also what the physics says, so the big tile creeps
+     and the small one does the visible churning. */
+  background-size: 50% 50%;
+  animation: sunChurnA 48s linear infinite;
 }
 .sun-churn-b {
-  /* soft-light rather than overlay on the second layer: two overlays stack into
-     mud, and the finer tile only needs to break up the coarser one. */
-  mix-blend-mode: soft-light;
-  opacity: 0.3;
+  mix-blend-mode: screen;
+  opacity: 0.62;
   background-image: url("/noise/plasma-b.png");
-  /* 13% of a 200%-wide element is 26% of the sun. */
-  background-size: 13% 13%;
-  animation: sunChurnB 1.6s linear infinite;
+  background-size: 14% 14%;
+  animation: sunChurnB 2.1s linear infinite;
 }
 @keyframes sunChurnA {
   to {
-    transform: translate(21%, -21%);
+    transform: translate(50%, -50%);
   }
 }
 @keyframes sunChurnB {
   to {
-    transform: translate(-13%, -13%);
+    transform: translate(-14%, -14%);
   }
 }
 
@@ -581,27 +643,42 @@ select.field {
    match, so the loop is seamless and a frozen frame is the neutral bloom. */
 .sun-flicker {
   inset: 0;
+  border-radius: 50%;
   background: radial-gradient(
     closest-side circle at 46% 43%,
-    rgba(255, 202, 128, 0.16),
-    rgba(240, 130, 60, 0.05) 60%,
-    transparent 86%
+    rgba(255, 202, 128, 0.3),
+    rgba(240, 130, 60, 0.14) 58%,
+    rgba(217, 94, 39, 0.05) 84%,
+    transparent 94%
   );
-  opacity: 0.3;
-  animation: sunFlicker 1.35s linear infinite;
+  opacity: 0.42;
+  animation: sunFlicker 1.05s linear infinite;
 }
+/* FLICKER, and he asked for it to flicker like a real fire, so the amplitude roughly
+   tripled: the old schedule swung 0.29-0.53 around a 0.3 opacity, which is a gentle
+   breathe. This runs 0.16-1.0 around 0.42 on a 1.05s loop.
+   The stops stay deliberately irregular and deliberately not a sine. A fire's
+   luminance is not periodic -- it gusts. An even oscillation reads as a lighthouse, and
+   that is the single easiest way to make a flame look fake. First and last frames match
+   so the loop has no seam, and the neutral value sits mid-range so a frozen frame is a
+   correctly lit disc. */
 @keyframes sunFlicker {
-  0% { opacity: 0.3; }
-  9% { opacity: 0.46; }
-  17% { opacity: 0.34; }
-  28% { opacity: 0.53; }
-  36% { opacity: 0.38; }
-  47% { opacity: 0.29; }
-  58% { opacity: 0.45; }
-  66% { opacity: 0.33; }
-  79% { opacity: 0.5; }
-  88% { opacity: 0.36; }
-  100% { opacity: 0.3; }
+  0% { opacity: 0.42; }
+  6% { opacity: 0.86; }
+  11% { opacity: 0.34; }
+  17% { opacity: 0.62; }
+  23% { opacity: 0.22; }
+  31% { opacity: 1; }
+  38% { opacity: 0.46; }
+  44% { opacity: 0.7; }
+  52% { opacity: 0.28; }
+  59% { opacity: 0.9; }
+  67% { opacity: 0.38; }
+  74% { opacity: 0.16; }
+  81% { opacity: 0.74; }
+  88% { opacity: 0.3; }
+  94% { opacity: 0.56; }
+  100% { opacity: 0.42; }
 }
 
 /* ── Flames, embers and prominences ──────────────────────────────────────── */
