@@ -62,8 +62,14 @@ export default function GlazedCredit({
     <a
       href="https://www.glazedweb.com"
       className={`gw-credit ${className}`}
-      // Not nofollow: this is a real credit, not a paid placement.
-      rel="noopener"
+      // A new tab, deliberately. This is the one link on the page whose job is to take the
+      // visitor AWAY from the client, and doing that in their own tab is a small unkindness to
+      // the person paying for the site. copperac and cookinwithbeans already did this; chism
+      // and sprinklesandsparklesbb did not.
+      target="_blank"
+      // noopener for the usual reason. NOT nofollow: a designer credit is a real editorial
+      // link, not a paid placement.
+      rel="noopener noreferrer"
     >
       {line}{" "}
       <span className="gw-credit-name">Glazed&nbsp;Web</span>
