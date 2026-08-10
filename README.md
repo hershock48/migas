@@ -139,6 +139,11 @@ to leave alone.
       deliberately, so ask before filling it in.
 - [ ] **Store product URLs.** `buyUrl` on each guide. The guides already sell today. A URL there
       turns the request form into a real buy button with no code change.
+- [ ] **Sign off on the footer credit, and its wording.** It currently reads "Baked by Glazed
+      Web". The pun is the studio's, and in his field "baked" reads a second way — charming to a
+      grower, slightly off-message to an institutional buyer, on a site otherwise built in a
+      deliberately commercial register. It is our joke in his footer, so it is his call.
+      Removing it, or changing the line, is one line in `components/Footer.tsx`.
 - [ ] **Confidentiality, rescheduling, and the guide-credit question.** `FAQ`. Licensed
       operators will ask about the first before they book.
 

@@ -53,11 +53,18 @@ export default function Footer() {
       <div className="border-t border-line">
         <div className="wrap flex flex-col gap-2 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
-          {/* Plain register for this client, deliberately: he sells SOPs to licensed
-              commercial operators, and a donut joke in his footer would be the studio
-              talking about itself while a facility director is mid-decision. Warmer
-              clients take a warmer line — the component's `line` prop is the knob. */}
-          <GlazedCredit line="Built by" />
+          {/* "Baked by" carries two registers at once, which is why it beats both the plain
+              line and the full pun here. It is the studio's own bakery language, and in this
+              client's field it is also a wink his audience gets immediately.
+
+              The thing to be awake to is that the second reading is "stoned", and this site
+              is deliberately built in the opposite register — commercial, licensed, SOPs,
+              facility framing, because "for growers of all sizes" is what attracts a hobbyist
+              and he is trying to attract operators. To a grower the line is charming; to an
+              institutional buyer it is very slightly off-message. It is also our joke sitting
+              in his footer, so the downside lands on him rather than on us, which makes it his
+              call rather than ours. On the before-launch list. */}
+          <GlazedCredit line="Baked by" />
         </div>
       </div>
     </footer>
