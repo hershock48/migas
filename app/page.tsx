@@ -372,12 +372,63 @@ export default function Home() {
           className="pointer-events-none absolute inset-x-0 top-[94px] h-px bg-gradient-to-r from-transparent via-ember/50 to-transparent sm:top-[190px]"
         />
 
+        {/* THE COPY WAS NOT "IN THE LIGHT", IT WAS IN THE FIRE. The note above this section
+            says the arrangement puts the words underneath the disc where nothing bright
+            touches them. That was true of the CLIP — the fade at the top exists to stop the
+            crop reading as a straight chord — and false of the words. The exterior fire spreads
+            well past the disc, and the copy starts about forty pixels below the horizon
+            hairline, which is where that fire is brightest. Measured per line, text against the
+            ground immediately behind it:
+
+              line 1   1.78:1
+              line 2   2.08:1
+              line 3   2.27:1
+
+            against a 4.5:1 floor for body text — worse than the hero note was before it got a
+            scrim, and this is the last thing read before the primary button.
+
+            Raising the text cannot fix it on its own: `bone` at full strength against the
+            brightest of those grounds still only reaches about 4.2:1. The ground has to come
+            down. So this is ink, but RADIAL and centred rather than a full-width band — the
+            copy is max-w-xl and centred, so an ellipse over the column drops the words onto
+            near-black while the fire keeps glowing past both edges of it, which is the thing
+            the section was arranged for in the first place. It sits after the sun and before
+            the copy, so the order is fire, scrim, words. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-[60px] h-[420px] bg-[radial-gradient(58%_72%_at_50%_46%,#060403_0%,#060403_46%,rgba(6,4,3,0.86)_66%,rgba(6,4,3,0.4)_84%,transparent_100%)] sm:top-[150px] sm:h-[520px]"
+        />
+
         <div className="wrap relative pt-[130px] text-center sm:pt-[230px]">
           <p className="eyebrow reveal">Indoors, you are the sun</p>
           <h2 className="reveal mt-5 text-3xl sm:text-5xl">Every room has one.</h2>
+          {/* THE LAST COPY BEFORE THE BUTTON, so it has to earn the button rather than
+              recap the page. It used to read "Yours has a switch, a schedule and a feed
+              chart. Bring it to the call: eight questions, your photos, and we have read
+              both before you speak." The first sentence is the whole conceit landing and it
+              stays. Everything after it had three faults.
+
+              The list collapsed. "eight questions, your photos, and we have read both"
+              looks like three items and is not: the third is a claim ABOUT the first two,
+              and "both" reaches backwards into the list it sits inside.
+
+              "Bring it to the call" had no referent. The nearest noun is a feed chart; the
+              intended one was the room, which you cannot bring to a call.
+
+              And it was the hero again. "your photos" and "before you" each appeared twice
+              on this page and "intake" three times — counted in the rendered text, not
+              guessed. Restating the top of the page is the weakest thing the bottom of it
+              can do.
+
+              What replaces it finishes the metaphor instead. Outdoors the sun is weather and
+              nobody set it. Indoors it is a switch, a timer and a chart, which means every
+              number in that room is a decision somebody made — flattering to a grower, and
+              also the exact reason to book a call, since a decision can be revisited and
+              weather cannot. Three plain sentences, topic then explanation, and the last one
+              points at the button underneath it. */}
           <p className="reveal mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Yours has a switch, a schedule and a feed chart. Bring it to the call:
-            eight questions, your photos, and we have read both before you speak.
+            Yours has a switch, a schedule and a feed chart. Somebody set every one of
+            those, which means every one can be changed. That is what the call is for.
           </p>
           <div className="reveal mt-9 flex flex-wrap justify-center gap-3">
             <Link href="/consulting#book" className="btn-primary">
