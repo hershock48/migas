@@ -47,12 +47,43 @@ import { VIEWBOX as GRAFFITI_VB, D as GRAFFITI_D } from "./Graffiti.path";
 
 type Props = { className?: string; title?: string };
 
+/**
+ * EVERY MARK CARRIES EXPLICIT width AND height, and that is a bug fix rather than tidiness.
+ *
+ * An <svg> with a viewBox and no width/height attributes has an intrinsic ASPECT RATIO but no
+ * intrinsic SIZE. Modern engines resolve `width: 62%; height: auto` from the ratio and get it
+ * right — WebKit here measures the mirrored lockup at 186.6 x 79.0, exactly 2.36:1. Safari on
+ * iOS has historically fallen back to the CSS replaced-element default of 150px for the
+ * unspecified dimension instead, and that is almost certainly what he photographed: a faint
+ * square patch on the disc, centred, measured off his screenshot at 59% of the diameter wide by
+ * 55% tall. A 186.6 x 150 box on a 301px disc is 62% by 50%. Nothing else on the page is that
+ * shape in that place.
+ *
+ * It is visible at all because the lockup is absolutely positioned with a translate, so it is
+ * promoted to its own compositing layer, and it sits over `.sun-churn-b`, which is
+ * mix-blend-mode: screen. Where a composited layer overlaps a blend layer's backdrop, iOS can
+ * snapshot that backdrop per layer — so the layer's RECTANGLE prints as a tonal step even though
+ * the element itself paints nothing outside its glyphs. This is the same family as the grey
+ * square he reported from an iPhone weeks ago, which was composited descendants escaping the
+ * disc's border-radius; that one was cured with a mask on .sun-disc.
+ *
+ * Setting both attributes from the viewBox removes the ambiguity in every engine: the intrinsic
+ * size is stated, so `height: auto` has a real ratio to resolve against and cannot fall back.
+ * Written once here rather than three times, and derived from the viewBox rather than typed, so
+ * a retrace cannot leave the two disagreeing.
+ */
+function dims(viewBox: string) {
+  const [, , w, h] = viewBox.split(/\s+/).map(Number);
+  return { width: w, height: h };
+}
+
 /** Wide, one row, chunky enough to survive small sizes. The navigation mark. */
 export function Graffiti({ className = "", title = "MI Gas" }: Props) {
   return (
     <svg
       className={className}
       viewBox={GRAFFITI_VB}
+      {...dims(GRAFFITI_VB)}
       role="img"
       aria-label={title}
       focusable="false"
@@ -71,7 +102,14 @@ export function Graffiti({ className = "", title = "MI Gas" }: Props) {
 /** MIGAS over its own reflection, 2.36:1. The poster mark — see the note about small sizes. */
 export function MirrorLockup({ className = "", title = "MI Gas" }: Props) {
   return (
-    <svg className={className} viewBox={MIRROR_VB} role="img" aria-label={title} focusable="false">
+    <svg
+      className={className}
+      viewBox={MIRROR_VB}
+      {...dims(MIRROR_VB)}
+      role="img"
+      aria-label={title}
+      focusable="false"
+    >
       <g transform="translate(0,4930) scale(1,-1)" fill="currentColor">
         <path d={MIRROR_D} />
       </g>
@@ -82,7 +120,14 @@ export function MirrorLockup({ className = "", title = "MI Gas" }: Props) {
 /** The same letters read downward, one per row, each mirrored. 0.43:1 — very tall. */
 export function Totem({ className = "", title = "MI Gas" }: Props) {
   return (
-    <svg className={className} viewBox={TOTEM_VB} role="img" aria-label={title} focusable="false">
+    <svg
+      className={className}
+      viewBox={TOTEM_VB}
+      {...dims(TOTEM_VB)}
+      role="img"
+      aria-label={title}
+      focusable="false"
+    >
       <g transform="translate(0,16260) scale(1,-1)" fill="currentColor">
         <path d={TOTEM_D} />
       </g>
