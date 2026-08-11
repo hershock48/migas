@@ -264,7 +264,7 @@ export const SESSIONS: SessionType[] = [
     name: "Program Review",
     minutes: 60,
     price: 300,
-    summary: "Your whole feed and environment programme, examined end to end.",
+    summary: "Your whole feed and environment program, examined end to end.",
     forWho: "A grow that works but underperforms, or one you are about to scale.",
     includes: [
       "Full intake and photo review",
@@ -278,7 +278,7 @@ export const SESSIONS: SessionType[] = [
     minutes: 90,
     price: 500,
     summary: "Standard operating procedures for a team that has to run this without you.",
-    forWho: "Licensed operations, new builds, or a facility standardising across rooms.",
+    forWho: "Licensed operations, new builds, or a facility standardizing across rooms.",
     includes: [
       "Full intake and photo review",
       "Draft SOP tailored to your rooms",
@@ -528,10 +528,10 @@ export const FAQ = [
     a: "Yes. Calls are remote, and the programs are not state-specific. Facility work in other states is case by case.",
   },
   {
-    q: "I bought a guide. Does that count towards a call?",
+    q: "I bought a guide. Does that count toward a call?",
     // PLACEHOLDER, and worth pushing him on: it turns a $200 guide into a paid lead
     // magnet for a $300 call instead of a competitor to it.
-    a: "PLACEHOLDER: proposed: yes, one guide purchase credits towards your first consult. His call.",
+    a: "PLACEHOLDER: proposed: yes, one guide purchase credits toward your first consult. His call.",
   },
 ];
 

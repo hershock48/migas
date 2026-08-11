@@ -23,7 +23,7 @@ const CHANNELS = [
   {
     name: "Patreon",
     href: SITE.patreon,
-    label: "The community, the back catalogue and the tier posts.",
+    label: "The community, the back catalog and the tier posts.",
   },
   {
     name: "Instagram",

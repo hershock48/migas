@@ -142,17 +142,36 @@ export default function Home() {
       {/* ── The router ────────────────────────────────────────────────────────
           "Streamline my consulting calls" is a routing problem before it is a
           calendar problem. Somebody with spider mite this morning and somebody
-          standardising four rooms want different amounts of his time, and if the site
+          standardizing four rooms want different amounts of his time, and if the site
           does not sort them, the first ten minutes of every call does.
+
+          NO PARAGRAPH UNDER THE HEADING, and that is the fix rather than the omission.
+          There was one: "Three lengths, because a room on fire and a facility writing its
+          SOPs are not the same conversation. Pick one and the intake adapts to it." Three
+          things wrong with it, and only the third is a matter of taste.
+
+          The last clause was not true. All three sessions render the identical eight
+          INTAKE questions — `INTAKE.map` in components/Booking.tsx, with no branch on the
+          chosen session anywhere. What actually narrows is which time slots are offered,
+          via `fits`. The site was promising a form that reshapes itself and shipping one
+          that does not.
+
+          The middle was already used. "A room on fire and a facility writing its SOPs are
+          not the same conversation" also opens the Sessions section on /consulting. The
+          same figure twice on one site stops being an observation and becomes a
+          catchphrase, and antithesis was the exact habit the copy pass flagged for
+          rationing.
+
+          And it was explaining the cards to the reader before the reader got to them.
+          Each SessionCard already carries its own summary in plain language: something is
+          wrong right now, your whole program examined end to end, SOPs for a team that has
+          to run this without you. A paragraph restating that in a more clever register is
+          the studio voice he keeps catching, doing work the cards do better.
           ───────────────────────────────────────────────────────────────────── */}
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Consulting</p>
           <h2 className="mt-4 text-3xl sm:text-4xl">Every call starts with your room</h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted">
-            Three lengths, because a room on fire and a facility writing its SOPs are not
-            the same conversation. Pick one and the intake adapts to it.
-          </p>
         </div>
 
         <div className="reveal mt-12 grid gap-6 md:grid-cols-3">

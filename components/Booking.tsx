@@ -627,7 +627,7 @@ export default function Booking({ days }: Props) {
             <Field id="name" label="Name" autoComplete="name" state={state} error={errors.name} required />
             <Field id="email" label="Email" type="email" autoComplete="email" state={state} error={errors.email} required />
             <Field id="phone" label="Phone" type="tel" autoComplete="tel" state={state} error={errors.phone} />
-            <Field id="company" label="Operation or licence name" state={state} error={errors.company} />
+            <Field id="company" label="Operation or license name" state={state} error={errors.company} />
             <div className="sm:col-span-2">
               <Field id="heard" label="How did you find us?" state={state} error={errors.heard} />
             </div>
