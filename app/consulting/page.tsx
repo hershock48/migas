@@ -12,11 +12,32 @@ export const metadata: Metadata = {
 };
 
 /**
- * Slots are generated per request, not at build, or the calendar would be frozen on the
- * day of the deploy. An hour of caching is plenty — availability here comes from a
- * weekly pattern, so it only changes when somebody edits lib/site.ts.
+ * PER REQUEST, AND IT HAS TO BE. This said "slots are generated per request, not at
+ * build, or the calendar would be frozen on the day of the deploy" — the right intent
+ * against the wrong directive. `revalidate = 3600` does not render per request. It
+ * prerenders at BUILD time and then regenerates at most hourly, and regeneration is
+ * triggered BY a request: the visitor who arrives after a quiet spell is served the old
+ * HTML and only kicks off the rebuild for whoever comes next. On a site with steady
+ * traffic that is an hour of staleness. On a brand-new consultancy site with none, the
+ * cached page ages until something asks for it, and Next's default `expire` is a year.
+ *
+ * That matters here because the slot values are baked into the HTML as radio inputs and
+ * the server action re-validates them against the real clock. Stale HTML therefore
+ * offers times the server will refuse. Measured against the real slotGrid, taking a page
+ * built on a Monday and re-validating every slot in it:
+ *
+ *     +1 day    6 of 72 slots rejected
+ *     +7 days  36 of 72
+ *   +14 days  72 of 72 — every time the page offers is refused, the form is dead
+ *
+ * and the visitor's only feedback is "That time is no longer open. Pick another." on
+ * every single alternative, with a reload serving the same stale page. Nothing logs it.
+ *
+ * So: dynamic. The page reads a config object and formats dates — there is no database
+ * call to protect and nothing to gain from caching the result. Correctness over a cached
+ * HTML document for a form that takes money.
  */
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 export default function Consulting() {
   const days = slotGrid();

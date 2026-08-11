@@ -172,11 +172,11 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
 
   const name = str(fd, "name");
   values.name = name;
-  if (name.length < 2) errors.name = "Your name, so he knows who he is talking to.";
+  if (name.length < 2) errors.name = "Your name, so we know who we are talking to.";
 
   const email = str(fd, "email");
   values.email = email;
-  if (!emailLooksReal(email)) errors.email = "An email address he can send the invite to.";
+  if (!emailLooksReal(email)) errors.email = "An email address we can send the invite to.";
 
   for (const q of INTAKE) {
     const v = str(fd, q.id);
@@ -283,7 +283,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       // "0 photos received" is a worse thing to read than an ask. When somebody skipped the
       // most useful field on the form, the confirmation is the last good moment to get it.
       photos.attachments.length === 0
-        ? "No photos yet — reply to your confirmation email with any and he will read them before the call"
+        ? "No photos yet — reply to your confirmation email with any and we will read them before the call"
         : photos.attachments.length === 1
           ? "1 photo sent with your intake"
           : `${photos.attachments.length} photos sent with your intake`,
@@ -329,7 +329,7 @@ export async function requestGuide(_prev: FormState, fd: FormData): Promise<Form
   const name = str(fd, "name");
   const errors: Record<string, string> = {};
   if (name.length < 2) errors.name = "Your name.";
-  if (!emailLooksReal(email)) errors.email = "An email address he can send it to.";
+  if (!emailLooksReal(email)) errors.email = "An email address we can send it to.";
   if (Object.keys(errors).length) return { status: "error", errors, values: { name, email } };
 
   await sendMail({
@@ -356,7 +356,7 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
     message: str(fd, "message"),
   };
   if (values.name.length < 2) errors.name = "Your name.";
-  if (!emailLooksReal(values.email)) errors.email = "An email address he can reply to.";
+  if (!emailLooksReal(values.email)) errors.email = "An email address we can reply to.";
   if (values.message.length < 10) errors.message = "A sentence or two about what you need.";
   if (Object.keys(errors).length) return { status: "error", errors, values };
 

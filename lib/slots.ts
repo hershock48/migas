@@ -96,7 +96,16 @@ const clock = (mins: number) => {
 /**
  * The next AVAILABILITY.horizonDays of open times, skipping the lead-time days and any
  * day with no window. `now` is an argument rather than a call to the clock so this is
- * testable — which is the only reason a test for it exists.
+ * testable. This used to claim "which is the only reason a test for it exists" — there is
+ * no test, and no test runner in the repo. The seam is still worth having: passing a fixed
+ * `now` is how the staleness of a cached page was measured rather than argued about.
+ *
+ * KNOWN EDGE, and it is conservative rather than dangerous. The first offered day is
+ * derived from UTC midnight, not from midnight in AVAILABILITY.timeZone, so between 8pm
+ * and midnight Detroit time — when the UTC date has already rolled over — the earliest
+ * bookable day is leadDays + 1 rather than leadDays. It never offers a slot too soon; it
+ * loses one day of availability during evenings. Fixing it properly means resolving the
+ * zone's own day boundary, which is the same work as the calendar-feed seam below.
  */
 export function slotGrid(now: Date = new Date()): SlotDay[] {
   const days: SlotDay[] = [];

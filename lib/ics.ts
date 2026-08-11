@@ -92,14 +92,25 @@ export function buildIcs(ev: IcsEvent, now: Date = new Date()): string {
   const end = new Date(start.getTime() + ev.minutes * 60_000);
   const organiser = SITE.email.startsWith("PLACEHOLDER") ? null : SITE.email;
 
+  /* THE METHOD HAS TO FOLLOW THE ADDRESS. This was hardcoded to REQUEST — chosen so a mail
+     client offers Accept/Decline on the attachment instead of treating it as a read-only
+     subscription entry — while the ORGANIZER line below is dropped whenever SITE.email is
+     still a placeholder, which it is. RFC 5546 §3.2.2 makes ORGANIZER mandatory in a
+     REQUEST, so what has actually been going out is an invalid REQUEST: Outlook refuses
+     the item outright, and clients that do accept it have no organiser to reply to, so
+     they show no Accept/Decline — losing the one thing REQUEST was for. An ATTENDEE with
+     RSVP=TRUE has the same problem: nobody to RSVP to.
+     PUBLISH with no attendee is a valid, complete calendar event that imports cleanly
+     everywhere. So while there is no mailbox this emits that, and the day a real address
+     lands in lib/site.ts it becomes a true invitation with no code change. */
+  const method = organiser ? "REQUEST" : "PUBLISH";
+
   const lines = [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
     `PRODID:-//${SITE.name}//Booking//EN`,
     "CALSCALE:GREGORIAN",
-    // REQUEST rather than PUBLISH, so a mail client offers Accept/Decline on the attachment
-    // instead of treating it as a read-only subscription entry.
-    "METHOD:REQUEST",
+    `METHOD:${method}`,
     "BEGIN:VEVENT",
     `UID:${ev.uid}`,
     `DTSTAMP:${stamp(now)}`,
@@ -108,7 +119,10 @@ export function buildIcs(ev: IcsEvent, now: Date = new Date()): string {
     `SUMMARY:${esc(ev.title)}`,
     `DESCRIPTION:${esc(ev.description)}`,
     organiser ? `ORGANIZER;CN=${esc(SITE.name)}:mailto:${organiser}` : null,
-    ev.attendeeEmail ? `ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:mailto:${ev.attendeeEmail}` : null,
+    // Only inside a REQUEST. See the note on `method`.
+    organiser && ev.attendeeEmail
+      ? `ATTENDEE;ROLE=REQ-PARTICIPANT;RSVP=TRUE:mailto:${ev.attendeeEmail}`
+      : null,
     "STATUS:CONFIRMED",
     "SEQUENCE:0",
     "BEGIN:VALARM",

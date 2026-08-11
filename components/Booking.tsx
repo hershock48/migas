@@ -71,8 +71,19 @@ export default function Booking({ days }: Props) {
   /* One error map, written by three things: the step check, the server, and the visitor
      fixing a field. It has to be one map — the first version merged a client map over a
      server map, and a server error the visitor had already corrected had nothing to clear
-     it, so it sat under a filled-in field indefinitely. */
-  const [errors, setErrors] = useState<Record<string, string>>({});
+     it, so it sat under a filled-in field indefinitely.
+
+     SEEDED FROM THE SERVER, which is what makes the no-JavaScript path actually work
+     rather than merely submit. The server's messages used to arrive only through the
+     effect below, and effects do not run without a script — so with JS off a rejected
+     submit rendered every input's `defaultValue` back correctly and not one error
+     message, nor a single aria-invalid. The visitor got "Something above needs fixing"
+     and no indication of what or where. Worst case was the slot message, whose own
+     comment in actions.ts says it exists specifically for the no-JS path: unreachable
+     by the only visitor it was written for. MiniForm reads state.errors during render
+     and was right all along. The effect stays for subsequent submits with JS on, where
+     the component never remounts. */
+  const [errors, setErrors] = useState<Record<string, string>>(state.errors ?? {});
   const [resizing, setResizing] = useState(false);
   const [touched, setTouched] = useState(false);
 
@@ -141,17 +152,40 @@ export default function Booking({ days }: Props) {
       setPhotos([]);
       return;
     }
+    /* EVERY EXIT FROM HERE HAS TO CLEAR `resizing`, because the submit button is disabled
+       while it is true. Without the finally, one throw in this function left "Resizing…"
+       on screen and the button dead for the rest of the visit — the form could not be
+       submitted at all, and reloading loses everything typed. Two real ways to throw:
+       DataTransfer does not exist on older iOS Safari and `input.files` is not settable
+       there, and a corrupt or unsupported image can fail mid-downscale. Neither is worth
+       a dead form, and neither actually needs to stop the submit: the originals are
+       already on the file input, so the post still carries them and the server rejects
+       anything oversized with a message the visitor can read. */
     setResizing(true);
-    const out: File[] = [];
-    for (const f of picked.slice(0, PHOTO_LIMITS.count)) out.push(await downscale(f));
-    // Writing back to input.files is what keeps this progressive: the form still
-    // submits its own file input, it just now holds smaller files.
-    const dt = new DataTransfer();
-    for (const f of out) dt.items.add(f);
-    input.files = dt.files;
-    setPhotos(out.map((f) => ({ name: f.name, size: f.size, url: URL.createObjectURL(f) })));
-    setResizing(false);
-    setErrors(({ photos: _gone, ...rest }) => rest);
+    try {
+      const out: File[] = [];
+      for (const f of picked.slice(0, PHOTO_LIMITS.count)) {
+        // Per file, so one image that will not decode does not cost the others theirs.
+        try {
+          out.push(await downscale(f));
+        } catch {
+          out.push(f);
+        }
+      }
+      // Writing back to input.files is what keeps this progressive: the form still
+      // submits its own file input, it just now holds smaller files.
+      try {
+        const dt = new DataTransfer();
+        for (const f of out) dt.items.add(f);
+        input.files = dt.files;
+      } catch {
+        // No DataTransfer here. The untouched originals stay on the input.
+      }
+      setPhotos(out.map((f) => ({ name: f.name, size: f.size, url: URL.createObjectURL(f) })));
+      setErrors(({ photos: _gone, ...rest }) => rest);
+    } finally {
+      setResizing(false);
+    }
   }
 
   /* ── Step gating ─────────────────────────────────────────────────────────── */
@@ -173,18 +207,74 @@ export default function Booking({ days }: Props) {
     return bad;
   }
 
+  /* REPLACING THE MAP THREW AWAY THE ONLY MESSAGE THAT MATTERED. `setErrors(bad)` on every
+     Continue wiped the whole map, and `validate` cannot reproduce two of the server's
+     errors: the photo size check (it never looks at files) and slotIsBookable. So the
+     sequence was: submit, server rejects a 6MB photo, the effect drops the visitor on step
+     2 and shows "…too large. Keep photos under 3 MB each.", the visitor reads it and
+     presses Continue — and the message disappears at the exact moment they act on it,
+     because validate(1) returned {}. They walk to the end and get rejected identically.
+     A blanket merge is not the fix either; the comment on the state above records why.
+     Instead each step drops exactly the keys it actually re-checks and leaves the rest,
+     so a corrected field clears itself and a server error the client cannot re-derive
+     survives until the server says otherwise. */
+  const checkedBy = (which: number): string[] =>
+    which === 0 ? ["session"]
+    : which === 1 ? INTAKE.filter((q) => q.required).map((q) => q.id)
+    : which === 2 ? ["slot"]
+    : ["name", "email"];
+
+  const withStepErrors = (which: number, bad: Record<string, string>) =>
+    (prev: Record<string, string>) => {
+      const own = new Set(checkedBy(which));
+      const kept = Object.fromEntries(Object.entries(prev).filter(([k]) => !own.has(k)));
+      return { ...kept, ...bad };
+    };
+
   function next() {
     setTouched(true);
     const bad = validate(step);
-    setErrors(bad);
+    setErrors(withStepErrors(step, bad));
     if (Object.keys(bad).length) return;
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
   function back() {
     setTouched(true);
-    setErrors({});
+    // Only the step being left, so stepping back does not also erase the server's word on
+    // photos or a slot that is no longer bookable.
+    setErrors(withStepErrors(step, {}));
     setStep((s) => Math.max(s - 1, 0));
+  }
+
+  /* THE HIDDEN SUBMIT BUTTON IS STILL THE FORM'S DEFAULT BUTTON. `.bk-hide` is display:
+     none, and per the HTML implicit-submission rules a default button that is merely
+     hidden — as opposed to disabled — is still clicked when Enter is pressed in a field.
+     Confirmed in a browser: typing into "Lights" on step 2 of 4 and pressing Enter fired
+     a real POST and came back with ten validation errors. The recoverable case is that;
+     the one that is not recoverable is a form already filled in correctly, where Enter
+     pressed while re-editing an earlier step sends the booking — two emails and a
+     calendar invite — carrying the half-typed value the visitor was in the middle of.
+     Enter on a non-final step means "next", so that is what it does now. TEXTAREA keeps
+     its newline, and BUTTON keeps its own activation. */
+  function onKeyDown(e: React.KeyboardEvent<HTMLFormElement>) {
+    if (e.key !== "Enter" || step === STEPS.length - 1) return;
+    const tag = (e.target as HTMLElement).tagName;
+    if (tag === "TEXTAREA" || tag === "BUTTON") return;
+    e.preventDefault();
+    next();
+  }
+
+  /* The last step's fields were never checked before the round trip: validate(3) existed
+     but nothing called it, because Continue is the only caller and it stops rendering on
+     the last step. It also held the corrected first-person wording while the server kept
+     the old "he" copy. */
+  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    const bad = validate(STEPS.length - 1);
+    if (!Object.keys(bad).length) return;
+    e.preventDefault();
+    setTouched(true);
+    setErrors(withStepErrors(STEPS.length - 1, bad));
   }
 
   /* ── Confirmation ────────────────────────────────────────────────────────── */
@@ -255,6 +345,8 @@ export default function Booking({ days }: Props) {
         noValidate
         onInput={clearOn}
         onChange={clearOn}
+        onKeyDown={onKeyDown}
+        onSubmit={onSubmit}
         className="card scroll-mt-24 p-6 sm:p-9"
       >
         {/* Bots fill everything. Humans never see this. */}
@@ -489,7 +581,13 @@ export default function Booking({ days }: Props) {
                           type="radio"
                           name="slot"
                           value={s.value}
-                          checked={slot === s.value}
+                          /* `ok &&` matters on the no-JS re-render. A slot restored from
+                             state.values that is too short for the session renders both
+                             checked AND disabled — it paints as selected through
+                             peer-checked, but a disabled control is left out of FormData,
+                             so the next submit says only "Pick a time" about a time that
+                             looks picked. Showing nothing selected is the honest state. */
+                          checked={ok && slot === s.value}
                           disabled={!ok}
                           onChange={() => {
                             setSlot(s.value);
