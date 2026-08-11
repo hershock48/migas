@@ -867,10 +867,32 @@ select.field {
   background-size: 50% 50%;
   animation: sunChurnA 48s linear infinite;
 }
+/* NO BLEND MODE, AND THAT IS THE FIX FOR THE SQUARE ON THE DISC.
+   He photographed a faint square patch inside the sun, concentric, measuring 59% of the
+   diameter across and 55% down — near-square, at 1.06:1. It does not reproduce in headless
+   WebKit at any size. What it matches is a compositor tile: 512 x 512 device pixels on a
+   3x display is 170.7 CSS px, and on a 301px disc that is 56.7%. Square by construction,
+   because tiles are.
+
+   The header of components/Sun.tsx already measured why there is a tile boundary to see.
+   Each mix-blend-mode layer inside `isolation: isolate` costs a backdrop READ-BACK, and
+   disabling the isolation alone doubled the frame rate. A backdrop read-back is tiled, so a
+   tile that resolves its backdrop differently from its neighbours prints as a rectangle —
+   and this was the last blend layer left inside the disc.
+
+   So the blend is gone and the tile now carries its own alpha instead. screen(base, t) is
+   1-(1-base)(1-t): black leaves the base untouched, white drives it to white. Normal
+   compositing reaches the same two endpoints if alpha IS the tile's luminance and the colour
+   is that pixel at full value, which is what scripts generated plasma-b-alpha.png to be. The
+   darkest fifth is forced FULLY transparent rather than merely dim, because screen can never
+   darken and a partly-opaque dark pixel composited normally would.
+
+   Two things come free. There is no backdrop read-back left anywhere on the disc, which by
+   this file's own measurements was the single largest cost on the element. And the same
+   change removes the whole class of iOS blend artifacts rather than this one instance. */
 .sun-churn-b {
-  mix-blend-mode: screen;
-  opacity: 0.62;
-  background-image: url("/noise/plasma-b.png");
+  opacity: 0.78;
+  background-image: url("/noise/plasma-b-alpha.png");
   background-size: 14% 14%;
   animation: sunChurnB 2.1s linear infinite;
 }
