@@ -1246,3 +1246,86 @@ select.field {
   --gw-plate: #FDF6EC;
   --gw-plate-ink: #2B1E16;
 }
+
+/* ───────────────────────────────────────────────────────────────────────────
+   Link preview card — the source frame for public/og.png, rendered by app/og-card
+   and screenshotted at exactly 1200x630. Absolute positioning throughout, because
+   the output is one fixed-size picture rather than a responsive layout.
+   ─────────────────────────────────────────────────────────────────────────── */
+.og-stage {
+  padding: 40px;
+  background: #000;
+}
+.og-frame {
+  position: relative;
+  width: 1200px;
+  height: 630px;
+  overflow: hidden;
+  background: theme("colors.ink.DEFAULT");
+}
+/* A HORIZON, NOT A DISC. Wider than the frame and pushed down so only the top arc and
+   its limb are in shot. Centred, so a square crop keeps the whole curve. */
+.og-sun {
+  position: absolute;
+  left: 50%;
+  top: 100%;
+  width: 980px;
+  transform: translate(-50%, -28%);
+}
+/* Ink down over the exterior fire, and it MUST stop before the limb. The first version
+   ran to 70% and crossed the arc, and near-black over a near-white rim does not darken it,
+   it greys it: the whole top of the curve came out a dull lilac while the same rim at the
+   bottom corners stayed cream. The hot edge is the best thing in the picture. So the sun
+   sits low enough that its apex is at 56% and this fades out by 55%, and the two never
+   meet. */
+.og-scrim {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(6, 4, 3, 0.97) 0%,
+    rgba(6, 4, 3, 0.95) 24%,
+    rgba(6, 4, 3, 0.86) 38%,
+    rgba(6, 4, 3, 0.46) 43%,
+    transparent 50%
+  );
+}
+.og-stack {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 78px;
+  gap: 30px;
+}
+/* THE MARK IS THE HERO, and its size was set from the thumbnail rather than from the
+   1200px frame. components/brand/README.md records the measured floor: this mark resolves
+   at 32px tall and is clean at 40. A phone draws one of these cards about 260pt wide, so
+   the frame scales down by 4.6x — at the 268px it started at, the mark arrived 18px tall
+   and read as a smudge. 480px wide is 152px tall here, which lands at 33px on the phone,
+   just over the floor.
+   That reordering is right for the job anyway. A link preview's first duty is to say WHOSE
+   link it is, and "Grow with us" does not say MI Gas. So the mark leads and the headline
+   supports it. */
+.og-graffiti {
+  width: 480px;
+  color: theme("colors.bone");
+}
+.og-head {
+  margin: 0;
+  font-family: var(--font-display), system-ui, sans-serif;
+  font-weight: 800;
+  font-size: 62px;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+}
+.og-head-rest {
+  color: theme("colors.bone");
+}
+/* The headline grows in and its fill flows on the real site. A screenshot wants both at
+   rest, and the resting style is the authored one. */
+.og-still {
+  animation: none !important;
+}

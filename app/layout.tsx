@@ -4,7 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
-import { SITE } from "@/lib/site";
+import { OG_IMAGE, SITE } from "@/lib/site";
 
 /**
  * Two faces, and only two.
@@ -38,6 +38,26 @@ export const metadata: Metadata = {
   },
   description:
     "Commercial cannabis cultivation consulting, SOPs and grow guides from the director of a licensed Michigan facility. Book a call, or buy the flower, veg and run-off programs.",
+  /**
+   * THE LINK PREVIEW CARD. There was no og:image at all, which is why pasting the URL into
+   * a text produced a bare row of words: with nothing to show, iMessage falls back to a
+   * text-only preview or scrapes the favicon.
+   *
+   * 1200x630 is what Slack, WhatsApp, Facebook, LinkedIn and X all want, and it is what
+   * Apple lists as the landscape option. The catch is that newer iOS crops these toward
+   * square, so the outer 285px of each side can go — everything in the card is inside the
+   * centre 630px band for that reason, and the square crop was rendered and checked rather
+   * than assumed.
+   *
+   * JPEG rather than PNG, and that is measured. The PNG came out at 778KB against Apple's
+   * 1MB guidance, which matters more here than usual because the SENDER's phone downloads
+   * it over their own connection with no proxy in between. Quality 95 with no chroma
+   * subsampling is 238KB — 69% smaller — for a mean error of 1.0/255 and 0.64/255 across
+   * the smooth dark sky, which is where JPEG would band if it were going to. Invisible.
+   *
+   * The picture is generated from the live components by app/og-card, not drawn separately,
+   * so it cannot drift away from the site.
+   */
   openGraph: {
     type: "website",
     siteName: SITE.name,
@@ -45,8 +65,11 @@ export const metadata: Metadata = {
     description:
       "Consulting, SOPs and grow guides for indoor cultivators, from a working commercial facility.",
     url: SITE.url,
+    // Relative is fine and resolves absolute against metadataBase above, which the spec
+    // requires — a relative og:image is simply dropped by most scrapers.
+    images: [OG_IMAGE],
   },
-  twitter: { card: "summary_large_image" },
+  twitter: { card: "summary_large_image", images: [OG_IMAGE.url] },
   // This is a pitch build, so the meta robots tag agrees with the HTTP header set in
   // next.config.ts. Both go on the day it becomes his real site.
   robots: { index: false, follow: false },

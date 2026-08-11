@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import MiniForm from "@/components/MiniForm";
 import { GuideCard, ReviewCard } from "@/components/cards";
 import { requestGuide } from "@/app/actions";
-import { BUNDLE, GUIDES, REVIEWS, bundleSeparately, money, type Guide } from "@/lib/site";
+import { BUNDLE, GUIDES, OG_IMAGE, REVIEWS, bundleSeparately, money, type Guide } from "@/lib/site";
 
 /** The four guides plus the bundle, all rendered by this one page. */
 const ALL: Guide[] = [BUNDLE, ...GUIDES];
@@ -27,7 +27,7 @@ export async function generateMetadata({
     // site's product pages share a platform-generated description, which is why they
     // compete with each other in search results.
     description: `${guide.blurb} ${money(guide.price)}. ${guide.includes.join(" and ")}.`,
-    openGraph: { title: `${guide.name} - MI Gas`, description: guide.blurb },
+    openGraph: { title: `${guide.name} - MI Gas`, description: guide.blurb, images: [OG_IMAGE] },
   };
 }
 

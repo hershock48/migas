@@ -408,6 +408,21 @@ export const DIAGRAM = {
  * Times are shown in one timezone, labelled, rather than guessed from the visitor's
  * browser. A wrong timezone is a missed call.
  */
+/**
+ * THE LINK PREVIEW IMAGE, in one place, because Next does NOT deep-merge `openGraph`.
+ * A page that defines its own openGraph REPLACES the parent's object rather than adding to
+ * it, so the five guide pages — which set their own title and description, and are the
+ * pages most likely to actually get pasted to somebody, since they are the products —
+ * emitted no og:image at all while every other route had one. Verified in the served HTML
+ * before and after. Spread this into any openGraph block instead of restating it.
+ */
+export const OG_IMAGE = {
+  url: "/og.jpg",
+  width: 1200,
+  height: 630,
+  alt: "The MI Gas mark over a burning sun, with the words Grow with us",
+} as const;
+
 export const AVAILABILITY = {
   timeZone: "America/Detroit",
   timeZoneLabel: "Eastern (Michigan)",
