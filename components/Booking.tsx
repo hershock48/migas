@@ -286,7 +286,7 @@ export default function Booking({ days }: Props) {
         <h3 className="mt-4 text-3xl">We have your room before you dial in</h3>
         <p className="mt-4 max-w-xl leading-relaxed text-muted">
           Your intake is with us now. We read it before the call, and confirm the time by
-          email &mdash; along with the invoice to settle beforehand.
+          email, along with the invoice to settle beforehand.
         </p>
         {state.summary && state.summary.length > 0 && (
           <dl className="mt-8 divide-y divide-line border-y border-line">
@@ -300,8 +300,8 @@ export default function Booking({ days }: Props) {
         )}
         {state.reference && (
           <p className="mt-6 text-sm text-muted">
-            Reference <span className="font-display font-bold text-bone">{state.reference}</span>{" "}
-            &mdash; quote it if you need to move the call.
+            Reference <span className="font-display font-bold text-bone">{state.reference}</span>
+            . Quote it if you need to move the call.
           </p>
         )}
         <div className="mt-8 flex flex-wrap gap-3">
@@ -493,7 +493,7 @@ export default function Booking({ days }: Props) {
             <p className="mt-2 text-sm leading-relaxed text-muted">
               Up to {PHOTO_LIMITS.count}. Wide shot of the canopy, a close-up of whatever is
               wrong, and your reservoir or controller if the problem is feed-related.
-              They are resized on your device before upload &mdash; nothing here needs your
+              They are resized on your device before upload. Nothing here needs your
               full-resolution camera roll.
             </p>
             <input
@@ -535,7 +535,7 @@ export default function Booking({ days }: Props) {
           <legend className="text-xl text-bone">Pick a time.</legend>
           <p className="mt-2 text-sm leading-relaxed text-muted">
             All times {AVAILABILITY.timeZoneLabel}. Shown in one timezone and labelled,
-            rather than converted to yours &mdash; a call missed by an hour costs more than
+            rather than converted to yours. A call missed by an hour costs more than
             reading a label does.
             {chosen && (
               <>

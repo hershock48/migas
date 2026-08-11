@@ -30,18 +30,18 @@ const sans = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
   title: {
-    default: `${SITE.name} — ${SITE.tagline}`,
+    default: `${SITE.name} - ${SITE.tagline}`,
     // Every page sets its own title and gets the brand appended once. The live site
     // titles every page "MI Gas", so five pages compete for one query and none of
     // them says what it is.
-    template: `%s — ${SITE.name}`,
+    template: `%s - ${SITE.name}`,
   },
   description:
     "Commercial cannabis cultivation consulting, SOPs and grow guides from the director of a licensed Michigan facility. Book a call, or buy the flower, veg and run-off programs.",
   openGraph: {
     type: "website",
     siteName: SITE.name,
-    title: `${SITE.name} — ${SITE.tagline}`,
+    title: `${SITE.name} - ${SITE.tagline}`,
     description:
       "Consulting, SOPs and grow guides for indoor cultivators, from a working commercial facility.",
     url: SITE.url,

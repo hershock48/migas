@@ -39,7 +39,7 @@ export default function Footer() {
                   while it is still a placeholder this renders as plain text rather than a
                   mailto: link that opens a mail client addressed to nobody. */}
               {SITE.email.startsWith("PLACEHOLDER") ? (
-                <span className="text-muted">Email &mdash; to be supplied</span>
+                <span className="text-muted">Email: to be supplied</span>
               ) : (
                 <a href={`mailto:${SITE.email}`} className="text-muted hover:text-flare">
                   {SITE.email}

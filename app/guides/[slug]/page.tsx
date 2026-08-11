@@ -27,7 +27,7 @@ export async function generateMetadata({
     // site's product pages share a platform-generated description, which is why they
     // compete with each other in search results.
     description: `${guide.blurb} ${money(guide.price)}. ${guide.includes.join(" and ")}.`,
-    openGraph: { title: `${guide.name} — MI Gas`, description: guide.blurb },
+    openGraph: { title: `${guide.name} - MI Gas`, description: guide.blurb },
   };
 }
 
@@ -127,7 +127,7 @@ export default async function GuidePage({ params }: { params: Promise<{ slug: st
                       { id: "name", label: "Name", required: true },
                       { id: "email", label: "Email", type: "email", required: true },
                     ]}
-                    submit={`Request — ${money(guide.price)}`}
+                    submit={`Request ${money(guide.price)}`}
                   />
                 </div>
               )}

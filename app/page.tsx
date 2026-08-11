@@ -43,9 +43,9 @@ export default function Home() {
                 `aria-label` on the heading rather than a visually-hidden duplicate: GROW is split
                 into four spans so each letter can rise on its own, and some screen readers spell
                 out a word broken into inline-blocks. The label gives assistive tech the clean
-                string; the DOM text still concatenates to "Grow with us." for a crawler. */}
+                string; the DOM text still concatenates to "Grow with us" for a crawler. */}
             <h1
-              aria-label="Grow with us."
+              aria-label="Grow with us"
               className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]"
             >
               <span className="grow-word text-flare">
@@ -69,7 +69,7 @@ export default function Home() {
                   than rendering it — a crawler, a reader mode, a scraper. The old headline had the
                   same fault ("Run the roomlike a facility."). Invisible on screen either way. */}{" "}
               <br />
-              with us.
+              with us
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
               Consulting, SOPs and full grow programs from a cultivator who runs a licensed
@@ -162,7 +162,7 @@ export default function Home() {
         </div>
 
         <p className="reveal mt-8 text-sm text-muted">
-          Rates are a starting proposal, not published prices &mdash;{" "}
+          Rates are a starting proposal, not published prices. See{" "}
           <Link href="/consulting" className="text-flare hover:underline">
             how a consult runs
           </Link>
@@ -242,7 +242,7 @@ export default function Home() {
           <div className="reveal mt-10 max-w-3xl rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-7">
             <p className="eyebrow">To supply</p>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Six reviews exist on the current site, as screenshots &mdash; which means Google
+              Six reviews exist on the current site, as screenshots, which means Google
               cannot read a word of them and neither can a screen reader. Send the text and
               they go here, and into structured data, so they can surface under his name in
               search results. No invented testimonials in the meantime.
@@ -324,7 +324,7 @@ export default function Home() {
           <p className="eyebrow reveal">Indoors, you are the sun</p>
           <h2 className="reveal mt-5 text-3xl sm:text-5xl">Every room has one.</h2>
           <p className="reveal mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Yours has a switch, a schedule and a feed chart. Bring it to the call &mdash;
+            Yours has a switch, a schedule and a feed chart. Bring it to the call:
             eight questions, your photos, and we have read both before you speak.
           </p>
           <div className="reveal mt-9 flex flex-wrap justify-center gap-3">

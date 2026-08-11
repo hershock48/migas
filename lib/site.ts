@@ -65,7 +65,7 @@ export const SITE = {
   // "Commercial cannabis cultivation advice, SOPs, and instruction." That is the
   // language that attracts a facility, where "for growers of all sizes" attracts a
   // hobbyist. The site now leads with the commercial framing.
-  tagline: "Commercial cannabis cultivation advice, SOPs and instruction",
+  tagline: "Commercial cannabis cultivation advice, SOPs, and instruction",
   blurb:
     "Teaching, training and advising for indoor cultivators worldwide, from inside a working commercial facility.",
   // PLACEHOLDER. There is no email address anywhere on the current site; the only
@@ -145,7 +145,7 @@ export const GUIDES: Guide[] = [
     buyUrl: null,
     detail: [
       "Clone, transplant, and everything up to the day you flip. Veg is where the size of the harvest is decided, and where most rooms lose it.",
-      "Aimed at structure as much as speed — a canopy that finishes evenly starts as a plant built to.",
+      "Aimed at structure as much as speed. A canopy that finishes evenly starts as a plant built for it.",
       "Pairs directly with the Flower Guide. Bought together with Run-Off, they are the Complete Package.",
     ],
   },
@@ -160,7 +160,7 @@ export const GUIDES: Guide[] = [
     buyUrl: null,
     detail: [
       "A standard operating procedure, written to be followed. Runoff is the only direct read you get on what the root zone is doing, and most rooms never take it.",
-      "Developed across years of trials in different rooms, medias and nutrient lines — which is why it survives being applied to yours.",
+      "Developed across years of trials in different rooms, medias and nutrient lines, which is why it survives being applied to yours.",
       "The one program that makes the other two easier. Start here if you are choosing a single guide.",
     ],
   },
@@ -193,14 +193,14 @@ export const BUNDLE: Guide & { contains: string[] } = {
   name: "The Complete Package",
   price: 500,
   contains: ["flower", "veg", "run-off"],
-  blurb: "Flower, Veg and Run-Off together — the whole program, start to finish.",
+  blurb: "Flower, Veg and Run-Off together. The whole program, start to finish.",
   includes: ["Guide video gallery", "Downloadable PDFs"],
   covers: "Clone to harvest",
   buyUrl: null,
   detail: [
     "Veg, Flower and Run-Off together: the full program from clone to chop, plus the SOP that holds it steady.",
     "Bought separately these are $600. Together they are $500, and the reason to take them together is that they were built to be read together.",
-    "The Hand-Water to Automation guide is separate and stays separate — it solves a different problem, for a grower at a different point.",
+    "The Hand-Water to Automation guide is separate and stays separate. It solves a different problem, for a grower at a different point.",
   ],
 };
 
@@ -232,7 +232,7 @@ export const SESSIONS: SessionType[] = [
     minutes: 30,
     price: 150,
     summary: "Something is wrong right now and you need an answer this week.",
-    forWho: "A run in trouble — deficiency, pests, a runoff number that will not settle.",
+    forWho: "A run in trouble: deficiency, pests, a runoff number that will not settle.",
     includes: ["Photo review before the call", "Written next actions after"],
   },
   {
@@ -285,7 +285,7 @@ export const INTAKE = [
     id: "canopy",
     label: "Canopy size",
     type: "select" as const,
-    options: ["Under 100 sq ft", "100–500 sq ft", "500–2,000 sq ft", "2,000–10,000 sq ft", "Over 10,000 sq ft"],
+    options: ["Under 100 sq ft", "100-500 sq ft", "500-2,000 sq ft", "2,000-10,000 sq ft", "Over 10,000 sq ft"],
     required: true,
   },
   {
@@ -304,7 +304,7 @@ export const INTAKE = [
   },
   {
     id: "lights",
-    label: "Lights — type and wattage per light",
+    label: "Lights: type and wattage per light",
     type: "text" as const,
     placeholder: "e.g. 8 × 720W LED, or 12 × 1000W double-ended HPS",
     required: true,
@@ -320,7 +320,7 @@ export const INTAKE = [
     id: "runoff",
     label: "Runoff EC and pH, if you measure them",
     type: "text" as const,
-    placeholder: "e.g. in 3.0 EC / 5.9 pH, out 4.8 EC / 6.4 pH — or leave blank",
+    placeholder: "e.g. in 3.0 EC / 5.9 pH, out 4.8 EC / 6.4 pH, or leave blank",
     required: false,
   },
   {
@@ -354,9 +354,9 @@ export const MERCH = [
  * whatever attribution the reviewers agreed to.
  */
 export const REVIEWS = [
-  { quote: "PLACEHOLDER — transcribe from R1.png on the live site.", who: "PLACEHOLDER", context: "" },
-  { quote: "PLACEHOLDER — transcribe from R2.png on the live site.", who: "PLACEHOLDER", context: "" },
-  { quote: "PLACEHOLDER — transcribe from R3.png on the live site.", who: "PLACEHOLDER", context: "" },
+  { quote: "PLACEHOLDER: transcribe from R1.png on the live site.", who: "PLACEHOLDER", context: "" },
+  { quote: "PLACEHOLDER: transcribe from R2.png on the live site.", who: "PLACEHOLDER", context: "" },
+  { quote: "PLACEHOLDER: transcribe from R3.png on the live site.", who: "PLACEHOLDER", context: "" },
 ];
 
 /**
@@ -470,15 +470,15 @@ export const FAQ = [
     // marijuana", and Calendly, Acuity and Setmore all settle through Stripe, Square
     // or PayPal. This is the single biggest open question on the build and the reason
     // the booking flow deliberately stops before taking a card.
-    a: "PLACEHOLDER — payment route to be confirmed. Right now a booking request reaches us and we send you an invoice to settle before the call.",
+    a: "PLACEHOLDER: payment route to be confirmed. Right now a booking request reaches us and we send you an invoice to settle before the call.",
   },
   {
     q: "What if I need to move it?",
-    a: "PLACEHOLDER — reply to your confirmation and we will move it, up to 24 hours before. Inside 24 hours the slot is held.",
+    a: "PLACEHOLDER: reply to your confirmation and we will move it, up to 24 hours before. Inside 24 hours the slot is held.",
   },
   {
     q: "Is what I tell you confidential?",
-    a: "PLACEHOLDER — he needs to write this one himself. Licensed operators will ask, and for a facility consult it decides whether they book.",
+    a: "PLACEHOLDER: he needs to write this one himself. Licensed operators will ask, and for a facility consult it decides whether they book.",
   },
   {
     q: "Will you look at photos before the call?",
@@ -492,7 +492,7 @@ export const FAQ = [
     q: "I bought a guide. Does that count towards a call?",
     // PLACEHOLDER, and worth pushing him on: it turns a $200 guide into a paid lead
     // magnet for a $300 call instead of a competitor to it.
-    a: "PLACEHOLDER — proposed: yes, one guide purchase credits towards your first consult. His call.",
+    a: "PLACEHOLDER: proposed: yes, one guide purchase credits towards your first consult. His call.",
   },
 ];
 

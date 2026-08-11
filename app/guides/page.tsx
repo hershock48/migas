@@ -81,7 +81,7 @@ export default function Guides() {
           </div>
           <div className="text-[15px] leading-relaxed text-muted">
             <p>
-              If you want to run the whole thing properly, start with a program &mdash; it is
+              If you want to run the whole thing properly, start with a program. It is
               the same system, for a fraction of an hour of our time, and you keep it.
             </p>
             <p className="mt-4">

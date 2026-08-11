@@ -52,8 +52,8 @@ export default function Consulting() {
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             Most paid consults spend their first twenty minutes on questions a form could
-            have asked. This one asks them first &mdash; stage, canopy, media, feed, lights,
-            runoff &mdash; and takes your photos with them, so the time you pay for is spent
+            have asked. This one asks them first: stage, canopy, media, feed, lights,
+            runoff. It takes your photos with them too, so the time you pay for is spent
             on the answer.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
@@ -109,7 +109,7 @@ export default function Consulting() {
           <p className="eyebrow">Book</p>
           <h2 className="mt-4 text-3xl sm:text-4xl">Bring the room with you</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            Four steps. The middle two are the ones that matter &mdash; they are what we
+            Four steps. The middle two are the ones that matter. They are what we
             read before you speak.
           </p>
         </div>
@@ -132,7 +132,7 @@ export default function Consulting() {
             {[
               "Your last two runs' yields, and what you changed between them.",
               "Runoff EC and pH if you take them, in and out, for the last week.",
-              "Room temperature, humidity and CO₂ over a 24-hour cycle — day and night numbers, not averages.",
+              "Room temperature, humidity and CO₂ over a 24-hour cycle. Day and night numbers, not averages.",
               "A wide shot of the canopy plus close-ups of whatever is wrong.",
               "Your feed chart, even if it is the one off the bottle.",
             ].map((line) => (

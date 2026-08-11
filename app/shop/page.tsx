@@ -7,7 +7,7 @@ import { MERCH, money } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Merch",
   description:
-    "MI Gas hoodies, tees and the camo trucker. Everything is currently between runs — join the list to hear about the restock first.",
+    "MI Gas hoodies, tees and the camo trucker. Everything is currently between runs. Join the list to hear about the restock first.",
 };
 
 /**
@@ -33,7 +33,7 @@ export default function Shop() {
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
             {allOut
-              ? `All ${MERCH.length} designs are out of stock right now. Rather than let you find that out one product at a time, here it is up front — and here is how to hear about the restock before it sells through again.`
+              ? `All ${MERCH.length} designs are out of stock right now. Rather than let you find that out one product at a time, here it is up front, and here is how to hear about the restock before it sells through again.`
               : `${MERCH.length - soldOut.length} of ${MERCH.length} designs are in stock.`}
           </p>
         </div>

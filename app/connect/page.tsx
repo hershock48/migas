@@ -49,8 +49,8 @@ export default function Connect() {
             Booking a consult? Go through{" "}
             <Link href="/consulting#book" className="text-flare hover:underline">
               consulting
-            </Link>{" "}
-            &mdash; the intake means he arrives at the call already knowing your room.
+            </Link>
+            . The intake means we arrive at the call already knowing your room.
             Everything else lands here.
           </p>
         </div>
@@ -121,7 +121,7 @@ export default function Connect() {
               <p className="mt-3 text-sm leading-relaxed text-muted">
                 No published address yet. This is the one thing on the whole site that costs
                 real money to leave missing: an operator who will not DM a stranger has no way
-                to reach him at all. One address, and this becomes a link.
+                to reach us at all. One address, and this becomes a link.
               </p>
             )}
           </div>

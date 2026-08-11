@@ -93,7 +93,7 @@ async function sendMail(opts: {
   const from = process.env.SMTP_FROM ?? process.env.SMTP_USER;
   if (!t || !from || opts.to.startsWith("PLACEHOLDER")) {
     console.warn(
-      `[migas] Not sent — SMTP_HOST/SMTP_FROM unset, or recipient is a placeholder.\n` +
+      `[migas] Not sent: SMTP_HOST/SMTP_FROM unset, or recipient is a placeholder.\n` +
         `to: ${opts.to}\nsubject: ${opts.subject}\n${opts.text}\n` +
         `attachments: ${(opts.attachments ?? []).map((a) => a.filename).join(", ") || "none"}`
     );
@@ -209,7 +209,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
 
   const when = describeSlot(slot);
   const brief = [
-    `${session!.name} — ${session!.minutes} minutes — ${when}`,
+    `${session!.name}, ${session!.minutes} minutes, ${when}`,
     "",
     `Name:    ${name}`,
     `Email:   ${email}`,
@@ -218,7 +218,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     values.heard ? `Heard:   ${values.heard}` : null,
     "",
     "THE ROOM",
-    ...INTAKE.map((q) => `${q.label}\n  ${values[q.id] || "—"}`),
+    ...INTAKE.map((q) => `${q.label}\n  ${values[q.id] || "not given"}`),
     "",
     `Photos attached to this email: ${photos.attachments.length}`,
   ]
@@ -234,7 +234,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     uid: `${ref.toLowerCase()}@mi-gas.net`,
     localStart: slot,
     minutes: session!.minutes,
-    title: `${SITE.name} — ${session!.name} — ${name}`,
+    title: `${SITE.name} - ${session!.name} - ${name}`,
     description: brief,
     attendeeEmail: email,
   });
@@ -246,7 +246,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
 
   await sendMail({
     to: notifyTo(),
-    subject: `[${ref}] ${session!.name} — ${name} — ${when}`,
+    subject: `[${ref}] ${session!.name} - ${name} - ${when}`,
     text: brief,
     attachments: [...photos.attachments, invite],
   });
@@ -256,7 +256,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
   // a relay; one whose body an attacker cannot influence is not worth abusing.
   await sendMail({
     to: email,
-    subject: `${SITE.name} — booking request received (${ref})`,
+    subject: `${SITE.name} - booking request received (${ref})`,
     text: [
       `Your request for a ${session!.name} is with ${SITE.name}.`,
       "",
@@ -279,11 +279,11 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     summary: [
       `${session!.name}, ${session!.minutes} minutes`,
       when,
-      `${money(session!.price)} — invoiced before the call`,
+      `${money(session!.price)}, invoiced before the call`,
       // "0 photos received" is a worse thing to read than an ask. When somebody skipped the
       // most useful field on the form, the confirmation is the last good moment to get it.
       photos.attachments.length === 0
-        ? "No photos yet — reply to your confirmation email with any and we will read them before the call"
+        ? "No photos yet. Reply to your confirmation email with any and we will read them before the call"
         : photos.attachments.length === 1
           ? "1 photo sent with your intake"
           : `${photos.attachments.length} photos sent with your intake`,
@@ -334,8 +334,8 @@ export async function requestGuide(_prev: FormState, fd: FormData): Promise<Form
 
   await sendMail({
     to: notifyTo(),
-    subject: `Guide request — ${guide || "unspecified"} — ${name}`,
-    text: `${name} <${email}>\nWants: ${guide || "—"}`,
+    subject: `Guide request - ${guide || "unspecified"} - ${name}`,
+    text: `${name} <${email}>\nWants: ${guide || "not specified"}`,
   });
   return {
     status: "done",
@@ -362,8 +362,8 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
 
   await sendMail({
     to: notifyTo(),
-    subject: `Question — ${values.name}${values.topic ? ` — ${values.topic}` : ""}`,
-    text: `${values.name} <${values.email}>\nTopic: ${values.topic || "—"}\n\n${values.message}`,
+    subject: `Question - ${values.name}${values.topic ? ` - ${values.topic}` : ""}`,
+    text: `${values.name} <${values.email}>\nTopic: ${values.topic || "not given"}\n\n${values.message}`,
   });
   return {
     status: "done",

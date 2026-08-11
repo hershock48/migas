@@ -33,7 +33,7 @@ export default function Reviews() {
             What growers say <span className="text-flare">after</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
-            Published as text rather than screenshots &mdash; so a search engine can index
+            Published as text rather than screenshots, so a search engine can index
             them, a screen reader can read them, and you can quote one back at us.
           </p>
         </div>
