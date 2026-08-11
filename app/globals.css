@@ -1270,7 +1270,7 @@ select.field {
   left: 50%;
   top: 100%;
   width: 980px;
-  transform: translate(-50%, -28%);
+  transform: translate(-50%, -24%);
 }
 /* Ink down over the exterior fire, and it MUST stop before the limb. The first version
    ran to 70% and crossed the arc, and near-black over a near-white rim does not darken it,
@@ -1281,13 +1281,21 @@ select.field {
 .og-scrim {
   position: absolute;
   inset: 0;
+  /* Opaque THROUGH the headline, then out before the limb. Measured: with the ramp
+     ending at 50% the headline sat at 41-51% of the frame, so its ground was the exterior
+     fire glowing at luminance 0.24-0.31 and "Grow" — which is filled with that same fire —
+     came out at 1.96:1 against it. Under the 3:1 floor for large text, and exactly what he
+     reported: you cannot see the word. "with us" measured 2.52:1 and only read better
+     because near-white differs from orange in hue as well as value. Neither was a type
+     problem. Both were the ground. */
   background: linear-gradient(
     to bottom,
-    rgba(6, 4, 3, 0.97) 0%,
-    rgba(6, 4, 3, 0.95) 24%,
-    rgba(6, 4, 3, 0.86) 38%,
-    rgba(6, 4, 3, 0.46) 43%,
-    transparent 50%
+    rgba(6, 4, 3, 0.98) 0%,
+    rgba(6, 4, 3, 0.97) 30%,
+    rgba(6, 4, 3, 0.95) 46%,
+    rgba(6, 4, 3, 0.72) 53%,
+    rgba(6, 4, 3, 0.3) 58%,
+    transparent 62%
   );
 }
 .og-stack {
@@ -1296,8 +1304,8 @@ select.field {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 78px;
-  gap: 30px;
+  padding-top: 52px;
+  gap: 26px;
 }
 /* THE MARK IS THE HERO, and its size was set from the thumbnail rather than from the
    1200px frame. components/brand/README.md records the measured floor: this mark resolves
@@ -1309,14 +1317,14 @@ select.field {
    link it is, and "Grow with us" does not say MI Gas. So the mark leads and the headline
    supports it. */
 .og-graffiti {
-  width: 480px;
+  width: 460px;
   color: theme("colors.bone");
 }
 .og-head {
   margin: 0;
   font-family: var(--font-display), system-ui, sans-serif;
   font-weight: 800;
-  font-size: 62px;
+  font-size: 60px;
   line-height: 1;
   letter-spacing: -0.02em;
   white-space: nowrap;

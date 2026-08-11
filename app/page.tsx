@@ -31,7 +31,12 @@ export default function Home() {
           ───────────────────────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden">
         <div className="wrap relative grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:min-h-[680px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16">
-          <div className="reveal relative">
+          {/* z-10 so the copy paints above the sun wrapper, which comes AFTER it in the DOM.
+              The scrim below needs to sit over the fire and under the text, and with
+              everything at auto z the first attempt put opaque ink straight over the
+              paragraph instead: text luminance fell to 0.006 and contrast to 1.08:1, worse
+              than the problem. Order has to be fire, then scrim, then words. */}
+          <div className="reveal relative z-10">
             <p className="eyebrow">{SITE.region} &middot; Indoor cultivators worldwide</p>
             {/* HIS WORDS, AND THE ONE WORD THAT EARNS AN ANIMATION.
                 "grow with us" is his own headline, lifted whole. What it buys that "Run the room
@@ -101,6 +106,34 @@ export default function Home() {
               ever allowed over it. */}
           <div className="reveal pointer-events-none relative mx-auto w-[86%] max-w-[380px] lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]">
             <Sun />
+            {/* THE SAME RULE AS ABOVE, ENFORCED ON A PHONE TOO. The comment on this wrapper
+                has always said no paragraph is allowed over the disc, and at lg that is kept
+                two ways: the sun is `-z-10` behind the copy and there is a fade across the
+                top of the section. Below lg neither applies. The sun sits in the flow under
+                the copy and looks safely separate — but `.sun-flame` is `inset: -34%`, so the
+                exterior fire reaches about a third of the disc's height ABOVE its own box,
+                and the sun comes after the copy in the DOM. So the fire climbed into the last
+                paragraph unguarded.
+
+                Measured on a 390px viewport, per line of "Every call starts with an
+                eight-question room intake…", text against the ground immediately behind it:
+
+                  line 1   4.85:1   ok
+                  line 2   3.25:1
+                  line 3   1.73:1
+
+                The ground goes 0.003 -> 0.031 -> 0.114 as the fire rises, which is why he
+                described the words as hidden behind the sun: the first line is fine and the
+                sentence fades out from under you. 4.5:1 is the floor for body text.
+
+                This is ink over the bleed and only the bleed. It sits above the wrapper
+                rather than inside it, opaque at the top where it meets a page that is already
+                ink — so the join is invisible — and transparent by the disc's own top edge, so
+                the brightest fire, the part right off the limb, is not touched at all. */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-[-40%] bottom-full h-[200px] bg-[linear-gradient(to_bottom,#060403_0%,#060403_66%,rgba(6,4,3,0.6)_84%,transparent_100%)] lg:hidden"
+            />
             {/* His own device: the mark in near-black, over the fire. It appears only where the
                 disc is whole — on a wide screen the sun is cropped off the frame and there is
                 no room for a 2.4:1 lockup on a crescent.
