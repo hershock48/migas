@@ -76,7 +76,31 @@ export const SITE = {
   // PLACEHOLDER. No phone number is published. Leave null and the site renders no
   // phone anywhere rather than a broken tel: link.
   phone: null as string | null,
-  url: "https://mi-gas.net",
+  /**
+   * WHERE THIS BUILD IS SERVED, and it is not their domain. This said
+   * "https://mi-gas.net" — the client's live Squarespace site — and it is metadataBase,
+   * so every absolute URL in the page's metadata was built against it. Two consequences,
+   * both live:
+   *
+   * og:image resolved to https://mi-gas.net/og.jpg. og.jpg is a file in THIS repo's
+   * public/ folder, deployed to migas.glazedweb.com; nothing puts it on their Squarespace
+   * domain. So Apple fetched the page fine, read the title, went looking for the image at
+   * an address that has never had it, found nothing, and fell back to the compact card
+   * with app/apple-icon.png in the little square slot. Which is exactly what he was
+   * looking at: the right title, the right domain underneath, and the site favicon
+   * instead of the card.
+   *
+   * og:url resolved to https://mi-gas.net, so every share of this pitch build named their
+   * EXISTING site as its canonical address. A platform that follows og:url would have
+   * shown their old Squarespace page to somebody we sent here deliberately.
+   *
+   * On the day this becomes their real site, this becomes https://mi-gas.net and
+   * liveSite below goes away with the rest of the pitch scaffolding.
+   */
+  url: "https://migas.glazedweb.com",
+  /** Their current Squarespace site. Referenced where we mean "their existing site",
+   *  never as this build's own address. */
+  liveSite: "https://mi-gas.net",
   patreon: "https://www.patreon.com/Mi_gas_",
   // Note the capital M. His own site links to the lowercase form, which 403s.
   instagram: "https://instagram.com/mi_gas_2.0",
