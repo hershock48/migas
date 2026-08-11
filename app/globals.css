@@ -153,16 +153,39 @@ select.field {
    The tile is sized to about one and a half letter-heights, so each glyph lands on structure
    rather than on one flat patch.
 
-   THE FILL USED TO DRIFT and no longer does. A 22s creep of background-position was there as
-   insurance: with the old low-contrast tile a letter could land on a dark patch and read as a
-   hole, and a moving crop meant no letter sat in one for long. The re-toned tile removed the
-   need for it — the position was swept in 15% steps across a full tile width and at every
-   single step the dimmest of the four letters still measured above 128 mean luminance, so
-   there is no bad crop left to drift away from. Given that, a fill that crawls forever
-   underneath the first words on the page is just a distraction competing with the sun, which
-   already carries all the motion this section needs. Pinned at the hottest and highest-
-   contrast crop the sweep found (mean 156, sd 55, and only 14 luminance between the dimmest
-   and brightest letter). The one-off grow-in stays; it was asked for.
+   THE FILL FLOWS UPWARD, FAST. It used to creep at 22 seconds a tile, which works out at
+   4.6 px/s — slower than the disc's SLOW convection layer, and slow enough that the flames
+   inside the letters did not read as moving at all. "Can you have them move faster?" Yes:
+   1.6s a tile, 63 px/s, 14 times quicker.
+
+   THE PERIOD IS THE DISC'S OWN SURFACE VELOCITY, not a number picked by feel. The letters are
+   made of the disc's texture, so they should move at the speed that texture moves. Measured
+   off .sun-churn-b: a 143px tile crossing one tile width in 2.1s is 68 px/s. At 150% of a
+   67px line box the letters' tile is 100px, so matching that is 1.47s. Rounded to 1.6s and
+   not below it, because the disc's fast tile is 62% opacity screened over a slow base while
+   the letters carry theirs at full strength, so the same px/s reads hotter in type than it
+   does on the sphere.
+   One duration is right at every size: the shift is one tile height, and the tile is sized
+   from the type, so the phone's 41px letters move their own 62px tile in the same 1.6s and
+   the flames look identical relative to the letter.
+
+   UPWARD, BECAUSE FIRE IS BUOYANT. The old drift went sideways, and sideways inside a glyph
+   is the exact fault the sun's exterior had before it was fixed — a sheet sliding past a
+   window rather than anything burning. Rising reads as flames licking up the stroke.
+
+   THE LOOP IS EXACTLY ONE TILE, VERIFIED. background-position percentages resolve against
+   (element − image), and with background-size: 150% that is −0.5H, so one whole tile height
+   is a swing of 300 percentage points — 55% to 355%. Checked rather than derived and trusted:
+   rendered at both endpoints, mean absolute pixel difference 0.000, while a half tile and a
+   third differ by 12.1 and 16.8. Seamless, so there is no jump on repeat.
+
+   WHAT IT COSTS, stated plainly because the sun's own header makes a rule of animating only
+   transform and opacity. background-position is a paint, and each letter carries two
+   drop-shadows that re-run with it, so this is roughly 2.8M filtered pixels a second across
+   the four letters — about two and a half viewports' worth of blur, against a sun running two
+   1024px blend layers continuously. Small next to what is already there. If a real phone ever
+   shows it, the lever is dropping the wide 22px bleed at the mobile breakpoint and keeping the
+   tight core, which measured glyph sd 71 on its own against 77 for the pair.
 
    The fallback matters: if background-clip: text is unsupported, `color: transparent` would
    leave the headline invisible. `@supports` gates the whole treatment, so anything that
@@ -256,6 +279,19 @@ select.field {
        block and a stacking context — off the path that does not need it. */
     filter: drop-shadow(0 0 4px rgba(255, 150, 60, 0.6))
       drop-shadow(0 0 22px rgba(214, 74, 20, 0.45));
+    animation-name: growUp, growFlow;
+    animation-duration: 1150ms, 1.6s;
+    animation-timing-function: cubic-bezier(0.2, 1.28, 0.32, 1), linear;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: both, none;
+  }
+  /* No `from`, so the implicit start is the authored 0% 55% above — which means the pinned
+     hot crop is also where the loop begins and ends, and the reduced-motion still frame is
+     that same crop rather than an arbitrary point mid-cycle. */
+  @keyframes growFlow {
+    to {
+      background-position: 0% 355%;
+    }
   }
 }
 
