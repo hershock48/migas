@@ -302,7 +302,20 @@ export const INTAKE = [
     id: "stage",
     label: "What stage is the room in right now?",
     type: "select" as const,
-    options: ["Clone / early veg", "Late veg", "Just flipped", "Early flower", "Late flower", "Between runs"],
+    // Phase names and day ranges are his, from his own published bloom program:
+    // days 1-21 post-transplant and stretch, 22-44 end of stretch and bulking,
+    // 45 onward ripening and flush. A grower answering in those terms hands him an
+    // answer already mapped to the schedule, and reads phase names he will recognise
+    // from the guide he is thinking about buying. Same select, no extra friction.
+    options: [
+      "Clone / early veg",
+      "Late veg",
+      "Just flipped",
+      "Stretch (day 1-21)",
+      "Bulking (day 22-44)",
+      "Ripening / flush (day 45+)",
+      "Between runs",
+    ],
     required: true,
   },
   {
@@ -330,7 +343,7 @@ export const INTAKE = [
     id: "lights",
     label: "Lights: type and wattage per light",
     type: "text" as const,
-    placeholder: "e.g. 8 × 720W LED, or 12 × 1000W double-ended HPS",
+    placeholder: "e.g. 8 × 720W LED, or 12 × 1000W DE HPS. Add PPFD or DLI if you have it.",
     required: true,
   },
   {
@@ -342,9 +355,13 @@ export const INTAKE = [
   },
   {
     id: "runoff",
-    label: "Runoff EC and pH, if you measure them",
+    // Volume first. His runoff method is explicit that if EC and pH look wrong AND
+    // the volume is wrong, you fix the volume and re-read before touching the recipe.
+    // This asked for the two readings and never asked for the number that qualifies
+    // them, so the single most useful answer was the one it could not receive.
+    label: "Runoff: how much, and EC and pH if you measure them",
     type: "text" as const,
-    placeholder: "e.g. in 3.0 EC / 5.9 pH, out 4.8 EC / 6.4 pH, or leave blank",
+    placeholder: "e.g. 20% runoff, in 3.0 EC / 5.9 pH, out 4.8 EC / 6.4 pH. Volume alone is useful.",
     required: false,
   },
   {
