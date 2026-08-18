@@ -3,6 +3,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9Ii0yNyAtMTYgMjU0IDI1NCIgd2lkdGg9IjI1NCIgaGVpZ2h0PSIyNTQiPgogIDwhLS0gZ2xhemVkd2ViIGZhdmljb24g4oCUIHNpbXBsaWZpZWQgbWFyaywgdHJhbnNwYXJlbnQgaG9sZSAtLT4KICA8cGF0aCBkPSJNIDc4IDEwMCBDIDc0IDEzMCwgNzYgMTYwLCA4MiAxODQgQyA4NCAxOTgsIDkwIDIwNiwgOTggMjA2IEMgMTA2IDIwNiwgMTEwIDE5NiwgMTA4IDE4MiBDIDExMiAxNTIsIDExNCAxMjQsIDExNiAxMDAgWiIgZmlsbD0iI0JGRTA3QSIvPgogIDxwYXRoIGZpbGwtcnVsZT0iZXZlbm9kZCIgZmlsbD0iI0U4NEQ4QSIKICAgICAgICBkPSJNIDEwMCAxMiBBIDU0IDU0IDAgMSAwIDEwMCAxMjAgQSA1NCA1NCAwIDEgMCAxMDAgMTIgWgogICAgICAgICAgIE0gMTAwIDU1IEEgMTUgMTUgMCAxIDEgMTAwIDg1IEEgMTUgMTUgMCAxIDEgMTAwIDU1IFoiLz4KICA8cGF0aCBkPSJNIDU0IDk0IEEgNTQgNTQgMCAwIDAgMTQ2IDk0IEMgMTQwIDkwLCAxMzYgOTYsIDEyOCA5OCBDIDExOCAxMDEsIDExNCA5MiwgMTA0IDkyIEMgOTQgOTIsIDkyIDEwMSwgODIgOTkgQyA3MiA5NywgNjggOTAsIDYwIDkyIEMgNTYgOTMsIDU1IDkzLCA1NCA5NCBaIiBmaWxsPSIjQzNFMTgxIi8+CiAgPHBhdGggZD0iTSA2NiA0MCBBIDQ2IDQ2IDAgMCAxIDg0IDIyIiBmaWxsPSJub25lIiBzdHJva2U9IiNGRkZGRkYiIHN0cm9rZS13aWR0aD0iOSIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBvcGFjaXR5PSIwLjgiLz4KPC9zdmc+Cg==">
 <title>Glazed Web × MI Gas · Proposal</title>
 <meta name="description" content="A website proposal for MI Gas. Every finding links to your own site so you can check it.">
 <meta property="og:type" content="website">
@@ -74,7 +75,7 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;heigh
 nav{display:flex;gap:20px;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
 nav a{color:var(--mute);text-decoration:none}
 nav a:hover{color:var(--pink-i)}
-@media(max-width:720px){nav{display:none}.brand span{display:none}}
+@media(max-width:720px){nav{display:none}.brand>span:not(.bw){display:none}}
 
 /* hero */
 .hero{padding:66px 0 54px;text-align:left}
@@ -260,39 +261,39 @@ blockquote.pull:before{content:none}
   <div class="k">Section one</div><div class="rule"></div>
   <h2>What we found.</h2>
   <p class="note" style="margin-bottom:26px">
-    Everything below was read off mi-gas.net on 10 August 2026. Every one of them is
+    Everything below was read off mi-gas.net on 10 August 2026 and checked again on 18 August. Every one of them is
     checkable in about a minute, and the links go to your own site rather than to a
     screenshot of it. If something has changed since, it has changed and we are wrong.
   </p>
 
   <div class="claim">
     <h4>There is no email address anywhere on the site</h4>
-    <p>Not on the contact page, not in the footer, not on a product page. The only route to you is an Instagram DM. That means a licensed operator wanting facility work, a grower asking whether a guide covers coco, and a bot all land in the same inbox with nothing to sort them by, no record, and no way to reply from anywhere except your phone.</p>
-    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Check your own contact page ↗</a>
+    <p>Not on the contact page, not in the footer, not on a product page. The only two routes are an Instagram DM and a Patreon link, and neither is a business inbox. That means a licensed operator wanting facility work, a grower asking whether a guide covers coco, and a bot all land in the same inbox with nothing to sort them by, no record, and no way to reply from anywhere except your phone.</p>
+    <a class="verify" href="https://www.mi-gas.net/contact" target="_blank" rel="noopener">Open your contact page ↗</a>
   </div>
 
   <div class="claim">
     <h4>All six of your reviews are image files</h4>
-    <p>R1.png through R6.png. Google cannot read a word of them, so they do nothing for you in search. A screen reader announces nothing. The one asset a consultant genuinely cannot manufacture is invisible to everybody except a sighted visitor who happened to scroll to the right page. Transcribing them is about an hour of somebody's time and it is the highest-return hour on this whole project.</p>
-    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">View source on the reviews page ↗</a>
+    <p>R1.png through R6.png. Google cannot read a word of them, so they do nothing for you in search. None of the six carries alt text, so a screen reader announces nothing at all. The one asset a consultant genuinely cannot manufacture is invisible to everybody except a sighted visitor who happened to scroll to the right page. Transcribing them is about an hour of somebody's time and it is the highest-return hour on this whole project.</p>
+    <a class="verify" href="https://www.mi-gas.net/reviews" target="_blank" rel="noopener">Try to select the text on your reviews page ↗</a>
   </div>
 
   <div class="claim">
     <h4>Three of your four page titles are unedited platform defaults</h4>
-    <p>The guides page is titled <span class="mono">Store 1 — MI Gas</span>. That is the string Squarespace generates when nobody writes one, and it is what shows in a search result, in a browser tab and in a shared link. The page selling your programs is introducing itself as Store 1.</p>
-    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Look at the browser tab ↗</a>
+    <p>The guides page is titled <span class="mono">Store 1 — MI Gas</span>. That is the string Squarespace generates when nobody writes one, and it is what shows in a search result, in a browser tab and in a shared link. Your reviews page is <span class="mono">Reviews 1</span> and your contact page is <span class="mono">Contact 3</span>. Only the merch store has a real title. The page selling your programs is introducing itself as Store 1.</p>
+    <a class="verify" href="https://www.mi-gas.net/flower-guide" target="_blank" rel="noopener">Open it and look at the browser tab ↗</a>
   </div>
 
   <div class="claim">
-    <h4>Every one of the seven store items is sold out, and you find out one at a time</h4>
-    <p>Hoodies, tees, the camo trucker. A visitor clicks through the grid discovering it seven separate times. A storefront whose only message is "sold out" costs a little trust on every visit, and it collects nothing in exchange. Said once at the top with a restock list, the same dead page becomes a mailing list.</p>
-    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Open the store ↗</a>
+    <h4>All thirteen items in the store are sold out, and you find out one at a time</h4>
+    <p>Six hoodies at $41.40, six tees at $31.90, one camo trucker at $50. A visitor clicks through the grid discovering it thirteen separate times. A storefront whose only message is "sold out" costs a little trust on every visit, and it collects nothing in exchange. Said once at the top with a restock list, the same dead page becomes a mailing list.</p>
+    <a class="verify" href="https://www.mi-gas.net/shop" target="_blank" rel="noopener">Count them yourself ↗</a>
   </div>
 
   <div class="claim">
     <h4>The Complete Package is a fifth tile among four cheaper ones</h4>
-    <p>It is $500 against $600 bought separately, which makes it both your highest-value product and your best offer. On the page it is the same size tile as everything else, in the same row, so the most valuable thing you sell looks like one more option rather than the answer.</p>
-    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Compare the tiles ↗</a>
+    <p>It is $500 against $600 for the same three guides at $200 each, which makes it both your highest-value product and your best offer. On the page it is the same size tile as everything else, in the same row, so the most valuable thing you sell looks like one more option rather than the answer.</p>
+    <a class="verify" href="https://www.mi-gas.net/flower-guide" target="_blank" rel="noopener">Compare the five tiles ↗</a>
   </div>
 
   <div class="claim">
@@ -351,7 +352,7 @@ blockquote.pull:before{content:none}
     <tr><td><strong>Somebody searches for your reviews</strong></td><td>Google has never read one of them.</td></tr>
     <tr><td><strong>Somebody searches "grow consultant Michigan"</strong></td><td>No structured data says you are one.</td></tr>
     <tr><td><strong>A buyer is deciding between guides</strong></td><td>Your best offer looks like your fifth option.</td></tr>
-    <tr><td><strong>Somebody wants the merch</strong></td><td>Seven sold-out pages and no way to be told when it returns.</td></tr>
+    <tr><td><strong>Somebody wants the merch</strong></td><td>Thirteen sold-out pages and no way to be told when it returns.</td></tr>
   </table>
 </div></section>
 
