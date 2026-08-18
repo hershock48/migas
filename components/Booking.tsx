@@ -427,7 +427,7 @@ export default function Booking({ days }: Props) {
           <legend className="text-xl text-bone">Tell us about the room</legend>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
             This is the part that makes the call worth what it costs. We read it
-            beforehand, so you spend the time on the answer instead of the background.
+            beforehand, so the hour goes on your room.
           </p>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2">

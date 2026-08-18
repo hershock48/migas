@@ -78,7 +78,7 @@ export default function Home() {
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
               Consulting, SOPs and full grow programs from a cultivator who runs a licensed
-              Michigan facility. The same system, written down for your room.
+              Michigan facility. What we run, why we run it, and what changes in your room.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
@@ -91,9 +91,8 @@ export default function Home() {
             </div>
 
             <p className="mt-6 max-w-lg text-sm leading-relaxed text-muted">
-              Every call starts with an eight-question room intake and your photos, read
-              before you dial in. So it starts at the diagnosis instead of the
-              introduction.
+              Eight questions before we talk: stage, canopy, media, feed, lights, runoff,
+              and your photos. We read them first, so the hour goes on your room.
             </p>
           </div>
 

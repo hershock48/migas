@@ -387,14 +387,50 @@ export const REVIEWS = [
  * The three credibility lines under the hero.
  *
  * Each one is a claim, so each one has to be defensible. These are drawn from what
- * his own site and Patreon already say — nothing here is an achievement nobody
- * published. The first is deliberately vague because the facility is unnamed (see
- * SITE.facility); name it and this line becomes the strongest sentence on the site.
+ * his own site and Patreon already say. Nothing here is an achievement nobody
+ * published.
+ *
+ * WHAT THIS STRIP USED TO BE, AND WHY IT CHANGED. It read "Licensed / 4 / SOPs"
+ * and it was not doing the job. Twice it was deferred on the belief that fixing
+ * it needed a licence class, a licence number and a canopy figure that only he
+ * could supply.
+ *
+ * His own long-form writing says that is not what he thinks proves anything:
+ *
+ *   "I don't see them backed up with the work! They usually feature some random
+ *    up close nug shots, shots of gardens with somewhat questionable health...
+ *    It's hard to even tell if they are their own pictures. You can see the same
+ *    rooms every time in our shots, over and over again with new plants and the
+ *    same consistent success and quality."
+ *
+ * So his proof is the rooms over time plus deltas he has already stated in
+ * public, and all three lines above are his, not ours. See
+ * glaze/clients/migas-voice.md in the glazedweb repo for the sourcing.
+ *
+ * "Licensed" came out because the hero paragraph and the meta description both
+ * already say licensed Michigan facility. Three times on one page is the
+ * repetition rule, and a strip is worth more carrying something the hero cannot.
+ *
+ * ALL THREE ARE PLACEHOLDER UNTIL HE CONFIRMS THEM. The +25-30% and the operating
+ * history come from posts of a particular date and those numbers move. Ask him
+ * which figures he is happy to publish, and run any licence wording past him
+ * separately, because what a licensed operator may claim about their licence is
+ * his lawyer's question and not ours.
  */
 export const CREDS = [
-  { stat: "Licensed", label: "Director of a licensed Michigan cultivation facility" },
-  { stat: "4", label: "Programs published, clone through harvest" },
-  { stat: "SOPs", label: "Written for teams that run rooms without you" },
+  // PLACEHOLDER on all three figures until he confirms them. See below.
+  {
+    stat: "+25-30%",
+    label: "Average THC per strain, after we moved the program to lower EC",
+  },
+  {
+    stat: "Same rooms",
+    label: "Every run shot in the same rooms, new plants, one after another",
+  },
+  {
+    stat: "Tissue tested",
+    label: "Foliar analysis run on our own crop, results published",
+  },
 ];
 
 /**
