@@ -125,7 +125,8 @@ export default function Consulting() {
             <p className="eyebrow">Have it ready</p>
             <h2 className="mt-4 text-2xl sm:text-3xl">Five minutes now saves twenty on the call</h2>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">
-              Skip any of it and you can still book. Fill it in and the hour goes further.
+              All of it except the runoff numbers is needed before we can book you in.
+              It takes about two minutes, and it is why the call opens on your room.
             </p>
           </div>
           <ul className="grid gap-4 text-[15px]">

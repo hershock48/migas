@@ -17,7 +17,7 @@ export default function Footer() {
           <ul className="mt-4 space-y-2.5 text-sm">
             {NAV.map((i) => (
               <li key={i.href}>
-                <Link href={i.href} className="text-muted hover:text-flare">
+                <Link href={i.href} className="inline-block py-1 text-muted hover:text-flare">
                   {i.label}
                 </Link>
               </li>
@@ -29,10 +29,10 @@ export default function Footer() {
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-bone">Elsewhere</h2>
           <ul className="mt-4 space-y-2.5 text-sm">
             <li>
-              <a href={SITE.patreon} className="text-muted hover:text-flare">Patreon</a>
+              <a href={SITE.patreon} className="inline-block py-1 text-muted hover:text-flare">Patreon</a>
             </li>
             <li>
-              <a href={SITE.instagram} className="text-muted hover:text-flare">Instagram</a>
+              <a href={SITE.instagram} className="inline-block py-1 text-muted hover:text-flare">Instagram</a>
             </li>
             <li>
               {/* Reads the constant, so when the real address lands it is one edit — and
@@ -41,7 +41,7 @@ export default function Footer() {
               {SITE.email.startsWith("PLACEHOLDER") ? (
                 <span className="text-muted">Email: to be supplied</span>
               ) : (
-                <a href={`mailto:${SITE.email}`} className="text-muted hover:text-flare">
+                <a href={`mailto:${SITE.email}`} className="inline-block py-1 text-muted hover:text-flare">
                   {SITE.email}
                 </a>
               )}
@@ -51,6 +51,12 @@ export default function Footer() {
       </div>
 
       <div className="border-t border-line">
+        {/* Footer links carry inline-block and py-1 so the tap target is 25px rather
+            than the 17px a bare text link gives you. WCAG 2.5.8 wants 24px minimum for
+            a pointer target, and the inline-text exception does not apply to a stacked
+            list of navigation links. Measured at 320 wide, which is where a thumb has
+            the least room. The existing space-y-2.5 absorbs the padding, so nothing
+            moved. */}
         <div className="wrap flex flex-col gap-2 py-6 text-xs text-muted sm:flex-row sm:items-center sm:justify-between">
           <p>&copy; {new Date().getFullYear()} {SITE.name}. All rights reserved.</p>
           {/* "Baked by" carries two registers at once, which is why it beats both the plain
