@@ -64,7 +64,25 @@ export const metadata: Metadata = {
     title: `${SITE.name} - ${SITE.tagline}`,
     description:
       "Consulting, SOPs and grow guides for indoor cultivators, from a working commercial facility.",
-    url: SITE.url,
+    /**
+     * NOT SITE.url, and the /demo is load-bearing until they sign.
+     *
+     * The host split in next.config.ts makes migas.glazedweb.com/ the PROPOSAL and serves
+     * this site at /demo. So the site's own canonical share URL is no longer the root of
+     * the host it is currently served from.
+     *
+     * Slack and iMessage link a card to whatever URL was pasted, so they were fine either
+     * way. Facebook and LinkedIn canonicalize the share object to og:url — meaning a demo
+     * link posted there would have unfurled correctly and then landed the click on the
+     * proposal. He is being sent the demo to look at the site, not to re-read the pitch.
+     *
+     * metadataBase stays SITE.url, so the leading-slash og:image still resolves against the
+     * origin rather than picking up this path.
+     *
+     * ON THE DAY THEY SIGN this goes back to SITE.url, in the same commit that deletes the
+     * rewrites() block and public/pitch/migas. All three are one change.
+     */
+    url: `${SITE.url}/demo`,
     // Relative is fine and resolves absolute against metadataBase above, which the spec
     // requires — a relative og:image is simply dropped by most scrapers.
     images: [OG_IMAGE],

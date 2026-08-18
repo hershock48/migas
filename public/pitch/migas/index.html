@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en"><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Glazed Web × MI Gas · Proposal</title>
+<meta name="description" content="A website proposal for MI Gas. Every finding links to your own site so you can check it.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Glazed Web">
+<meta property="og:url" content="https://migas.glazedweb.com/">
+<meta property="og:title" content="How does a licensed operator hire you?">
+<meta property="og:description" content="A website proposal for MI Gas, where every finding links to the proof on your own site.">
+<meta property="og:image" content="https://migas.glazedweb.com/pitch/migas/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="How does a licensed operator hire you? A proposal from Glazed Web.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="How does a licensed operator hire you?">
+<meta name="twitter:description" content="A website proposal for MI Gas, where every finding links to the proof on your own site.">
+<meta name="twitter:image" content="https://migas.glazedweb.com/pitch/migas/og.jpg">
+<meta name="theme-color" content="#FDF6EC">
+<style>
+/* Stylesheet and donut marks lifted from public/pitch/griffin-claw/index.html in
+   hershock48/griffin-claw-rebuild, per glaze/proposal.md, rather than re-derived.
+   ONE DELIBERATE DIVERGENCE, recorded here as the rule requires: three colour tokens
+   are corrected. In the lifted shell --mute is #8A7663, which measures 4.03 as text
+   on the paper ground and needs 4.5, and it is used as a text colour in twelve rules.
+   --pink-d at 4.45 was every link on the page. Both now use the values from
+   glaze/brand.md: --mute #7F6D5B at 4.61, and a new --pink-i #C9356F at 4.63 for
+   link text, leaving --pink-d for backgrounds where white sits on it. The Griffin
+   Claw proposal carries the original fault and is being fixed in the same pass.
+
+   A fourth, found by measuring this page rather than by reading the CSS: .conf, the
+   line at the very bottom of the footer, was #7A6A58 on the footer's ink ground,
+   which is 3.56 at 11.5px. Now #A6907F, the same colour the studio footer already
+   uses on that ground, at 5.80.
+
+   And a fifth: --green-d was #55974A, which is 3.31 on paper at the 12px the section
+   kickers use. It is the same fern that failed on glazedweb.com this week and it takes
+   the same value, #467C3D at 4.65. All five of these came from measuring the rendered
+   page, not from reading the stylesheet. */
+
+:root{
+ --paper:#FDF6EC; --paper2:#FFF7EA; --card:#FFFDF8;
+ --ink:#2B1E16; --ink2:#201712; --body:#6B5747; --mute:#7F6D5B; --line:#E8DCC8;
+ --pink:#E84D8A; --pink-d:#CE3672;--pink-i:#C9356F; --pink-t:#FCE7F0;
+ --green:#BFE07A; --green-b:#A9D65C; --green-d:#467C3D; --green-t:#F1F8DC;
+ --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+ --serif:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--paper);color:var(--body);font-family:var(--sans);font-size:16.5px;line-height:1.6;-webkit-font-smoothing:antialiased}
+.wrap{max-width:760px;margin:0 auto;padding:0 24px}
+h1,h2,h3,h4,.k,.btn,nav,th,.num,.chip{font-family:var(--sans)}
+.k{font-size:12px;font-weight:700;letter-spacing:.3em;text-transform:uppercase;color:var(--green-d)}
+h2{font-size:clamp(30px,4.4vw,48px);font-weight:800;color:var(--ink);letter-spacing:-1.6px;line-height:1.08;margin:10px 0 14px}
+h3{font-size:19px;font-weight:800;color:var(--ink);margin:34px 0 10px;letter-spacing:-.4px}
+p{margin:0 0 14px}
+strong{color:var(--ink);font-weight:600}
+a{color:var(--pink-i)}
+.rule{height:3px;width:52px;background:var(--pink);border-radius:2px;margin:0 0 18px}
+section{padding:60px 0;border-top:1px solid var(--line)}
+section:first-of-type{border-top:0}
+
+/* header */
+header{position:sticky;top:0;z-index:60;background:rgba(253,246,236,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;justify-content:space-between;height:62px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none}
+.brand .gl{height:34px;width:auto;display:block}
+.brand .bw{font-family:var(--sans);font-weight:800;font-size:19px;color:var(--ink);letter-spacing:-.6px;line-height:1.1}
+.brand .bw span{font-weight:350;color:var(--mute)}
+.brand span{font-size:.72rem;color:var(--mute);font-style:italic}
+nav{display:flex;gap:20px;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+nav a{color:var(--mute);text-decoration:none}
+nav a:hover{color:var(--pink-i)}
+@media(max-width:720px){nav{display:none}.brand span{display:none}}
+
+/* hero */
+.hero{padding:66px 0 54px;text-align:left}
+.hero .mark{height:92px;width:auto;margin-bottom:24px;display:block}
+.hero h1{font-family:var(--sans);font-size:clamp(38px,5.5vw,60px);font-weight:800;color:var(--ink);letter-spacing:-2px;line-height:1.04}
+.hero h1 em{font-style:normal;color:var(--pink)}
+.hero .sub{font-size:1.12rem;color:var(--body);margin-top:20px;max-width:31em}
+.forwho{margin-top:26px;font-family:var(--sans);font-size:.7rem;letter-spacing:.16em;text-transform:uppercase;color:var(--mute);line-height:1.9}
+.forwho b{color:var(--ink)}
+
+/* tldr */
+.tldr{background:var(--ink);color:#F6EFE4;border-radius:16px;padding:26px 26px 22px;margin-top:38px}
+.tldr .k{color:var(--green)}
+.demo .k{color:var(--green)}
+.tldr ul{list-style:none;margin:14px 0 0}
+.tldr li{display:flex;gap:12px;padding:9px 0;border-top:1px solid rgba(255,255,255,.1);font-size:.97rem;line-height:1.5}
+.tldr li:first-child{border-top:0}
+.tldr .n{font-family:var(--sans);font-weight:800;color:var(--green);flex:0 0 auto;font-size:.8rem;padding-top:3px}
+.tldr b{color:#fff}
+
+/* claim cards */
+.claim{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:18px 20px;margin:12px 0;transition:border-color .16s,transform .16s}
+.claim:hover{border-color:var(--pink);transform:translateY(-1px)}
+.claim h4{font-family:var(--sans);font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:5px;letter-spacing:-.01em}
+.claim p{font-size:.95rem;margin:0}
+.claim .verify{display:inline-flex;align-items:center;gap:7px;margin-top:12px;font-family:var(--sans);font-size:.71rem;font-weight:700;
+ letter-spacing:.1em;text-transform:uppercase;color:var(--pink-i);text-decoration:none;border:1.5px solid var(--pink);
+ padding:7px 13px;border-radius:999px;transition:all .16s}
+.claim .verify:hover{background:var(--pink-d);color:#fff}
+.claim .verify.plain{border-color:var(--line);color:var(--mute);cursor:default}
+.claim .verify.plain:hover{background:transparent;color:var(--mute)}
+.mono{font-family:ui-monospace,Menlo,monospace;font-size:.83em;color:var(--mute)}
+
+/* calculator */
+.calc{background:var(--card);border:2px solid var(--ink);border-radius:16px;padding:26px;margin:22px 0}
+.calc label{display:block;font-family:var(--sans);font-size:.72rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--mute);margin-bottom:9px}
+.inputrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.money{display:flex;align-items:center;background:var(--paper);border:2px solid var(--line);border-radius:11px;padding:4px 14px;transition:border-color .16s}
+.money:focus-within{border-color:var(--pink)}
+.money span{font-family:var(--sans);font-size:1.3rem;font-weight:800;color:var(--mute)}
+.money input{border:0;background:transparent;font-family:var(--sans);font-size:1.45rem;font-weight:800;color:var(--ink);width:110px;padding:9px 6px;outline:none}
+.money em{font-style:normal;font-family:var(--sans);font-size:.8rem;color:var(--mute)}
+.presets{display:flex;gap:7px;flex-wrap:wrap}
+.chip{border:1.5px solid var(--line);background:var(--paper);border-radius:999px;padding:8px 14px;font-size:.78rem;font-weight:700;color:var(--body);cursor:pointer;transition:all .15s}
+.chip:hover{border-color:var(--pink);color:var(--pink-i)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.out{margin-top:22px;padding-top:20px;border-top:2px dashed var(--line);display:none}
+.out.show{display:block}
+.bars{display:grid;gap:12px;margin-bottom:16px}
+.bar .lab{display:flex;justify-content:space-between;font-family:var(--sans);font-size:.78rem;font-weight:700;color:var(--body);margin-bottom:5px}
+.bar .lab b{color:var(--ink);font-size:.95rem}
+.bar .track{height:26px;background:var(--paper);border-radius:7px;overflow:hidden;border:1px solid var(--line)}
+.bar .fill{height:100%;border-radius:6px;transition:width .5s cubic-bezier(.3,.8,.3,1)}
+.bar.stay .fill{background:repeating-linear-gradient(45deg,#E9D9C0,#E9D9C0 7px,#DECBAE 7px,#DECBAE 14px)}
+.bar.us .fill{background:linear-gradient(90deg,var(--green),var(--green-d))}
+.verdict{background:var(--green-t);border:1.5px solid var(--green);border-radius:12px;padding:15px 17px;font-size:.98rem;line-height:1.5}
+.verdict.neg{background:var(--pink-t);border-color:var(--pink)}
+.verdict b{color:var(--ink)}
+.calcnote{font-size:.82rem;color:var(--mute);margin-top:13px;line-height:1.5}
+
+/* compare table */
+.cmp{width:100%;border-collapse:collapse;margin:16px 0;font-size:.93rem}
+.cmp th{font-family:var(--sans);text-align:left;font-size:.66rem;letter-spacing:.13em;text-transform:uppercase;
+ padding:0 10px 9px 0;border-bottom:2px solid var(--ink);color:var(--ink);vertical-align:bottom}
+.cmp td{padding:12px 10px 12px 0;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.45}
+.cmp td:first-child{font-weight:700;color:var(--ink);width:24%;font-family:var(--sans);font-size:.86rem}
+.cmp td:nth-child(2){width:36%;color:var(--mute)}
+.cmp td:nth-child(3){width:40%}
+.tick{color:var(--green-d);font-weight:800}
+
+/* price */
+.pricebox{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+.pricebox>div{background:var(--card);border:1px solid var(--line);border-radius:13px;padding:20px}
+.pricebox .n{font-family:var(--sans);font-size:2rem;font-weight:800;color:var(--ink);letter-spacing:-.03em;line-height:1}
+.pricebox .l{font-size:.85rem;color:var(--mute);margin-top:7px;line-height:1.4}
+@media(max-width:600px){.pricebox{grid-template-columns:1fr}}
+
+/* demo cta */
+.demo{background:linear-gradient(135deg,#201712,#3A2416);color:#F6EFE4;border-radius:18px;padding:32px;margin:22px 0;text-align:center}
+.demo .k{color:var(--green)}
+.demo h3{color:#fff;margin:10px 0 8px;font-size:1.4rem}
+
+.demo p{color:#D8CBBA;font-size:.98rem;max-width:34em;margin:0 auto 20px}
+/* White on --pink is 3.58. --pink-d takes it to 4.78, which is the same fix the
+   studio's own .btn took this week. The button is the only place white sits on
+   pink, so nothing else moves. */
+.demo a{display:inline-block;background:var(--pink-d);color:#fff;font-family:var(--sans);font-weight:700;font-size:.82rem;box-shadow:0 6px 16px -6px rgba(232,77,138,.55);
+ letter-spacing:.09em;text-transform:uppercase;padding:15px 30px;border-radius:999px;text-decoration:none;transition:all .18s}
+.demo a:hover{background:var(--green);color:var(--ink);transform:translateY(-2px)}
+
+/* steps */
+.step{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)}
+.step:last-child{border-bottom:0}
+.step .no{font-family:var(--sans);font-weight:800;font-size:.78rem;color:#fff;background:var(--pink-d);width:28px;height:28px;
+ border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
+.step h4{font-family:var(--sans);font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:4px}
+.step p{font-size:.95rem;margin:0}
+
+footer{background:var(--ink);color:#B9A894;padding:44px 0;font-size:.86rem;margin-top:20px}
+footer .wrap{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+footer .gl-foot{height:62px;width:auto;opacity:.95}
+footer b{color:#F6EFE4;display:block;font-family:var(--sans);font-size:.95rem;margin-bottom:4px}
+footer .bw{display:block;font-weight:800;color:#F6EFE4;letter-spacing:-.6px;margin-bottom:5px}
+footer .bw span{font-weight:350;color:#A6907F}
+footer a{color:var(--green)}
+.conf{font-size:.72rem;color:#A6907F;margin-top:14px;letter-spacing:.04em}
+.note{font-size:.85rem;color:var(--mute);font-style:italic;line-height:1.5}
+
+/* --- the mark, and its drip, lifted from glazedweb.com --- */
+.gmark{display:block;overflow:visible}
+.gmark .goo{transform-box:fill-box;transform-origin:50% 0;animation:breathe 6s ease-in-out infinite}
+.gmark .wob1,.gmark .wob2,.gmark .wob3,.gmark .wobB{transform-box:fill-box;transform-origin:50% 0}
+.gmark .wob1{animation:sagg 3.8s ease-in-out -.6s infinite}
+.gmark .wob2{animation:sagg 4.9s ease-in-out -2.1s infinite}
+.gmark .wob3{animation:sagg 4.3s ease-in-out -1.3s infinite}
+.gmark .wobB{animation:sagg 5.6s ease-in-out -3s infinite}
+.gmark .string{transform-box:fill-box;transform-origin:50% 0;animation:stringy 3.4s cubic-bezier(.55,.1,.8,.5) infinite}
+.gmark .droplet{transform-box:fill-box;transform-origin:center;animation:fall 3.4s cubic-bezier(.5,.08,.85,.6) infinite}
+.gmark .droplet2{transform-box:fill-box;transform-origin:center;animation:fall2 5.1s cubic-bezier(.5,.08,.85,.6) -2.4s infinite}
+@keyframes breathe{0%,to{transform:scaleY(1)}50%{transform:scaleY(1.02)}}
+@keyframes sagg{0%,to{transform:scaleY(1) scaleX(1)}50%{transform:scaleY(1.07) scaleX(.98)}}
+@keyframes stringy{0%{transform:scaleY(.1);opacity:0}25%{transform:scaleY(.8);opacity:1}60%{transform:scaleY(1.7);opacity:.85}80%{transform:scaleY(2.4);opacity:0}to{transform:scaleY(.1);opacity:0}}
+@keyframes fall{0%{transform:translateY(-16px) scaleY(1.5) scaleX(.7);opacity:0}22%{transform:translateY(-8px) scaleY(1.2) scaleX(.85);opacity:1}60%{transform:translateY(10px) scale(1);opacity:1}to{transform:translateY(38px) scaleY(1.15) scaleX(.9);opacity:0}}
+@keyframes fall2{0%{transform:translateY(-10px) scaleY(1.4) scaleX(.75);opacity:0}25%{transform:translateY(-4px) scale(1);opacity:1}65%{transform:translateY(8px) scale(1);opacity:1}to{transform:translateY(26px) scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){
+ .gmark .goo,.gmark .wob1,.gmark .wob2,.gmark .wob3,.gmark .wobB,
+ .gmark .string,.gmark .droplet,.gmark .droplet2{animation:none}
+}
+.brand .gmark{height:38px;width:auto;margin-bottom:-6px}
+.hero .gmark{height:112px;width:auto;margin-bottom:26px}
+footer .gmark{height:78px;width:auto}
+
+
+/* NEW HERE, not in the lifted shell: a pull quote, because this proposal turns on
+   quoting the client's own writing back to him and there was no element for it. */
+blockquote.pull{margin:22px 0;padding:18px 22px;border-left:3px solid var(--green-b);
+  background:var(--green-t);font-family:var(--serif);font-size:1.02rem;line-height:1.65;
+  color:var(--ink);border-radius:0 10px 10px 0}
+blockquote.pull:before{content:none}
+
+</style></head>
+<body>
+<a id="top"></a>
+<header><div class="wrap">
+  <a class="brand" href="#top">
+    <svg class="gmark gl" viewBox="0 0 200 250" overflow="visible" aria-hidden="true"><defs><linearGradient id="dgGrad" x1="0" y1="92" x2="0" y2="165" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#5FA850"></stop><stop offset="100%" stop-color="#43813A"></stop></linearGradient><linearGradient id="lgGrad" x1="0" y1="92" x2="0" y2="215" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D9EDA0"></stop><stop offset="55%" stop-color="#BFE07A"></stop><stop offset="100%" stop-color="#A3CE55"></stop></linearGradient><radialGradient id="pinkGrad" cx="40%" cy="34%" r="75%"><stop offset="0%" stop-color="#F887B2"></stop><stop offset="55%" stop-color="#E84D8A"></stop><stop offset="100%" stop-color="#CE3672"></stop></radialGradient><linearGradient id="creepGrad" x1="0" y1="90" x2="0" y2="124" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#E3F2B0"></stop><stop offset="100%" stop-color="#C3E181"></stop></linearGradient></defs><g class="goo"><g fill="url(#dgGrad)"><ellipse cx="100" cy="110" rx="38" ry="15"></ellipse><path class="wobB" d="M 86 100 C 86 116, 87 130, 88 142 C 88 148, 91 149, 92 142 C 93 130, 92 114, 92 100 Z"></path><path d="M 114 100 C 114 112, 115 124, 116 134 C 116 140, 119 141, 120 134 C 121 124, 120 110, 120 100 Z"></path></g><g fill="url(#lgGrad)"><path class="wob1" d="M 64 100 C 63 120, 65 138, 66 152 C 66 164, 68 172, 74 173 C 80 172, 83 165, 82 154 C 84 136, 85 116, 86 100 Z"></path><path class="wob2" d="M 92 100 C 91 128, 93 152, 94 172 C 94 188, 97 199, 104 200 C 111 199, 114 190, 112 174 C 113 150, 114 124, 114 100 Z"></path><path class="wob3" d="M 120 100 C 119 116, 120 130, 121 142 C 121 152, 123 159, 129 160 C 134 159, 137 153, 135 144 C 136 130, 137 114, 137 100 Z"></path></g></g><path class="string" d="M 104 199 L 104 209" stroke="#BFE07A" stroke-width="2.5" stroke-linecap="round" fill="none"></path><g class="droplet"><circle cx="104" cy="213" r="7" fill="#BFE07A"></circle><circle cx="102" cy="211" r="2" fill="#F1F8DC" opacity="0.9"></circle></g><circle class="droplet2" cx="74" cy="186" r="4.5" fill="#BFE07A"></circle><circle cx="100" cy="70" r="52" fill="url(#pinkGrad)"></circle><path d="M 56 98 A 52 52 0 0 0 144 98 C 142 94, 138 92, 134 94 C 130 97, 129 102, 125 104 C 119 106, 116 98, 110 96 C 104 94, 103 102, 98 105 C 93 107, 90 100, 84 97 C 78 95, 76 100, 71 102 C 66 103, 62 100, 56 98 Z" fill="url(#creepGrad)"></path><path d="M 68 106 A 42 42 0 0 0 84 116" fill="none" stroke="#F1F8DC" stroke-width="4" stroke-linecap="round" opacity="0.85"></path><path d="M 97 144 Q 103 151 109 144" fill="none" stroke="#55974A" stroke-width="4" stroke-linecap="round"></path><g stroke="#F1F8DC" fill="none" stroke-linecap="round"><path d="M 97 128 C 96 148, 97 166, 100 182" stroke-width="4.5" opacity="0.85"></path><path d="M 69 118 C 68 132, 70 146, 71 156" stroke-width="3.5" opacity="0.8"></path><path d="M 124 114 C 123 124, 125 138, 126 148" stroke-width="3.5" opacity="0.8"></path></g><circle cx="100" cy="192" r="2.5" fill="#F1F8DC" opacity="0.9"></circle><circle cx="100" cy="72" r="13" fill="#FDF6EC"></circle><circle cx="100" cy="72" r="13" fill="none" stroke="#C22F6B" stroke-width="3" opacity="0.3"></circle><path class="sheen" d="M 62 46 A 44 44 0 0 1 82 28" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"></path><circle class="sheen" cx="92" cy="26" r="3.5" fill="#FFFFFF"></circle></svg>
+    <span class="bw">glazed<span>web</span></span>
+    <span>proposal</span>
+  </a>
+  <nav>
+    <a href="#found">What we found</a>
+    <a href="#matters">What matters</a>
+    <a href="#build">What we'd build</a>
+    <a href="#cost">Cost</a>
+  </nav>
+</div></header>
+
+<div class="wrap">
+  <div class="hero">
+    <div class="k">A proposal for MI Gas</div>
+    <h1>How does a licensed&nbsp;operator <em>hire you?</em></h1>
+    <p class="sub">
+      Right now they send an Instagram DM. There is no email address anywhere on
+      mi-gas.net, so a facility director with a budget and a bot arrive in the same
+      inbox, and neither of you can tell which is which until you open it.
+    </p>
+    <div class="forwho">For the director of MI Gas · Prepared by Glazed Web · August 2026</div>
+  </div>
+
+  <div class="tldr">
+    <div class="k">The short version</div>
+    <ul>
+      <li>You have spent years building proof. Almost none of it reaches the site.</li>
+      <li>Six people wrote you a review. All six are PNG files, so Google has read none of them and a screen reader announces nothing.</li>
+      <li>Your only contact route is a DM, and your highest-priced product sits as a fifth tile among four cheaper ones.</li>
+      <li>The rebuild is already built. It is live, it works, and you can use it before you decide.</li>
+      <li>$3,500 to take it over, $99 a month after that. You own all of it.</li>
+    </ul>
+  </div>
+</div>
+
+<section id="found"><div class="wrap">
+  <div class="k">Section one</div><div class="rule"></div>
+  <h2>What we found.</h2>
+  <p class="note" style="margin-bottom:26px">
+    Everything below was read off mi-gas.net on 10 August 2026. Every one of them is
+    checkable in about a minute, and the links go to your own site rather than to a
+    screenshot of it. If something has changed since, it has changed and we are wrong.
+  </p>
+
+  <div class="claim">
+    <h4>There is no email address anywhere on the site</h4>
+    <p>Not on the contact page, not in the footer, not on a product page. The only route to you is an Instagram DM. That means a licensed operator wanting facility work, a grower asking whether a guide covers coco, and a bot all land in the same inbox with nothing to sort them by, no record, and no way to reply from anywhere except your phone.</p>
+    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Check your own contact page ↗</a>
+  </div>
+
+  <div class="claim">
+    <h4>All six of your reviews are image files</h4>
+    <p>R1.png through R6.png. Google cannot read a word of them, so they do nothing for you in search. A screen reader announces nothing. The one asset a consultant genuinely cannot manufacture is invisible to everybody except a sighted visitor who happened to scroll to the right page. Transcribing them is about an hour of somebody's time and it is the highest-return hour on this whole project.</p>
+    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">View source on the reviews page ↗</a>
+  </div>
+
+  <div class="claim">
+    <h4>Three of your four page titles are unedited platform defaults</h4>
+    <p>The guides page is titled <span class="mono">Store 1 — MI Gas</span>. That is the string Squarespace generates when nobody writes one, and it is what shows in a search result, in a browser tab and in a shared link. The page selling your programs is introducing itself as Store 1.</p>
+    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Look at the browser tab ↗</a>
+  </div>
+
+  <div class="claim">
+    <h4>Every one of the seven store items is sold out, and you find out one at a time</h4>
+    <p>Hoodies, tees, the camo trucker. A visitor clicks through the grid discovering it seven separate times. A storefront whose only message is "sold out" costs a little trust on every visit, and it collects nothing in exchange. Said once at the top with a restock list, the same dead page becomes a mailing list.</p>
+    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Open the store ↗</a>
+  </div>
+
+  <div class="claim">
+    <h4>The Complete Package is a fifth tile among four cheaper ones</h4>
+    <p>It is $500 against $600 bought separately, which makes it both your highest-value product and your best offer. On the page it is the same size tile as everything else, in the same row, so the most valuable thing you sell looks like one more option rather than the answer.</p>
+    <a class="verify" href="https://mi-gas.net" target="_blank" rel="noopener">Compare the tiles ↗</a>
+  </div>
+
+  <div class="claim">
+    <h4>There are roughly twice as many product URLs as products</h4>
+    <p>Old and duplicate addresses left behind by the platform. Some of them are what a search engine has indexed, which means some share of the people looking for your guides are landing on a URL you are not maintaining.</p>
+    <a class="verify plain">Verified in the platform's own sitemap</a>
+  </div>
+
+  <div class="claim">
+    <h4>No structured data anywhere on the site</h4>
+    <p>Nothing tells Google that this is a professional service, what it costs, where it operates or what it sells. That is the difference between a search result that is a blue link and one that carries your service, your price range and your location. It is invisible to you and it is free to add.</p>
+    <a class="verify plain">Checked against the rendered markup</a>
+  </div>
+
+  <p class="note">
+    None of this is a comment on the growing. It is a comment on a platform doing the
+    least it can with what you gave it.
+  </p>
+</div></section>
+
+<section id="matters"><div class="wrap">
+  <div class="k">Section two</div><div class="rule"></div>
+  <h2>The part that matters most.</h2>
+
+  <h3>You already wrote the thesis of this proposal</h3>
+  <p>In one of your own posts, about educators who charge for information:</p>
+  <blockquote class="pull">
+    "I don't see them backed up with the work! They usually feature some random up close
+    nug shots, shots of gardens with somewhat questionable health and graphs and words.
+    It's hard to even tell if they are their own pictures. You can see the same rooms
+    every time in our shots, over and over again with new plants and the same consistent
+    success and quality."
+  </blockquote>
+  <p>
+    That is exactly right, and it is the whole argument for rebuilding this site. You
+    <em>are</em> backed up by the work. You publish the same rooms run after run. You run
+    tissue analysis on your own crop and post the results. You moved the program to lower
+    EC and your average THC per strain went up 25 to 30%. You say plainly when you do not
+    know something, which is the rarest thing in this industry and the reason people pay
+    you.
+  </p>
+  <p>
+    <strong>None of that is on your website.</strong> The six reviews are pictures. The
+    rooms are on Instagram. The programs are behind a page called Store 1. The only way to
+    hire you is a DM. A grower who has never heard of you arrives at mi-gas.net and sees a
+    tidy storefront with everything sold out.
+  </p>
+  <p>
+    The gap is not between you and better growers. It is between what you have proven and
+    what a stranger with a budget can see in the ninety seconds before they leave.
+  </p>
+
+  <h3>What that costs, specifically</h3>
+  <table class="cmp">
+    <tr><td><strong>A licensed operator wants facility work</strong></td><td>Finds no email. Sends a DM, or does not.</td></tr>
+    <tr><td><strong>Somebody searches for your reviews</strong></td><td>Google has never read one of them.</td></tr>
+    <tr><td><strong>Somebody searches "grow consultant Michigan"</strong></td><td>No structured data says you are one.</td></tr>
+    <tr><td><strong>A buyer is deciding between guides</strong></td><td>Your best offer looks like your fifth option.</td></tr>
+    <tr><td><strong>Somebody wants the merch</strong></td><td>Seven sold-out pages and no way to be told when it returns.</td></tr>
+  </table>
+</div></section>
+
+<section id="build"><div class="wrap">
+  <div class="k">Section three</div><div class="rule"></div>
+  <h2>What we would build.</h2>
+  <p>
+    We already did. It is deployed, every page works, and you can put your hands on it
+    before you decide anything. It is your logo, your copy, your prices and your photos.
+  </p>
+
+  <div class="demo">
+    <div class="k">Use it now</div>
+    <h3>The rebuild is live at <a href="/demo">this address</a></h3>
+    <p>Book a consult on it. Put a real room through the intake. Upload photos off your phone and see what arrives.</p>
+  </div>
+
+  <h3>The booking, which is the thing you actually asked for</h3>
+  <p>
+    You said you wanted something like Calendly with the whole experience made better. A
+    scheduler sells you a calendar. The calendar was never the problem: the problem is
+    that the first twenty minutes of a paid call go on questions a form could have asked.
+  </p>
+  <table class="cmp">
+    <tr><td><strong>Eight questions before the call</strong></td><td>Stage by day, canopy, media, feed, lights, nutrient line, runoff volume with EC and pH, and what they want out of the hour. Your questions, in <span class="mono">lib/site.ts</span>, editable without touching a component.</td></tr>
+    <tr><td><strong>Photos off a phone, which normally fail</strong></td><td>A canopy photo is 3 to 8 MB and the request cap is about 4.5 MB, so four straight off a camera roll physically cannot be posted. The browser downscales them before they leave the device. Measured: 7.23 MB of source photos arrived as 1.21 MB, renamed so your inbox is not four copies of IMG_4821.jpg.</td></tr>
+    <tr><td><strong>A real calendar invite</strong></td><td>An .ics to both of you with a 30-minute alarm, so your own calendar becomes the record of what is booked.</td></tr>
+    <tr><td><strong>Honest slot lengths</strong></td><td>A 90-minute consult is never offered at 11:30 in a window that closes at noon.</td></tr>
+    <tr><td><strong>One timezone, labelled</strong></td><td>Eastern, and it says so. A call missed by an hour costs more than a booking.</td></tr>
+  </table>
+
+  <h3>And the rest of the findings, fixed</h3>
+  <table class="cmp">
+    <tr><td>Contact</td><td>A question form with a topic attached, plus an email address wired everywhere it appears. Bookings go through the intake, everything else comes here already sorted.</td></tr>
+    <tr><td>Reviews</td><td>Text. Indexable, readable by a screen reader, and quotable. They render as visible empty slots until you send the real words, because inventing a testimonial is not a placeholder.</td></tr>
+    <tr><td>Titles and descriptions</td><td>Written per page, brand appended once. No Store 1.</td></tr>
+    <tr><td>The Complete Package</td><td>Its own row, first on the page, with the saving calculated from your own guide prices rather than typed in.</td></tr>
+    <tr><td>The store</td><td>Sold out said once, at the top, with a restock list that collects the email.</td></tr>
+    <tr><td>Structured data</td><td>ProfessionalService and Service, with any field we do not have left out rather than invented.</td></tr>
+    <tr><td>Dead URLs</td><td>A 404 that routes somewhere useful instead of ending the visit.</td></tr>
+  </table>
+
+  <p class="note">
+    Two things in the build are deliberately unfinished, and they need you rather than us:
+    the six review transcriptions, and an email address. Both are on a checklist in the
+    project's README and neither is a thing we can invent for you.
+  </p>
+</div></section>
+
+<section id="cost"><div class="wrap">
+  <div class="k">Section four</div><div class="rule"></div>
+  <h2>What it costs.</h2>
+
+  <div class="pricebox">
+    <div><div class="n">$3,500</div><div class="l">One-time build. Everything above, already written. Half to start, half at launch.</div></div>
+    <div><div class="n">$99<em>/mo</em></div><div class="l">Hosting, an SSL certificate, security patching, updates and small content edits. Month to month, thirty days' notice, no termination fee.</div></div>
+  </div>
+
+  <h3>What you own when the build fee is paid</h3>
+  <p>
+    The code, the content and the accounts. The repository, the hosting project and the
+    logins get handed over. The domain stays in your name and transfers free whenever you
+    ask. You can leave any month and take all of it with you, and the monthly buys care
+    rather than access.
+  </p>
+  <p class="note">
+    Worth saying plainly, because it is not how this usually works: there is no version of
+    this where cancelling costs you the website.
+  </p>
+
+  <h3>How that compares to staying put</h3>
+  <table class="cmp">
+    <tr><td><strong>A scheduling subscription</strong></td><td>$15 to $30 a month, forever, and it still cannot ask your eight questions or take the photos.</td></tr>
+    <tr><td><strong>The platform you are on</strong></td><td>A monthly fee for a site that titles your store page Store 1 and publishes your reviews as pictures.</td></tr>
+    <tr><td><strong>One consult</strong></td><td>A facility consult is $500. The build is seven of them, once.</td></tr>
+  </table>
+</div></section>
+
+<section id="next"><div class="wrap">
+  <div class="k">Section five</div><div class="rule"></div>
+  <h2>What happens next.</h2>
+
+  <div class="step"><div class="no">1</div>
+    <div><strong>Use the demo.</strong> Book yourself a consult on it, from your phone, with real photos. Ten minutes. If the flow is wrong for how you actually work, that is the most useful thing you can tell us.</div>
+  </div>
+  <div class="step"><div class="no">2</div>
+    <div><strong>Send two things.</strong> An email address you will read, and the text of your six reviews. Those are the only two items blocking a launch.</div>
+  </div>
+  <div class="step"><div class="no">3</div>
+    <div><strong>Say yes or say no.</strong> If it is a no, the demo comes down and nothing is owed. If it is a yes, we point mi-gas.net at it and hand you the keys.</div>
+  </div>
+
+  <h3>What we would need from you</h3>
+  <p>
+    An email address. The six review transcriptions. Confirmation of the figures on the
+    credentials strip, since those came from your own posts and posts have dates on them.
+    Your real availability windows for the booking calendar. And a decision on what the
+    site may say about the licence, which is your lawyer's answer and not ours.
+  </p>
+</div></section>
+
+<footer><div class="wrap">
+  <div>
+    <span class="bw" style="font-size:21px">glazed<span>web</span></span>
+    Kevin Hershock · Marshall, Michigan<br>
+    <a href="https://glazedweb.com" target="_blank" rel="noopener">glazedweb.com</a> · hello@glazedweb.com
+    <div class="conf">Prepared for MI Gas · August 2026 · Valid 60 days</div>
+  </div>
+  <svg class="gmark gl-foot" viewBox="0 0 200 250" overflow="visible" aria-hidden="true"><defs><linearGradient id="dgGrad" x1="0" y1="92" x2="0" y2="165" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#5FA850"></stop><stop offset="100%" stop-color="#43813A"></stop></linearGradient><linearGradient id="lgGrad" x1="0" y1="92" x2="0" y2="215" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D9EDA0"></stop><stop offset="55%" stop-color="#BFE07A"></stop><stop offset="100%" stop-color="#A3CE55"></stop></linearGradient><radialGradient id="pinkGrad" cx="40%" cy="34%" r="75%"><stop offset="0%" stop-color="#F887B2"></stop><stop offset="55%" stop-color="#E84D8A"></stop><stop offset="100%" stop-color="#CE3672"></stop></radialGradient><linearGradient id="creepGrad" x1="0" y1="90" x2="0" y2="124" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#E3F2B0"></stop><stop offset="100%" stop-color="#C3E181"></stop></linearGradient></defs><g class="goo"><g fill="url(#dgGrad)"><ellipse cx="100" cy="110" rx="38" ry="15"></ellipse><path class="wobB" d="M 86 100 C 86 116, 87 130, 88 142 C 88 148, 91 149, 92 142 C 93 130, 92 114, 92 100 Z"></path><path d="M 114 100 C 114 112, 115 124, 116 134 C 116 140, 119 141, 120 134 C 121 124, 120 110, 120 100 Z"></path></g><g fill="url(#lgGrad)"><path class="wob1" d="M 64 100 C 63 120, 65 138, 66 152 C 66 164, 68 172, 74 173 C 80 172, 83 165, 82 154 C 84 136, 85 116, 86 100 Z"></path><path class="wob2" d="M 92 100 C 91 128, 93 152, 94 172 C 94 188, 97 199, 104 200 C 111 199, 114 190, 112 174 C 113 150, 114 124, 114 100 Z"></path><path class="wob3" d="M 120 100 C 119 116, 120 130, 121 142 C 121 152, 123 159, 129 160 C 134 159, 137 153, 135 144 C 136 130, 137 114, 137 100 Z"></path></g></g><path class="string" d="M 104 199 L 104 209" stroke="#BFE07A" stroke-width="2.5" stroke-linecap="round" fill="none"></path><g class="droplet"><circle cx="104" cy="213" r="7" fill="#BFE07A"></circle><circle cx="102" cy="211" r="2" fill="#F1F8DC" opacity="0.9"></circle></g><circle class="droplet2" cx="74" cy="186" r="4.5" fill="#BFE07A"></circle><circle cx="100" cy="70" r="52" fill="url(#pinkGrad)"></circle><path d="M 56 98 A 52 52 0 0 0 144 98 C 142 94, 138 92, 134 94 C 130 97, 129 102, 125 104 C 119 106, 116 98, 110 96 C 104 94, 103 102, 98 105 C 93 107, 90 100, 84 97 C 78 95, 76 100, 71 102 C 66 103, 62 100, 56 98 Z" fill="url(#creepGrad)"></path><path d="M 68 106 A 42 42 0 0 0 84 116" fill="none" stroke="#F1F8DC" stroke-width="4" stroke-linecap="round" opacity="0.85"></path><path d="M 97 144 Q 103 151 109 144" fill="none" stroke="#55974A" stroke-width="4" stroke-linecap="round"></path><g stroke="#F1F8DC" fill="none" stroke-linecap="round"><path d="M 97 128 C 96 148, 97 166, 100 182" stroke-width="4.5" opacity="0.85"></path><path d="M 69 118 C 68 132, 70 146, 71 156" stroke-width="3.5" opacity="0.8"></path><path d="M 124 114 C 123 124, 125 138, 126 148" stroke-width="3.5" opacity="0.8"></path></g><circle cx="100" cy="192" r="2.5" fill="#F1F8DC" opacity="0.9"></circle><circle cx="100" cy="72" r="13" fill="#201712"></circle><circle cx="100" cy="72" r="13" fill="none" stroke="#C22F6B" stroke-width="3" opacity="0.3"></circle><path class="sheen" d="M 62 46 A 44 44 0 0 1 82 28" fill="none" stroke="#FFFFFF" stroke-width="8" stroke-linecap="round"></path><circle class="sheen" cx="92" cy="26" r="3.5" fill="#FFFFFF"></circle></svg>
+</div></footer>
+
+<!-- The lifted shell carried an interactive five-year cost calculator. Its markup is
+     not in this proposal, so the script it drives is stripped rather than left in:
+     every one of the eight ids it reaches for was absent here and it threw
+     "Cannot read properties of null" on load, on every width. proposal.md says lift
+     the shell and then strip what it does not use; this is that step. Its numbers
+     were Griffin Claw's anyway (a $4,500 build against a $195 incumbent monthly). -->
+</body></html>

@@ -11,6 +11,35 @@ const nextConfig: NextConfig = {
     serverActions: { bodySizeLimit: "4.5mb" },
   },
 
+  // ── The host split ──────────────────────────────────────────────────────────
+  //
+  // migas.glazedweb.com serves TWO things: the proposal at its root, and a full copy
+  // of the client's site at /demo. mi-gas.net, when it becomes theirs, serves the site
+  // at its root with no proposal anywhere.
+  //
+  // THESE MUST BE IN beforeFiles. A plain rewrites() array is afterFiles, which only
+  // runs once Next has failed to find a page, and app/page.tsx already answers "/", so
+  // the root rewrite would silently never fire and the proposal would never appear.
+  //
+  // Host-scoped rather than basePath: "/demo", because basePath is global to a build
+  // and would bury the real site under /demo the day the domain goes live.
+  //
+  // One accepted wart: links inside the demo are root-relative, so the /demo prefix
+  // drops off after the first click. Nothing 404s, and the alternative is rewriting
+  // every href in the app for the benefit of a temporary host.
+  //
+  // Delete this block and public/pitch/migas the day they sign or pass.
+  async rewrites() {
+    const onPitchHost = [{ type: "host" as const, value: "migas.glazedweb.com" }];
+    return {
+      beforeFiles: [
+        { source: "/", destination: "/pitch/migas/index.html", has: onPitchHost },
+        { source: "/demo", destination: "/", has: onPitchHost },
+        { source: "/demo/:path*", destination: "/:path*", has: onPitchHost },
+      ],
+    };
+  },
+
   // This build is a pitch, not the client's live site. Until MI Gas signs, every
   // path must stay out of the index: it is a full copy of their content and must
   // never compete with mi-gas.net for their own name. Delete this block on the day
