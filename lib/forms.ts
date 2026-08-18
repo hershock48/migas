@@ -20,6 +20,19 @@ export type FormState = {
    *  because the file is already in the response that rendered the confirmation — no
    *  storage, no second request, nothing to expire. */
   ics?: string;
+  /**
+   * WHETHER THE MAIL ACTUALLY WENT OUT. sendMail already returned this and every caller
+   * threw it away, so the confirmation asserted "a copy is on its way to your inbox"
+   * whether or not anything had been sent. With SMTP unset — or with MIGAS_NOTIFY_TO
+   * unset, which leaves the recipient at PLACEHOLDER@ — that sentence is false, and the
+   * person it is false to is the one who just filled in eight fields.
+   *
+   * Two flags, not one, because they fail apart. The owner notification is gated on a
+   * real recipient address and the visitor confirmation is not, so a build can perfectly
+   * well confirm the booking to the visitor while nobody at the other end ever hears
+   * about it. Those are different lies and the page needs to be able to tell them apart.
+   */
+  delivered?: { toOwner: boolean; toVisitor: boolean };
 };
 
 export const EMPTY: FormState = { status: "idle" };

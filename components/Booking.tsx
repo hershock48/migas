@@ -317,9 +317,24 @@ export default function Booking({ days }: Props) {
             Read a program while you wait
           </Link>
         </div>
-        <p className="mt-4 text-xs text-muted">
-          A copy of the invite is on its way to your inbox too.
-        </p>
+        {/* Only claimed when it happened. See FormState.delivered in lib/forms.ts: this
+            sentence used to render unconditionally, which made it a promise the build
+            could not keep with SMTP unset. */}
+        {state.delivered?.toVisitor && (
+          <p className="mt-4 text-xs text-muted">
+            A copy of the invite is on its way to your inbox too.
+          </p>
+        )}
+        {/* Says his inbox, NOT "nothing was emailed". The two flags fail apart: with SMTP
+            configured but MIGAS_NOTIFY_TO unset, the visitor's own confirmation goes out
+            while the owner's does not, and a blanket "nothing was emailed" then sits
+            directly under a line promising an email. Verified in all three states. */}
+        {state.delivered && !state.delivered.toOwner && (
+          <p className="mt-4 text-xs text-muted">
+            Outgoing mail to his inbox is not switched on for this build yet, so the
+            request has not reached him. The reference above is your record of it.
+          </p>
+        )}
       </div>
     );
   }

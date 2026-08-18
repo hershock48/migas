@@ -244,7 +244,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     contentType: "text/calendar; charset=utf-8; method=REQUEST",
   };
 
-  await sendMail({
+  const toOwner = await sendMail({
     to: notifyTo(),
     subject: `[${ref}] ${session!.name} - ${name} - ${when}`,
     text: brief,
@@ -254,7 +254,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
   // And a confirmation to the grower. Deliberately contains NO text they supplied — only the
   // session name, the time and the reference. A form that will email an arbitrary address is
   // a relay; one whose body an attacker cannot influence is not worth abusing.
-  await sendMail({
+  const toVisitor = await sendMail({
     to: email,
     subject: `${SITE.name} - booking request received (${ref})`,
     text: [
@@ -276,6 +276,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     status: "done",
     reference: ref,
     ics: icsDataUrl(ics),
+    delivered: { toOwner, toVisitor },
     summary: [
       `${session!.name}, ${session!.minutes} minutes`,
       when,
@@ -283,7 +284,9 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       // "0 photos received" is a worse thing to read than an ask. When somebody skipped the
       // most useful field on the form, the confirmation is the last good moment to get it.
       photos.attachments.length === 0
-        ? "No photos yet. Reply to your confirmation email with any and we will read them before the call"
+        ? toVisitor
+          ? "No photos yet. Reply to your confirmation email with any and we will read them before the call"
+          : "No photos yet. Send them with your reference and we will read them before the call"
         : photos.attachments.length === 1
           ? "1 photo sent with your intake"
           : `${photos.attachments.length} photos sent with your intake`,
@@ -303,12 +306,20 @@ export async function notifyRestock(_prev: FormState, fd: FormData): Promise<For
   if (!emailLooksReal(email)) {
     return { status: "error", errors: { email: "That does not look like an email address." }, values: { email } };
   }
-  await sendMail({
+  const toOwner = await sendMail({
     to: notifyTo(),
     subject: "Restock list signup",
     text: `${email}\nWants to hear about the next merch drop.`,
   });
-  return { status: "done", summary: ["You are on the list for the next drop."] };
+  return {
+    status: "done",
+    delivered: { toOwner, toVisitor: true },
+    summary: [
+      toOwner
+        ? "You are on the list for the next drop."
+        : "Sent. Outgoing mail is not switched on for this build yet.",
+    ],
+  };
 }
 
 /* ── Guide request ──────────────────────────────────────────────────────────── */
@@ -332,14 +343,19 @@ export async function requestGuide(_prev: FormState, fd: FormData): Promise<Form
   if (!emailLooksReal(email)) errors.email = "An email address we can send it to.";
   if (Object.keys(errors).length) return { status: "error", errors, values: { name, email } };
 
-  await sendMail({
+  const toOwner = await sendMail({
     to: notifyTo(),
     subject: `Guide request - ${guide || "unspecified"} - ${name}`,
     text: `${name} <${email}>\nWants: ${guide || "not specified"}`,
   });
   return {
     status: "done",
-    summary: ["Request sent. He replies with the invoice and the download."],
+    delivered: { toOwner, toVisitor: true },
+    summary: [
+      toOwner
+        ? "Request sent. He replies with the invoice and the download."
+        : "Sent. Outgoing mail is not switched on for this build yet.",
+    ],
   };
 }
 
@@ -360,13 +376,18 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
   if (values.message.length < 10) errors.message = "A sentence or two about what you need.";
   if (Object.keys(errors).length) return { status: "error", errors, values };
 
-  await sendMail({
+  const toOwner = await sendMail({
     to: notifyTo(),
     subject: `Question - ${values.name}${values.topic ? ` - ${values.topic}` : ""}`,
     text: `${values.name} <${values.email}>\nTopic: ${values.topic || "not given"}\n\n${values.message}`,
   });
   return {
     status: "done",
-    summary: ["Message sent. He answers from the same inbox the bookings land in."],
+    delivered: { toOwner, toVisitor: true },
+    summary: [
+      toOwner
+        ? "Message sent. He answers from the same inbox the bookings land in."
+        : "Sent. Outgoing mail is not switched on for this build yet.",
+    ],
   };
 }
