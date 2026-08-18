@@ -166,6 +166,17 @@ nav a:hover{color:var(--pink-i)}
  letter-spacing:.09em;text-transform:uppercase;padding:15px 30px;border-radius:999px;text-decoration:none;transition:all .18s}
 .demo a:hover{background:var(--green);color:var(--ink);transform:translateY(-2px)}
 
+/* the second way to the demo, at the end of the read. The first one is three
+   sections up by the time anyone reaches "what happens next", and step one of that
+   list is "use the demo", so the link belongs next to the instruction as well. */
+.enddemo{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:26px 0 4px}
+.enddemo a{display:inline-block;background:var(--pink-d);color:#fff;font-family:var(--sans);
+ font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;
+ padding:15px 30px;border-radius:999px;text-decoration:none;
+ box-shadow:0 6px 16px -6px rgba(232,77,138,.55);transition:all .18s}
+.enddemo a:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
+.enddemo span{font-size:.9rem;color:var(--mute)}
+
 /* steps */
 .step{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)}
 .step:last-child{border-bottom:0}
@@ -279,14 +290,14 @@ blockquote.pull:before{content:none}
   </div>
 
   <div class="claim">
-    <h4>Three of your four page titles are unedited platform defaults</h4>
-    <p>The guides page is titled <span class="mono">Store 1 — MI Gas</span>. That is the string Squarespace generates when nobody writes one, and it is what shows in a search result, in a browser tab and in a shared link. Your reviews page is <span class="mono">Reviews 1</span> and your contact page is <span class="mono">Contact 3</span>. Only the merch store has a real title. The page selling your programs is introducing itself as Store 1.</p>
+    <h4>Three of your five page titles are unedited platform defaults</h4>
+    <p>The guides page is titled <span class="mono">Store 1 — MI Gas</span>. That is the string Squarespace generates when nobody writes one, and it is what shows in a search result, in a browser tab and in a shared link. Your reviews page is <span class="mono">Reviews 1</span> and your contact page is <span class="mono">Contact 3</span>. Your home page is just <span class="mono">MI Gas</span>, so of the five, only the merch store says what it is. The page selling your programs is introducing itself as Store 1.</p>
     <a class="verify" href="https://www.mi-gas.net/flower-guide" target="_blank" rel="noopener">Open it and look at the browser tab ↗</a>
   </div>
 
   <div class="claim">
-    <h4>All thirteen items in the store are sold out, and you find out one at a time</h4>
-    <p>Six hoodies at $41.40, six tees at $31.90, one camo trucker at $50. A visitor clicks through the grid discovering it thirteen separate times. A storefront whose only message is "sold out" costs a little trust on every visit, and it collects nothing in exchange. Said once at the top with a restock list, the same dead page becomes a mailing list.</p>
+    <h4>Every one of the seven store items is sold out, and you find out one at a time</h4>
+    <p>Three hoodies at $41.40, three tees at $31.90, one camo trucker at $50. A visitor clicks through the grid discovering it seven separate times. A storefront whose only message is "sold out" costs a little trust on every visit, and it collects nothing in exchange. Said once at the top with a restock list, the same dead page becomes a mailing list.</p>
     <a class="verify" href="https://www.mi-gas.net/shop" target="_blank" rel="noopener">Count them yourself ↗</a>
   </div>
 
@@ -321,11 +332,12 @@ blockquote.pull:before{content:none}
   <h3>You already wrote the thesis of this proposal</h3>
   <p>In one of your own posts, about educators who charge for information:</p>
   <blockquote class="pull">
-    "I don't see them backed up with the work! They usually feature some random up close
-    nug shots, shots of gardens with somewhat questionable health and graphs and words.
-    It's hard to even tell if they are their own pictures. You can see the same rooms
-    every time in our shots, over and over again with new plants and the same consistent
-    success and quality."
+    "&hellip; I don't see them backed up with the work! They usually feature some random
+    up close up nug shots, shots of gardens with somewhat questionable health and graphs
+    and words. It's hard to even tell if they are their own pictures as there are no
+    distinguishing features that let you know it's legit. You can see the same rooms every
+    time in our shots, over and over again with new plants and the same consistent success
+    and quality."
   </blockquote>
   <p>
     That is exactly right, and it is the whole argument for rebuilding this site. You
@@ -352,7 +364,7 @@ blockquote.pull:before{content:none}
     <tr><td><strong>Somebody searches for your reviews</strong></td><td>Google has never read one of them.</td></tr>
     <tr><td><strong>Somebody searches "grow consultant Michigan"</strong></td><td>No structured data says you are one.</td></tr>
     <tr><td><strong>A buyer is deciding between guides</strong></td><td>Your best offer looks like your fifth option.</td></tr>
-    <tr><td><strong>Somebody wants the merch</strong></td><td>Thirteen sold-out pages and no way to be told when it returns.</td></tr>
+    <tr><td><strong>Somebody wants the merch</strong></td><td>Seven sold-out pages and no way to be told when it returns.</td></tr>
   </table>
 </div></section>
 
@@ -361,7 +373,7 @@ blockquote.pull:before{content:none}
   <h2>What we would build.</h2>
   <p>
     We already did. It is deployed, every page works, and you can put your hands on it
-    before you decide anything. It is your logo, your copy, your prices and your photos.
+    before you decide anything. It is your logo, your photos, your guide prices and your programs. The copy is written to sound like you rather than like an agency, and the consulting rates in it are our proposal, not yours, because you have never published any.
   </p>
 
   <div class="demo">
@@ -378,7 +390,7 @@ blockquote.pull:before{content:none}
   </p>
   <table class="cmp">
     <tr><td><strong>Eight questions before the call</strong></td><td>Stage by day, canopy, media, feed, lights, nutrient line, runoff volume with EC and pH, and what they want out of the hour. Your questions, in <span class="mono">lib/site.ts</span>, editable without touching a component.</td></tr>
-    <tr><td><strong>Photos off a phone, which normally fail</strong></td><td>A canopy photo is 3 to 8 MB and the request cap is about 4.5 MB, so four straight off a camera roll physically cannot be posted. The browser downscales them before they leave the device. Measured: 7.23 MB of source photos arrived as 1.21 MB, renamed so your inbox is not four copies of IMG_4821.jpg.</td></tr>
+    <tr><td><strong>Photos off a phone, which normally fail</strong></td><td>A canopy photo is 3 to 8 MB and the request cap is about 4.5 MB, so four straight off a camera roll physically cannot be posted. The browser resizes each one to 1600px on its long edge and re-encodes it before it leaves the device, and renames it so your inbox is not four copies of IMG_4821.jpg.</td></tr>
     <tr><td><strong>A real calendar invite</strong></td><td>An .ics to both of you with a 30-minute alarm, so your own calendar becomes the record of what is booked.</td></tr>
     <tr><td><strong>Honest slot lengths</strong></td><td>A 90-minute consult is never offered at 11:30 in a window that closes at noon.</td></tr>
     <tr><td><strong>One timezone, labelled</strong></td><td>Eastern, and it says so. A call missed by an hour costs more than a booking.</td></tr>
@@ -396,9 +408,13 @@ blockquote.pull:before{content:none}
   </table>
 
   <p class="note">
-    Two things in the build are deliberately unfinished, and they need you rather than us:
-    the six review transcriptions, and an email address. Both are on a checklist in the
-    project's README and neither is a thing we can invent for you.
+    Seven things in the build are deliberately unfinished, and every one of them needs you
+    rather than us: an email address, the six review transcriptions, your consulting rates,
+    your real availability windows, four answers in the consulting FAQ, the figures on the
+    credentials strip, and the feed and runoff numbers on the guides diagram. They are
+    marked as drafts on the pages themselves and listed in the project's README. We could
+    have filled every one of them in and you would probably not have caught all seven,
+    which is exactly why we did not.
   </p>
 </div></section>
 
@@ -427,7 +443,7 @@ blockquote.pull:before{content:none}
   <table class="cmp">
     <tr><td><strong>A scheduling subscription</strong></td><td>$15 to $30 a month, forever, and it still cannot ask your eight questions or take the photos.</td></tr>
     <tr><td><strong>The platform you are on</strong></td><td>A monthly fee for a site that titles your store page Store 1 and publishes your reviews as pictures.</td></tr>
-    <tr><td><strong>One consult</strong></td><td>A facility consult is $500. The build is seven of them, once.</td></tr>
+    <tr><td><strong>Your own Complete Package</strong></td><td>$500, your price. The build is seven of those, once.</td></tr>
   </table>
 </div></section>
 
@@ -439,7 +455,7 @@ blockquote.pull:before{content:none}
     <div><strong>Use the demo.</strong> Book yourself a consult on it, from your phone, with real photos. Ten minutes. If the flow is wrong for how you actually work, that is the most useful thing you can tell us.</div>
   </div>
   <div class="step"><div class="no">2</div>
-    <div><strong>Send two things.</strong> An email address you will read, and the text of your six reviews. Those are the only two items blocking a launch.</div>
+    <div><strong>Send two things first.</strong> An email address you will read, and the text of your six reviews. They are the two that unblock the most, and the rest of the list is below.</div>
   </div>
   <div class="step"><div class="no">3</div>
     <div><strong>Say yes or say no.</strong> If it is a no, the demo comes down and nothing is owed. If it is a yes, we point mi-gas.net at it and hand you the keys.</div>
@@ -447,11 +463,24 @@ blockquote.pull:before{content:none}
 
   <h3>What we would need from you</h3>
   <p>
-    An email address. The six review transcriptions. Confirmation of the figures on the
-    credentials strip, since those came from your own posts and posts have dates on them.
-    Your real availability windows for the booking calendar. And a decision on what the
-    site may say about the licence, which is your lawyer's answer and not ours.
+    The same seven, in the order they matter. An email address. The six review
+    transcriptions. Your real availability windows, because the ones in the demo are a
+    plausible shape and not your calendar. Your consulting rates, since you have never
+    published any and the three in there are our proposal. Answers to four questions in
+    the consulting FAQ, one of which is whether what a client tells you is confidential.
+    Confirmation of the figures on the credentials strip, which came from your own posts
+    and posts have dates on them. And the feed and runoff numbers on the guides diagram,
+    which are illustrative right now and should be yours or generic.
   </p>
+  <p class="note">
+    A decision on what the site may say about your licence sits outside that list, because
+    it is your lawyer's answer rather than either of ours.
+  </p>
+
+  <div class="enddemo">
+    <a href="/demo">Open the demo</a>
+    <span>It is the same site this proposal is about. Nothing to install, nothing owed.</span>
+  </div>
 </div></section>
 
 <footer><div class="wrap">

@@ -169,6 +169,18 @@ export default function Home() {
             </div>
           ))}
         </dl>
+        {/* Unlike everything else marked PLACEHOLDER in this build, these three are HIS
+            numbers — lifted from his own posts rather than invented. What is unconfirmed
+            is whether they still hold, because the posts are dated and he has not checked
+            them for the site. Same dashed treatment as the other pending surfaces, and
+            addressed to him rather than written in his voice. */}
+        <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
+          <p className="eyebrow">Your figures, needing a re-check</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+            These three came out of your own posts rather than from us. The posts are
+            dated, so confirm they still hold before this goes live.
+          </p>
+        </div>
       </section>
 
       {/* ── The router ────────────────────────────────────────────────────────

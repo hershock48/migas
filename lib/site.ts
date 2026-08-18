@@ -466,7 +466,8 @@ export const DIAGRAM = {
   inValues: ["3.0 EC", "5.9 pH"],
   outLabel: "Runoff out",
   outValues: ["4.8 EC", "6.4 pH"],
-  caption: "Runoff tells you what the root zone is actually doing. Most rooms never read it.",
+  caption:
+    "An illustration, not a target: runoff coming back higher than it went in is a room stacking salt. Reading it is how you catch that.",
 };
 
 /**

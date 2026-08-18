@@ -101,6 +101,25 @@ export default function Consulting() {
             <SessionCard key={s.slug} session={s} href="#book" featured={i === 1} />
           ))}
         </div>
+        {/* These three prices are OURS, not his. lib/site.ts: "CONSULTING — ALL
+            PLACEHOLDER. He has never published rates, so these are a proposal and a
+            conversation starter, not his prices." Unlabelled, they turn our guess into
+            his quote on his own site.
+
+            A dashed build note rather than a line of body copy, and that distinction is
+            the whole point: everywhere else this page says "we", it is him speaking to a
+            grower. A sentence in that voice saying the rates are not set would read as
+            him telling customers he has not decided what he charges. The dashed panel is
+            addressed to him instead, which is what components/cards.tsx established for
+            the reviews and what the FAQ drafts use. It comes off when he sets them. */}
+        <div className="reveal mt-8 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
+          <p className="eyebrow">Proposed, not yours yet</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+            You have never published a rate, so these three are our suggestion, pitched
+            against what comparable consulting sells for and against your own $200 guides.
+            They are the first thing to change on your say-so.
+          </p>
+        </div>
       </section>
 
       {/* ── The booking flow ─────────────────────────────────────────────────── */}
