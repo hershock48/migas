@@ -1,12 +1,19 @@
-# MI Gas — proposal build
+# MI Gas
 
-A Next.js rebuild of [mi-gas.net](https://mi-gas.net) with the thing he actually asked for
-built into it: *"Need to streamline my consulting calls and have a calendar like Calendly but
-make the whole experience better. Actually more of a revamp."*
+A Next.js rebuild of [mi-gas.net](https://mi-gas.net) around the thing he actually asked
+for: *"Need to streamline my consulting calls and have a calendar like Calendly but make
+the whole experience better. Actually more of a revamp."*
 
-**This is a pitch, not his site.** It contains a full copy of a real business's content on a
-hostname that is not theirs, so every path is `noindex` until the day it becomes their site.
-See [Going live](#going-live) — three separate things have to change together.
+**Status: he is in.** The owner call of 2026-08-27 turned the pitch into a build and set
+the direction the site now follows: no merch, no guide selling (the Patreon is advertised
+instead), consulting at his stated $250 an hour, a new co-management offer in his own
+terms, and a booking flow whose availability he can edit himself at `/admin` and which
+reads his own calendar back to close the double-booking gap.
+
+**It is still noindexed**, because it still serves from migas.glazedweb.com while his
+domain points at Squarespace. See [Going live](#going-live) — three separate things have
+to change together on cutover day, and the pitch page at the host root comes down with
+them.
 
 ---
 
@@ -19,7 +26,8 @@ below instead of installed.
 
 | The thing a site like this usually rents | What it does here |
 | --- | --- |
-| Calendly / Acuity, ~$16–$50/mo | Slots generated from a weekly pattern in `lib/site.ts`, rendered as real radio inputs (`lib/slots.ts`) |
+| Calendly / Acuity, ~$16–$50/mo | Slots from windows he edits at `/admin`, stored as one JSON document, rendered as real radio inputs (`lib/slots.ts`, `lib/availability.ts`) |
+| Live availability sync | His own calendar's private iCal address, read back by `lib/busy.ts`: an event on his calendar removes the slots it covers |
 | Calendar invites | `lib/ics.ts` — RFC 5545 is a text format from 1998 and about eighty lines of it |
 | Hosted email API | Plain SMTP through a mailbox he already pays for, via `nodemailer` (MIT) |
 | Object storage for uploads | Photos ride along as MIME attachments on the brief. Nothing to host, nothing to expire |
@@ -27,8 +35,12 @@ below instead of installed.
 | A stock hero image | The sun is drawn in CSS (`components/Sun.tsx`). No photograph, no licence question, no kilobytes |
 | Analytics / chat widget / cookie banner | None. There is nothing to consent to |
 
-The full runtime dependency list is `next`, `react`, `react-dom`, `nodemailer`. Everything
-else is a build tool.
+The full runtime dependency list is `next`, `react`, `react-dom`, `nodemailer`, and
+`@vercel/blob`. Everything else is a build tool. The Blob store deserves its sentence:
+it is Vercel's own storage riding on the hosting he already has, holding one small JSON
+document of availability, inside the free allowance by orders of magnitude. It is the
+one place this build stores anything, and if the token is unset the site serves the
+defaults in `lib/site.ts` and says so on `/admin` rather than erroring.
 
 The one thing that is not free is hosting, which is his existing choice, and Vercel's free
 tier covers a site this size.
@@ -37,20 +49,21 @@ tier covers a site this size.
 
 | | Now | Here |
 | --- | --- | --- |
-| Booking a consult | Instagram DM | Session type → room intake → photos → time → a written brief, the photos and a calendar invite in his inbox before the call |
-| Calendar | none | An `.ics` to both sides. His own calendar becomes the record of what is booked |
+| Booking a consult | Instagram DM | Session length → room intake → photos → time → a written brief, the photos and a calendar invite in his inbox before the call |
+| Calendar | none | An `.ics` to both sides, his calendar read back so booked times drop off the grid, and his hours editable at `/admin` |
+| Consulting price | Never published | $250 an hour, his number from the 2026-08-27 call, one constant |
+| Co-management | Nowhere | Its own page, in his own terms: per-light pricing, the sensor requirement, the head-grower condition |
+| The Patreon | A bare link | One section with the checkable numbers off his public page and a seam for his dashboard data |
 | Contact | Instagram DM only, no email anywhere | A question form with a topic, plus the email constant wired everywhere it appears |
 | Reviews | Six PNG screenshots | Text, indexable and readable by a screen reader |
 | Page titles | Three of four are unedited platform defaults (`Store 1 — MI Gas`) | Written per page, brand appended once |
-| Product pages | One shared platform-generated description | A description written from each guide's own data |
-| The bundle | A fifth tile among four cheaper ones | Its own row, first on the page, with the saving derived from the guide prices |
-| Store | Seven items, every one sold out, discovered one at a time | Said once at the top, with a restock list |
-| Structured data | None | `ProfessionalService` and `Service`, placeholder fields omitted rather than invented |
-| Dead product URLs | Roughly twice as many URLs as products | A 404 that routes |
+| Structured data | None | `ProfessionalService` and two `Service` nodes, placeholder fields omitted rather than invented |
+| Dead product URLs | Roughly twice as many URLs as products | A 404 that routes — which now also catches this build's own retired `/guides` and `/shop` |
 
 ## The booking flow
 
-`components/Booking.tsx`, `app/actions.ts`, `lib/slots.ts`, `lib/ics.ts`.
+`components/Booking.tsx`, `app/actions.ts`, `lib/slots.ts`, `lib/availability.ts`,
+`lib/busy.ts`, `lib/ics.ts`, and the admin at `app/admin/`.
 
 **What makes it better than a scheduler:**
 
@@ -75,18 +88,33 @@ tier covers a site this size.
   returns 12 server-side messages, a slot too short for the chosen session is rejected with
   a sentence explaining why, and the answers come back filled in rather than wiped.
 
+**The availability loop, closed on 2026-08-27.** The seam this section used to describe
+is filled:
+
+- **He edits his own hours at `/admin`** — weekly windows, days off, lead time and
+  horizon — behind a PIN (`MIGAS_ADMIN_PIN`), saved as one JSON document in the
+  project's Blob store, no commit needed. The page is plain forms posting server
+  actions, so it works from a phone in a grow room with no JavaScript downloaded.
+- **His calendar removes taken times.** `MIGAS_BUSY_ICS_URL` points at the private
+  iCal address of his own calendar. Every event on it removes or shortens the slots it
+  covers, and the loop closes through the invite: a confirmed booking lands on his
+  calendar, the feed carries it, the slot is gone for the next visitor. Recurring
+  events are deliberately not expanded (counted and logged instead) — recurring
+  commitments belong in the windows, the feed exists for one-off collisions. Every
+  feed failure is open: unset, unreachable or unparseable, the grid renders from the
+  windows alone and the form stays up.
+- **The last four seconds are still honest.** Two visitors submitting the same moment
+  before the first booking reaches his calendar both pass. He confirms by reply, so
+  that collision costs an apology rather than a no-show.
+
 **What it deliberately is not:**
 
-- **Not a calendar.** It does not know what is already booked, does not sync, and does not
-  stop two people taking the same 9am four seconds apart. Slots come from a weekly pattern.
-  Hand-writing live availability is how you get double-booked. The seam is `slotGrid()` in
-  `lib/slots.ts`. Mitigation in the meantime: every confirmed call lands in his own calendar
-  as a real event, so his calendar is the record.
 - **It takes no card.** Not laziness — unresolved. Stripe's published restricted-business
   list prohibits *"Courses and information on cultivating marijuana"*, and Calendly, Acuity
   and Setmore all settle through Stripe, Square or PayPal. Which processor will underwrite
   him is a question for him and his bank, and a checkout built against the wrong answer is
-  work done twice.
+  work done twice. First question on that path: what settles his existing Squarespace
+  store sales today, and does it know what it is settling?
 
 ## Environment
 
@@ -100,6 +128,9 @@ a chat window.
 | `SMTP_USER` / `SMTP_PASS` | Omitted means an unauthenticated relay, which almost no provider allows. |
 | `SMTP_FROM` | Falls back to `SMTP_USER`. Must be an address that mailbox is allowed to send as. |
 | `MIGAS_NOTIFY_TO` | Falls back to `SITE.email`, which is a placeholder — so notification is skipped until one or the other is real. |
+| `MIGAS_ADMIN_PIN` | `/admin` says it is not switched on and nothing can sign in. |
+| `BLOB_READ_WRITE_TOKEN` | Availability edits cannot be saved; the grid serves the `lib/site.ts` defaults and `/admin` says so. Written by Vercel when a Blob store is attached to the project. |
+| `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address; treat that URL as a secret. |
 
 Any mailbox with SMTP works: his own domain mail, Google Workspace, Fastmail, whatever he
 already has. No new account and no new bill.
@@ -127,10 +158,9 @@ page happens to request.
 | Run-Off Guide cover | `bfbe6a96-ab4a-4d25-9c40-aa3dd48add9e/ROGbutton2.png` |
 | Grow gallery | `IMG_9011.jpg` – `IMG_9014.jpg`, same prefix, individual UUIDs |
 
-The five covers map one-to-one onto `GUIDES` plus `BUNDLE` in `lib/site.ts` — FG/VG/ROG/HWG
-and TCP against flower / veg / run-off / automation / complete. Five products, five covers,
-nothing missing on either side, which is a useful independent check that the product list
-read off their site is complete.
+The five covers mapped one-to-one onto the guide list this build used to sell — retired
+2026-08-27 when he took guide selling off the site. The URLs stay recorded because
+permission was granted and the covers may yet be wanted for the Patreon section.
 
 **The white signature logo is probably the one to use.** This build is near-black
 (`ink #060403`) and the primary is likely dark-on-transparent.
@@ -161,9 +191,25 @@ reads as work. Search for `PLACEHOLDER` to find each one in place. Ordered by wh
 to leave alone.
 
 - [ ] **An email address.** `SITE.email`. There is no contact address anywhere on the live site.
-      An operator who will not DM a stranger currently has no way to reach him at all.
-- [ ] **Who processes his payments** — and has anyone ever asked them about the cannabis
-      education category? Everything about how money moves depends on this answer.
+      An operator who will not DM a stranger currently has no way to reach him at all. It also
+      unlocks the true `METHOD:REQUEST` invite (see `lib/ics.ts`).
+- [ ] **Set the booking environment, then book a real test call end to end.**
+      `MIGAS_ADMIN_PIN`, a Blob store on the Vercel project, `MIGAS_BUSY_ICS_URL` from his
+      calendar's private iCal address, and the SMTP set. `/admin` shows all four as a status
+      panel, red until real. Done means: a test booking arrives in his inbox with photos and
+      invite, lands on his phone calendar, and the slot disappears from the grid.
+- [ ] **The co-management project minimum.** `COMANAGEMENT`. He said a minimum exists and
+      did not put a figure on it. The page says "a project minimum applies" without a number
+      until he sets one.
+- [ ] **Confirm the 30 and 90 minute prices.** $250/hr is his; $125 and $375 are pro-rata
+      arithmetic on it. If calls start at a full hour, delete the 30-minute session from
+      `SESSIONS` and nothing else changes.
+- [ ] **Patreon growth data and member quotes.** `PATREON.growth` and `PATREON.quotes`. Both
+      come from his own dashboard; the section renders without them until they land. Refresh
+      `PATREON.stats` from the public page and bump `checkedOn` when touched.
+- [ ] **Review text.** `REVIEWS`. Transcribe the six images on the live site. Highest-return
+      hour on the project — the cards render as visible empty slots until then, because
+      inventing a testimonial is not a placeholder.
 - [ ] **His logo, as a file — the letterforms only.** `components/Mark.tsx` now reproduces the
       lockup's actual construction: MIGAS set once, then again directly beneath as a vertical
       mirror, the two rows meeting on a shared axis. That was verified against his artwork
@@ -174,28 +220,23 @@ to leave alone.
       heavy and angular, closer to blackletter, and they cannot be traced from a screenshot
       because the strokes overhang the disc onto pure black where they are indistinguishable
       from the background.
-- [ ] **Consulting rates.** `SESSIONS`. He has never published any, so $150/$300/$500 is a
-      proposal built from published comparables in the niche and from the principle that a live
-      hour should cost more than a $200 guide. It should not survive contact with him.
-- [ ] **Review text.** `REVIEWS`. Transcribe the six images on the live site. Highest-return
-      hour on the project — the cards render as visible empty slots until then, because
-      inventing a testimonial is not a placeholder.
-- [ ] **His availability.** `AVAILABILITY.windows`. Currently a plausible shape, not his diary.
-- [ ] **The runoff numbers on the diagram.** `DIAGRAM`. A specific runoff target on a
-      consultant's page reads as his recommendation. Confirm them or the labels go generic.
+- [ ] **Who processes his payments** — and has anyone ever asked them about the cannabis
+      education category? Everything about how money moves depends on this answer. Start with
+      whatever settles his existing Squarespace store sales today.
+- [ ] **The runoff numbers on the diagram.** `DIAGRAM`, now rendered on /co-management. A
+      specific runoff target on a consultant's page reads as his recommendation. Confirm them
+      or the labels go generic.
 - [ ] **The facility name.** `SITE.facility`. The site claims "director of Michigan's top
       licensed cannabis facility" and never names it — the strongest credibility asset he has,
       going unused. Plenty of people keep their employer separate from their personal brand
       deliberately, so ask before filling it in.
-- [ ] **Store product URLs.** `buyUrl` on each guide. The guides already sell today. A URL there
-      turns the request form into a real buy button with no code change.
 - [ ] **Sign off on the footer credit, and its wording.** It currently reads "Baked by Glazed
       Web". The pun is the studio's, and in his field "baked" reads a second way — charming to a
       grower, slightly off-message to an institutional buyer, on a site otherwise built in a
       deliberately commercial register. It is our joke in his footer, so it is his call.
       Removing it, or changing the line, is one line in `components/Footer.tsx`.
-- [ ] **Confidentiality, rescheduling, and the guide-credit question.** `FAQ`. Licensed
-      operators will ask about the first before they book.
+- [ ] **Confidentiality and rescheduling.** `FAQ`. Licensed operators will ask about the
+      first before they book.
 
 ## The look
 
@@ -213,15 +254,20 @@ both gives you either unreadable links or washed-out buttons. Button labels are 
 ## Layout
 
 ```
-lib/site.ts     Every fact about the business. One edit per correction.
-lib/slots.ts    Slot generation, timezone handling, and the calendar seam.
-lib/ics.ts      Calendar invites, hand-rolled. Timezone conversion and RFC 5545 folding.
-lib/forms.ts    Form types and limits — NOT in app/actions.ts, see below.
-app/actions.ts  The four server actions, SMTP, and photo attachments.
-app/globals.css Component classes and every @keyframes on the site.
+lib/site.ts         Every fact about the business. One edit per correction.
+lib/slots.ts        Slot generation and timezone handling; takes runtime windows + busy.
+lib/availability.ts His editable hours: Blob-stored JSON over lib/site.ts defaults,
+                    plus openSlots()/bookableSlot(), the two calls everything books through.
+lib/busy.ts         His calendar's iCal feed, parsed into busy intervals. Fails open.
+lib/admin-auth.ts   The PIN gate for /admin. One operator, one cookie, no store.
+lib/ics.ts          Calendar invites, hand-rolled. Timezone conversion and RFC 5545 folding.
+lib/forms.ts        Form types and limits — NOT in app/actions.ts, see below.
+app/actions.ts      The booking and question actions, SMTP, and photo attachments.
+app/admin/          The availability editor. Plain forms, no client JavaScript.
+app/globals.css     Component classes and every @keyframes on the site.
 tailwind.config.ts  The whole palette, with measured contrast ratios.
 components/Sun.tsx      His sun, drawn and alive.
-components/FeedRig.tsx  The fertigation diagram on /guides.
+components/FeedRig.tsx  The fertigation diagram, now on /co-management.
 components/Booking.tsx  The booking flow.
 ```
 
@@ -301,8 +347,8 @@ never the dev server.
 
 ```bash
 rm -rf .next && npm run build && npx next start -p 4491 -H 127.0.0.1 &
-node tools/audit.mjs     --base http://127.0.0.1:4491 --routes /,/consulting,/guides,/guides/flower,/guides/complete,/shop,/reviews,/connect
-node tools/contrast.mjs  --base http://127.0.0.1:4491 --routes /,/consulting,/guides,/shop,/connect,/reviews
+node tools/audit.mjs     --base http://127.0.0.1:4491 --routes /,/consulting,/co-management,/reviews,/connect,/admin
+node tools/contrast.mjs  --base http://127.0.0.1:4491 --routes /,/consulting,/co-management,/connect,/reviews,/admin
 node tools/animating.mjs --url  http://127.0.0.1:4491/ --selector ".sun-cell-1"
 ```
 

@@ -1,21 +1,29 @@
+import { toInstant } from "./ics";
 import { AVAILABILITY, SESSIONS } from "./site";
 
 /**
- * Slot generation, and an honest account of what it does not do.
+ * Slot generation.
  *
- * WHAT THIS IS. Given the weekly windows in AVAILABILITY, it produces the next couple
- * of weeks of bookable times as plain data, so the booking form can render them as
- * real radio inputs on the server. That is the reason to generate them here rather
- * than in the browser: the times exist in the HTML, so the form works with JavaScript
- * switched off, and a screen reader gets the same thing a mouse does.
+ * WHAT THIS IS. Given weekly windows, it produces the next couple of weeks of
+ * bookable times as plain data, so the booking form can render them as real radio
+ * inputs on the server. That is the reason to generate them here rather than in the
+ * browser: the times exist in the HTML, so the form works with JavaScript switched
+ * off, and a screen reader gets the same thing a mouse does.
  *
- * WHAT THIS IS NOT, and this is the part to read before promising a client anything.
- * It does not know whether a slot is already booked. It does not sync to his calendar.
- * It does not stop two people submitting the same slot four seconds apart. Those are
- * live-availability problems, and hand-writing them is how you end up double-booked at
- * 9am on a Tuesday. This module is the seam: replace `slotGrid()` with a call to a
- * calendar feed and everything downstream — the form, the action, the confirmation —
- * is unchanged. The README says where.
+ * THE SEAM THIS FILE SPENT ITS FIRST WEEKS PROMISING IS NOW FILLED. The header used
+ * to say, honestly, that a weekly pattern does not know what is already booked and
+ * that a calendar feed belongs here. It does now: `slotGrid` takes a
+ * RuntimeAvailability whose windows come from the /admin editor (lib/availability.ts)
+ * and whose `busy` intervals come from his own calendar's ICS feed (lib/busy.ts). A
+ * slot that collides with a calendar event is either shortened to the session that
+ * still fits before it, or dropped. Called with no runtime it behaves exactly as it
+ * always did — the static windows, nothing busy — which is what keeps it testable
+ * with nothing mocked.
+ *
+ * WHAT IS STILL TRUE: two people submitting the same moment four seconds apart both
+ * pass, because the feed only knows about a booking once it is on his calendar. The
+ * confirmation flow absorbs that: he confirms by reply, so a collision costs an
+ * apology, not a no-show.
  *
  * ONE GRID FOR ALL THREE SESSION LENGTHS. Slots step every 30 minutes, and each one
  * carries the longest session that still fits inside its window, so 10:30 in a window
@@ -51,6 +59,26 @@ export type SlotDay = {
   /** "Aug 12" */
   label: string;
   slots: Slot[];
+};
+
+/** What slotGrid actually renders from: the stored windows plus the calendar feed.
+ *  lib/availability.ts assembles one; the default below reproduces the static build. */
+export type RuntimeAvailability = {
+  windows: readonly { day: number; from: string; to: string }[];
+  /** "YYYY-MM-DD" days removed whole: harvests, holidays, travel. */
+  blockedDates: readonly string[];
+  leadDays: number;
+  horizonDays: number;
+  /** Busy intervals from his calendar, as epoch ms. */
+  busy: readonly { start: number; end: number }[];
+};
+
+const STATIC_RUNTIME: RuntimeAvailability = {
+  windows: AVAILABILITY.windows,
+  blockedDates: [],
+  leadDays: AVAILABILITY.leadDays,
+  horizonDays: AVAILABILITY.horizonDays,
+  busy: [],
 };
 
 const DAY_MS = 86_400_000;
@@ -107,25 +135,43 @@ const clock = (mins: number) => {
  * loses one day of availability during evenings. Fixing it properly means resolving the
  * zone's own day boundary, which is the same work as the calendar-feed seam below.
  */
-export function slotGrid(now: Date = new Date()): SlotDay[] {
+export function slotGrid(
+  now: Date = new Date(),
+  runtime: RuntimeAvailability = STATIC_RUNTIME
+): SlotDay[] {
   const days: SlotDay[] = [];
-  const start = now.getTime() + AVAILABILITY.leadDays * DAY_MS;
+  const start = now.getTime() + runtime.leadDays * DAY_MS;
   // Noon UTC on the first offered day. See the header comment for why noon.
   const firstNoon = Math.floor(start / DAY_MS) * DAY_MS + 12 * 60 * 60 * 1000;
 
-  for (let i = 0; i < AVAILABILITY.horizonDays; i++) {
+  // A busy interval blocks a length when the two overlap at all. `start < b.end`
+  // rather than <=, so a call may begin the minute a calendar event ends.
+  const collides = (startMs: number, endMs: number) =>
+    runtime.busy.some((b) => startMs < b.end && endMs > b.start);
+
+  for (let i = 0; i < runtime.horizonDays; i++) {
     const p = parts(new Date(firstNoon + i * DAY_MS));
-    const windows = AVAILABILITY.windows.filter((w) => w.day === WEEKDAY_INDEX[p.weekday]);
+    const windows = runtime.windows.filter((w) => w.day === WEEKDAY_INDEX[p.weekday]);
     if (windows.length === 0) continue;
 
     const date = `${p.year}-${MONTHS[p.month]}-${pad(Number(p.day))}`;
+    if (runtime.blockedDates.includes(date)) continue;
+
     const slots: Slot[] = [];
     for (const w of windows) {
       const close = minutes(w.to);
       for (let t = minutes(w.from); t + LENGTHS[LENGTHS.length - 1] <= close; t += AVAILABILITY.stepMinutes) {
-        const maxMinutes = LENGTHS.find((m) => t + m <= close);
+        const value = `${date}T${pad(Math.floor(t / 60))}:${pad(t % 60)}`;
+        // Epoch resolution only when there is something to collide with: 72 slots
+        // times two Intl passes is measurable, and an empty calendar needs neither.
+        const startMs = runtime.busy.length ? toInstant(value).getTime() : 0;
+        const maxMinutes = LENGTHS.find(
+          (m) =>
+            t + m <= close &&
+            (!runtime.busy.length || !collides(startMs, startMs + m * 60_000))
+        );
         if (!maxMinutes) continue;
-        slots.push({ value: `${date}T${pad(Math.floor(t / 60))}:${pad(t % 60)}`, time: clock(t), maxMinutes });
+        slots.push({ value, time: clock(t), maxMinutes });
       }
     }
     if (slots.length === 0) continue;
@@ -133,20 +179,6 @@ export function slotGrid(now: Date = new Date()): SlotDay[] {
   }
 
   return days;
-}
-
-/**
- * Server-side check that a posted slot is one this site actually offered, and long
- * enough for the session chosen. Without this, the value is just a string a visitor
- * typed — and the no-JS path can genuinely reach here with a slot too short for a
- * 90-minute consult, because there is no client to grey it out.
- */
-export function slotIsBookable(value: string, sessionMinutes: number, now: Date = new Date()) {
-  for (const day of slotGrid(now)) {
-    const hit = day.slots.find((s) => s.value === value);
-    if (hit) return hit.maxMinutes >= sessionMinutes;
-  }
-  return false;
 }
 
 /**

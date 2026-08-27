@@ -3,7 +3,7 @@ import Link from "next/link";
 import Booking from "@/components/Booking";
 import { SessionCard } from "@/components/cards";
 import { AVAILABILITY, FAQ, PROCESS, RATE, SESSIONS, money } from "@/lib/site";
-import { slotGrid } from "@/lib/slots";
+import { openSlots } from "@/lib/availability";
 
 export const metadata: Metadata = {
   title: "Consulting",
@@ -39,8 +39,11 @@ export const metadata: Metadata = {
  */
 export const dynamic = "force-dynamic";
 
-export default function Consulting() {
-  const days = slotGrid();
+export default async function Consulting() {
+  // Stored windows minus blocked dates minus his calendar. See lib/availability.ts;
+  // the page stays force-dynamic for the same reason it always was, plus one more:
+  // the busy feed can change between any two requests.
+  const days = await openSlots();
 
   return (
     <>

@@ -3,7 +3,8 @@
 import nodemailer from "nodemailer";
 import { INTAKE, SESSIONS, SITE } from "@/lib/site";
 import { PHOTO_LIMITS, type FormState } from "@/lib/forms";
-import { describeSlot, slotIsBookable } from "@/lib/slots";
+import { describeSlot } from "@/lib/slots";
+import { bookableSlot } from "@/lib/availability";
 import { buildIcs, icsDataUrl } from "@/lib/ics";
 
 /**
@@ -197,9 +198,11 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
   values.slot = slot;
   if (!slot) {
     errors.slot = "Pick a time.";
-  } else if (session && !slotIsBookable(slot, session.minutes)) {
-    // Reachable honestly: with no JavaScript nothing greys out the 11:30 slot that
-    // cannot hold a 90-minute consult, so this message has to explain itself.
+  } else if (session && !(await bookableSlot(slot, session.minutes))) {
+    // Reachable honestly, two ways: with no JavaScript nothing greys out the 11:30
+    // slot that cannot hold a 90-minute consult, and with the calendar feed on, a
+    // time can genuinely close between page load and submit. Same sentence covers
+    // both, and it has to explain itself.
     errors.slot =
       `That time is no longer open for a ${session.minutes}-minute session. Pick another.`;
   }

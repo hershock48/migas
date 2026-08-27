@@ -26,10 +26,12 @@ import { AVAILABILITY, SITE } from "./site";
  */
 
 /** The zone's UTC offset, in minutes, at a given instant. Read from Intl rather than
- *  hardcoded, so it is right on both sides of a clock change without a table. */
-function offsetMinutes(at: Date): number {
+ *  hardcoded, so it is right on both sides of a clock change without a table. Takes the
+ *  zone as an argument because the busy-calendar feed (lib/busy.ts) carries events in
+ *  whatever TZID the calendar app wrote, not only ours. */
+function offsetMinutes(at: Date, timeZone: string): number {
   const name = new Intl.DateTimeFormat("en-US", {
-    timeZone: AVAILABILITY.timeZone,
+    timeZone,
     timeZoneName: "longOffset",
   })
     .formatToParts(at)
@@ -39,8 +41,8 @@ function offsetMinutes(at: Date): number {
   return (m[1] === "-" ? -1 : 1) * (Number(m[2]) * 60 + Number(m[3]));
 }
 
-/** "2026-08-12T09:30" in AVAILABILITY.timeZone → the actual instant. */
-export function toInstant(local: string): Date {
+/** "2026-08-12T09:30" as wall time in `timeZone` → the actual instant. */
+export function toInstantIn(local: string, timeZone: string): Date {
   const [d, t] = local.split("T");
   const [y, mo, da] = d.split("-").map(Number);
   const [h, mi] = (t ?? "00:00").split(":").map(Number);
@@ -49,9 +51,12 @@ export function toInstant(local: string): Date {
   // offset at the corrected instant, which is what makes the hour around a DST boundary come
   // out right instead of an hour off.
   let ms = naive;
-  for (let i = 0; i < 2; i++) ms = naive - offsetMinutes(new Date(ms)) * 60_000;
+  for (let i = 0; i < 2; i++) ms = naive - offsetMinutes(new Date(ms), timeZone) * 60_000;
   return new Date(ms);
 }
+
+/** "2026-08-12T09:30" in AVAILABILITY.timeZone → the actual instant. */
+export const toInstant = (local: string): Date => toInstantIn(local, AVAILABILITY.timeZone);
 
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
