@@ -5,20 +5,22 @@
  * published wrong. Everything the site states about the business reads from here, so
  * a correction is one edit.
  *
- * WHAT IS REAL AND WHAT IS NOT. Anything marked PLACEHOLDER was invented or inferred
- * and has to be confirmed before this goes live. The guide names and prices, the merch
- * and its prices, and the social links were all read off mi-gas.net directly and are
- * his. The consulting session types and rates are a proposal — he has never published
- * rates, so somebody has to invent a starting point and it should not survive contact
- * with him.
+ * THE OWNER CALL, 2026-08-27, which reshaped this file. He is in, and he gave
+ * direction that retired half of what used to live here:
  *
- * ONE ATTRIBUTION TO RE-CHECK. The four guide `blurb` strings were recorded here as read
- * verbatim off his site, and they do not read like his site. His published voice is
- * all-lowercase and loose; these are ours. Either they came off a product page written in
- * a different register, or the attribution is wrong. A later attempt to re-verify failed —
- * his /guides page is not fetchable and his subpages are not indexed — so this is flagged
- * rather than resolved. Confirm with him before launch: publishing our words as his is a
- * worse fault than a blurb that needs rewriting.
+ *   - Merch sales are off the site. MERCH is gone with the /shop page.
+ *   - The site stops selling the guides. GUIDES and BUNDLE are gone with /guides;
+ *     the Patreon is advertised instead of undercut. See PATREON below.
+ *   - Consulting is $250 per hour, his number, stated on the call. RATE below.
+ *   - A new co-management offer, his whole outline, in COMANAGEMENT below.
+ *   - Booking should adjust easily and land on his phone calendar. That work lives
+ *     in lib/availability.ts and app/admin, not here.
+ *
+ * WHAT IS REAL AND WHAT IS NOT. Anything marked PLACEHOLDER was invented or inferred
+ * and has to be confirmed before this goes live. The social links were read off
+ * mi-gas.net directly and are his. The hourly rate and the co-management terms are
+ * his, from the call. The 30 and 90 minute prices are arithmetic on his rate rather
+ * than numbers he spoke, and are flagged where they are set.
  *
  * ── HOUSE VOICE ──────────────────────────────────────────────────────────────────────
  * Measured against his own site, because "does it match?" deserves a count rather than an
@@ -112,133 +114,56 @@ export const SITE = {
   region: "Michigan",
 } as const;
 
-export type Guide = {
-  slug: string;
-  name: string;
-  price: number;
-  blurb: string;
-  includes: string[];
-  covers: string;
-  /**
-   * The live product URL on his existing store.
-   *
-   * Null everywhere for now, and that is the seam rather than an omission: with a URL
-   * here the page renders a real buy button straight to his working checkout; without
-   * one it renders a request form and he invoices. The guides already sell today, so
-   * pasting four URLs in is the difference between a demo and a shop — and it needs no
-   * code change to happen.
-   */
-  buyUrl?: string | null;
-  /** Longer sell copy for the guide's own page. Kept separate from `blurb`, which has to
-   *  work in a four-across grid. */
-  detail?: string[];
-};
+/**
+ * THE PATREON, advertised rather than resold. His direction on the 2026-08-27 call:
+ * remove the store, steer away from selling posts, and give the Patreon one section
+ * that shows what it actually is, with the proof and a clickable link.
+ *
+ * Every number in `stats` was read off his public Patreon page on the date recorded,
+ * so each one is checkable by anyone who clicks through. They will drift; the page is
+ * the authority and this is a snapshot. Re-read the page and bump the date when they
+ * are refreshed.
+ *
+ * `growth` and `quotes` are seams, empty on purpose. He offered his member-growth
+ * history and his member comments on the call, and both only exist inside his own
+ * Patreon dashboard. Until he exports them the section renders without a chart and
+ * without quotes rather than with invented ones.
+ */
+export const PATREON = {
+  url: "https://www.patreon.com/Mi_gas_",
+  stats: {
+    paidMembers: 45,
+    posts: 162,
+    priceFrom: 100,
+    /** The day the three numbers above were read off the public page. */
+    checkedOn: "August 27, 2026",
+  },
+  /** PLACEHOLDER seam: [{ label: "2024", members: 12 }, ...] from his dashboard.
+   *  Renders a growth strip the moment it has two or more points. */
+  growth: [] as { label: string; members: number }[],
+  /** PLACEHOLDER seam: member comments he picks, with whatever attribution each
+   *  member agreed to. Same rule as REVIEWS: nothing invented, gaps shown honestly. */
+  quotes: [] as { quote: string; who: string }[],
+} as const;
 
 /**
- * Read verbatim off mi-gas.net. Prices, names and the `blurb` copy are his.
+ * CONSULTING. The rate is his: $250 per hour, stated on the 2026-08-27 call. That
+ * retires the "all placeholder" era this block spent its first two weeks in.
  *
- * The `detail` lines are new writing, and they are framing rather than content: what the
- * program is, who it suits, what arrives. Nothing in them claims a technique or a number
- * he has not published. Filling a sales page with invented specifics is how you sell
- * something the product does not contain.
+ * The three lengths survive because a run in trouble and a facility writing SOPs do
+ * not need the same hour. Each price is derived from RATE rather than typed, so the
+ * day he moves the rate every card moves with it.
+ *
+ * ONE DERIVATION TO CONFIRM WITH HIM. He said "$250 per hour". The 30 minute call at
+ * $125 and the 90 at $375 are pro-rata arithmetic on that sentence, not prices he
+ * spoke. If he would rather hold a one-hour minimum, delete the 30-minute session and
+ * nothing else changes.
  */
-export const GUIDES: Guide[] = [
-  {
-    slug: "flower",
-    name: "Flower Guide",
-    price: 200,
-    blurb:
-      "The entire flower program as MI Gas runs it, flip to harvest. Methods and practices that apply to gardens of any size.",
-    includes: ["Guide video library", "Downloadable PDF"],
-    covers: "Flip to harvest",
-    buyUrl: null,
-    detail: [
-      "The flower program as it is actually run in a licensed room, week by week from flip to chop.",
-      "Video alongside the written guide, because a technique you can watch once is worth more than three paragraphs describing it.",
-      "Written for scale independence. The same decisions apply to a tent and to a flower room; the numbers move, the reasoning does not.",
-    ],
-  },
-  {
-    slug: "veg",
-    name: "Veg Guide",
-    price: 200,
-    blurb:
-      "The full veg program with video demonstration, from clone and transplant through to flip. Faster growth, better structure, bigger canopies.",
-    includes: ["Guide video gallery", "Downloadable PDF"],
-    covers: "Clone to flip",
-    buyUrl: null,
-    detail: [
-      "Clone, transplant, and everything up to the day you flip. Veg is where the size of the harvest is decided, and where most rooms lose it.",
-      "Aimed at structure as much as speed. A canopy that finishes evenly starts as a plant built for it.",
-      "Pairs directly with the Flower Guide. Bought together with Run-Off, they are the Complete Package.",
-    ],
-  },
-  {
-    slug: "run-off",
-    name: "Run-Off Guide",
-    price: 200,
-    blurb:
-      "The runoff SOP, developed across years of trials in different rooms, medias and nutrient lines. Makes plant health simpler to hold at every phase.",
-    includes: ["Guide video gallery", "Downloadable PDF"],
-    covers: "Every growth phase",
-    buyUrl: null,
-    detail: [
-      "A standard operating procedure, written to be followed. Runoff is the only direct read you get on what the root zone is doing, and most rooms never take it.",
-      "Developed across years of trials in different rooms, medias and nutrient lines, which is why it survives being applied to yours.",
-      "The one program that makes the other two easier. Start here if you are choosing a single guide.",
-    ],
-  },
-  {
-    slug: "automation",
-    name: "Hand-Water to Automation",
-    price: 200,
-    blurb:
-      "Multiple strategies for the hardest transition in a grow: getting off hand-watering and onto automated feeding without losing a run.",
-    includes: ["Downloadable PDF"],
-    covers: "The transition",
-    buyUrl: null,
-    detail: [
-      "The transition nobody writes about: moving off hand-watering without paying for it with a run.",
-      "More than one route, because the right one depends on your media, your room and how much of it you can change at once.",
-      "Written for the grower who has outgrown the watering can and cannot afford a bad first attempt at automation.",
-    ],
-  },
-];
+export const RATE = 250;
 
-/**
- * The bundle. Priced by him at $500 against $600 bought separately.
- *
- * Typed as a Guide so it renders through exactly the same page and card as the rest —
- * the live site treats it as a fifth tile, which is how the highest-value thing on the
- * site ends up looking like the cheapest.
- */
-export const BUNDLE: Guide & { contains: string[] } = {
-  slug: "complete",
-  name: "The Complete Package",
-  price: 500,
-  contains: ["flower", "veg", "run-off"],
-  blurb: "Flower, Veg and Run-Off together. The whole program, start to finish.",
-  includes: ["Guide video gallery", "Downloadable PDFs"],
-  covers: "Clone to harvest",
-  buyUrl: null,
-  detail: [
-    "Veg, Flower and Run-Off together: the full program from clone to chop, plus the SOP that holds it steady.",
-    "Bought separately these are $600. Together they are $500, and the reason to take them together is that they were built to be read together.",
-    "The Hand-Water to Automation guide is separate and stays separate. It solves a different problem, for a grower at a different point.",
-  ],
-};
+/** Pro-rata on RATE. Kept as a function so a price can never disagree with the rate. */
+const atRate = (minutes: number) => Math.round((RATE * minutes) / 60);
 
-/**
- * CONSULTING — ALL PLACEHOLDER.
- *
- * He has never published rates, so these are a proposal and a conversation starter,
- * not his prices. Two things informed them rather than nothing: published
- * comparables in this niche run from roughly $200/hr at the grow-operations end to
- * $325/hr at the licensing end, and a live hour of his time should cost MORE than a
- * $200 guide, because the guide is the scalable product and the call is the premium
- * one. Credit a guide purchase against a first consult and the guide becomes a paid
- * lead magnet rather than a competitor.
- */
 export type SessionType = {
   slug: string;
   name: string;
@@ -254,7 +179,7 @@ export const SESSIONS: SessionType[] = [
     slug: "triage",
     name: "Room Triage",
     minutes: 30,
-    price: 150,
+    price: atRate(30),
     summary: "Something is wrong right now and you need an answer this week.",
     forWho: "A run in trouble: deficiency, pests, a runoff number that will not settle.",
     includes: ["Photo review before the call", "Written next actions after"],
@@ -263,7 +188,7 @@ export const SESSIONS: SessionType[] = [
     slug: "program",
     name: "Program Review",
     minutes: 60,
-    price: 300,
+    price: atRate(60),
     summary: "Your whole feed and environment program, examined end to end.",
     forWho: "A grow that works but underperforms, or one you are about to scale.",
     includes: [
@@ -274,18 +199,83 @@ export const SESSIONS: SessionType[] = [
   },
   {
     slug: "facility",
-    name: "Facility & SOP Consult",
+    name: "Facility Call",
     minutes: 90,
-    price: 500,
-    summary: "Standard operating procedures for a team that has to run this without you.",
-    forWho: "Licensed operations, new builds, or a facility standardizing across rooms.",
+    price: atRate(90),
+    summary: "Rooms, SOPs and team, walked end to end with the people who run them.",
+    forWho: "Licensed operations, new builds, or a facility weighing co-management.",
     includes: [
       "Full intake and photo review",
-      "Draft SOP tailored to your rooms",
+      "Written recommendations",
       "Two follow-up question threads",
     ],
   },
 ];
+
+/**
+ * CO-MANAGEMENT. His outline from the 2026-08-27 call, close to verbatim: we run the
+ * irrigation and the environment remotely, the head grower on the ground runs the
+ * program, and the room gets the results of the licensed facility's playbook without
+ * hiring its director.
+ *
+ * Facts that are his, from the call: the service list, $50 to $150 per light by
+ * project size, the sensor requirement including the TrolMaster exclusion, the
+ * head-grower condition, the relocation network, optional site visits, genetic
+ * sourcing through Bractworx or another nursery, and design-build as an ask.
+ *
+ * PLACEHOLDER, one number: the project minimum. He said a minimum exists and did not
+ * put a figure on it, so the copy says "project minimum" without one. Get the number.
+ */
+export const COMANAGEMENT = {
+  perLight: { from: 50, to: 150 },
+  services: [
+    {
+      name: "Irrigation, run remotely",
+      body: "Shot sizes, timings and dryback targets set and adjusted off your sensor data, run by run. The program that gets watched daily, not the one that gets installed and left.",
+    },
+    {
+      name: "Environmental parameters",
+      body: "Temperature, humidity and VPD targets per phase, day and night set separately, adjusted as the canopy changes rather than on a calendar.",
+    },
+    {
+      name: "Scheduling, with your labor",
+      body: "Defol, transplant, flip and harvest planned against the crew you actually have, so the room never waits on a task and the crew never waits on the room.",
+    },
+    {
+      name: "Cost reduction",
+      body: "Feed, media and labor spending reviewed against what the room measurably needs. In our own rooms, dialing salts back cut nutrient cost while holding yield. What yours can cut depends on where it is spending.",
+    },
+  ],
+  /** The conditions, stated up front because they filter better than a form does. */
+  requirements: [
+    {
+      name: "Substrate sensors we can read",
+      body: "Aroya, Pinnacle, Growlink or equivalent. Remote steering is only as good as the data feed, and we do not work off TrolMaster sensors.",
+    },
+    {
+      name: "A head grower who runs the program",
+      body: "Somebody on the ground has to own the day to day and follow the plan. Co-management steers the room; it cannot walk it.",
+    },
+  ],
+  extras: [
+    {
+      name: "Head growers, ready to relocate",
+      body: "A network of proven commercial head growers, available if your room needs its person on the ground.",
+    },
+    {
+      name: "On-site visits, if you want them",
+      body: "Regular in-person visits are optional and scheduled around your runs.",
+    },
+    {
+      name: "Genetic sourcing included",
+      body: "Clean cuts sourced through Bractworx or another nursery we trust, so a new strain does not arrive carrying somebody else's problem.",
+    },
+    {
+      name: "Design-build, by conversation",
+      body: "New rooms and retrofits are taken case by case. Ask on the call.",
+    },
+  ],
+} as const;
 
 /**
  * The intake questions.
@@ -373,17 +363,6 @@ export const INTAKE = [
     required: true,
   },
 ] as const;
-
-/** Read off mi-gas.net. Every item is currently sold out on the live site. */
-export const MERCH = [
-  { name: "MI Gas Tbird Hoodie", price: 41.4, kind: "Hoodie", soldOut: true },
-  { name: "MI Gas Her Tbird Hoodie", price: 41.4, kind: "Hoodie", soldOut: true },
-  { name: "PRIMO DANKS Impala Hoodie", price: 41.4, kind: "Hoodie", soldOut: true },
-  { name: "MI Gas Tbird Tee", price: 31.9, kind: "Tee", soldOut: true },
-  { name: "MI Gas Her Tbird Tee", price: 31.9, kind: "Tee", soldOut: true },
-  { name: "PRIMO DANKS Impala Tee", price: 31.9, kind: "Tee", soldOut: true },
-  { name: "MI Gas Camo Trucker", price: 50, kind: "Hat", soldOut: true },
-];
 
 /**
  * PLACEHOLDER, all six.
@@ -579,28 +558,20 @@ export const FAQ = [
   },
   {
     q: "Do you consult outside Michigan?",
-    a: "Yes. Calls are remote, and the programs are not state-specific. Facility work in other states is case by case.",
+    a: "Yes. Calls are remote, and the methods are not state-specific. Co-management and facility work in other states is case by case.",
   },
   {
-    q: "I bought a guide. Does that count toward a call?",
-    // PLACEHOLDER, and worth pushing him on: it turns a $200 guide into a paid lead
-    // magnet for a $300 call instead of a competitor to it.
-    a: "PLACEHOLDER: proposed: yes, one guide purchase credits toward your first consult. His call.",
+    q: "What does co-management need from my room?",
+    a: "Substrate sensors we can read remotely, Aroya, Pinnacle, Growlink or equivalent, and a head grower on the ground who will run the program. Both are firm. The details are on the co-management page.",
   },
 ];
 
 export const NAV = [
   { href: "/consulting", label: "Consulting" },
-  { href: "/guides", label: "Guides" },
-  { href: "/shop", label: "Shop" },
+  { href: "/co-management", label: "Co-Management" },
   { href: "/reviews", label: "Reviews" },
   { href: "/connect", label: "Connect" },
 ];
-
-/** What the bundle's contents cost bought one at a time. Derived, so the "saving"
- *  on the page can never disagree with the prices above it. */
-export const bundleSeparately = () =>
-  BUNDLE.contains.reduce((sum, slug) => sum + (GUIDES.find((g) => g.slug === slug)?.price ?? 0), 0);
 
 export const money = (n: number) =>
   n % 1 === 0 ? `$${n.toLocaleString("en-US")}` : `$${n.toFixed(2)}`;

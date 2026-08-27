@@ -7,7 +7,9 @@ import { describeSlot, slotIsBookable } from "@/lib/slots";
 import { buildIcs, icsDataUrl } from "@/lib/ics";
 
 /**
- * Every form on the site posts to one of these three server actions.
+ * Every form on the site posts to one of these server actions. There used to be four;
+ * the restock list went with the shop and the guide request went with the guide pages,
+ * both on the owner's 2026-08-27 direction.
  *
  * WHY SERVER ACTIONS AND NOT A FETCH. A server action attached with
  * `<form action={...}>` submits natively when JavaScript has not loaded, failed, or
@@ -297,67 +299,6 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
 // Local, because importing the formatter from lib/site into a "use server" file for one
 // string is more indirection than the string is worth.
 const money = (n: number) => (n % 1 === 0 ? `$${n.toLocaleString("en-US")}` : `$${n.toFixed(2)}`);
-
-/* ── Restock notify ─────────────────────────────────────────────────────────── */
-
-export async function notifyRestock(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (str(fd, "_trap")) return { status: "done", summary: [] };
-  const email = str(fd, "email");
-  if (!emailLooksReal(email)) {
-    return { status: "error", errors: { email: "That does not look like an email address." }, values: { email } };
-  }
-  const toOwner = await sendMail({
-    to: notifyTo(),
-    subject: "Restock list signup",
-    text: `${email}\nWants to hear about the next merch drop.`,
-  });
-  return {
-    status: "done",
-    delivered: { toOwner, toVisitor: true },
-    summary: [
-      toOwner
-        ? "You are on the list for the next drop."
-        : "Sent. Outgoing mail is not switched on for this build yet.",
-    ],
-  };
-}
-
-/* ── Guide request ──────────────────────────────────────────────────────────── */
-
-/**
- * Interim, and marked interim on the page itself.
- *
- * His guides already sell through a Squarespace store, so the right long-term wiring is
- * a checkout — which is exactly the thing blocked on the processor question. Until that
- * is answered, a request reaches him and he invoices, and the moment a product URL is
- * known it goes in `buyUrl` on the guide in lib/site.ts and the button becomes a real
- * buy button with no code change.
- */
-export async function requestGuide(_prev: FormState, fd: FormData): Promise<FormState> {
-  if (str(fd, "_trap")) return { status: "done", summary: [] };
-  const email = str(fd, "email");
-  const guide = str(fd, "guide");
-  const name = str(fd, "name");
-  const errors: Record<string, string> = {};
-  if (name.length < 2) errors.name = "Your name.";
-  if (!emailLooksReal(email)) errors.email = "An email address we can send it to.";
-  if (Object.keys(errors).length) return { status: "error", errors, values: { name, email } };
-
-  const toOwner = await sendMail({
-    to: notifyTo(),
-    subject: `Guide request - ${guide || "unspecified"} - ${name}`,
-    text: `${name} <${email}>\nWants: ${guide || "not specified"}`,
-  });
-  return {
-    status: "done",
-    delivered: { toOwner, toVisitor: true },
-    summary: [
-      toOwner
-        ? "Request sent. He replies with the invoice and the download."
-        : "Sent. Outgoing mail is not switched on for this build yet.",
-    ],
-  };
-}
 
 /* ── Ask a question ─────────────────────────────────────────────────────────── */
 

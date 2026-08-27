@@ -4,10 +4,10 @@ import { useActionState } from "react";
 import { EMPTY, type FormState } from "@/lib/forms";
 
 /**
- * One small form, used three times: the restock list, the guide request, and the
- * question form on /connect.
+ * One small form. It served three surfaces until the 2026-08-27 owner call retired
+ * the restock list and the guide request; the question form on /connect remains.
  *
- * It is a component rather than three near-identical ones because the interesting
+ * It is a component rather than a page-local form because the interesting
  * behaviour is shared and easy to get wrong in one copy and not the others: native
  * submission when JavaScript is absent (the server action handles the POST either way),
  * errors announced rather than merely coloured, and a success state that replaces the

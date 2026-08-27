@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Booking from "@/components/Booking";
 import { SessionCard } from "@/components/cards";
-import { AVAILABILITY, FAQ, PROCESS, SESSIONS } from "@/lib/site";
+import { AVAILABILITY, FAQ, PROCESS, RATE, SESSIONS, money } from "@/lib/site";
 import { slotGrid } from "@/lib/slots";
 
 export const metadata: Metadata = {
   title: "Consulting",
   description:
-    "Book a cultivation consult: room triage, a full program review, or facility SOP work. Every call starts with an eight-question room intake and your photos, read before you dial in.",
+    "Book a cultivation consult at $250 an hour: room triage, a full program review, or a facility call. Every call starts with an eight-question room intake and your photos, read before you dial in.",
 };
 
 /**
@@ -90,10 +90,10 @@ export default function Consulting() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Sessions</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">How long do you need?</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">One rate, three lengths</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            A room on fire and a facility writing its SOPs are not the same conversation,
-            and pricing them the same serves neither.
+            {money(RATE)} an hour, and you pick how much of one you need. A room in
+            trouble usually fits in thirty minutes; a facility rarely does.
           </p>
         </div>
         <div className="reveal mt-12 grid gap-6 md:grid-cols-3">
@@ -101,23 +101,17 @@ export default function Consulting() {
             <SessionCard key={s.slug} session={s} href="#book" featured={i === 1} />
           ))}
         </div>
-        {/* These three prices are OURS, not his. lib/site.ts: "CONSULTING — ALL
-            PLACEHOLDER. He has never published rates, so these are a proposal and a
-            conversation starter, not his prices." Unlabelled, they turn our guess into
-            his quote on his own site.
-
-            A dashed build note rather than a line of body copy, and that distinction is
-            the whole point: everywhere else this page says "we", it is him speaking to a
-            grower. A sentence in that voice saying the rates are not set would read as
-            him telling customers he has not decided what he charges. The dashed panel is
-            addressed to him instead, which is what components/cards.tsx established for
-            the reviews and what the FAQ drafts use. It comes off when he sets them. */}
+        {/* The rate is his, from the 2026-08-27 call, which retired the "proposed, not
+            yours yet" panel that used to sit here. What remains open is smaller and
+            still his: the 30 and 90 minute prices are pro-rata arithmetic on his $250
+            an hour, not numbers he spoke. Same dashed convention, addressed to him. */}
         <div className="reveal mt-8 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">Proposed, not yours yet</p>
+          <p className="eyebrow">One derivation to confirm</p>
           <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            You have never published a rate, so these three are our suggestion, pitched
-            against what comparable consulting sells for and against your own $200 guides.
-            They are the first thing to change on your say-so.
+            {money(RATE)} an hour is your number. The {money(RATE / 2)} half hour and the{" "}
+            {money((RATE * 3) / 2)} ninety minutes are that number divided and multiplied,
+            not prices you said. If calls should start at a full hour, say so and the
+            half hour comes off.
           </p>
         </div>
       </section>

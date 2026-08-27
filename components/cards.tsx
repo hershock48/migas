@@ -1,34 +1,15 @@
 import Link from "next/link";
-import { money, type Guide, type SessionType } from "@/lib/site";
+import { money, type SessionType } from "@/lib/site";
 
 /**
- * The three card shapes the site reuses. They live together because they share one
+ * The card shapes the site reuses. They live together because they share one
  * decision worth stating once: a card is a link only when the whole card goes
  * somewhere, and when it does, exactly one anchor covers it. Nested links and
  * duplicate "Learn more" anchors are why card grids are miserable with a screen reader
  * and a keyboard — you tab three times per card to move once.
+ *
+ * GuideCard lived here until the owner took guide selling off the site (2026-08-27).
  */
-
-export function GuideCard({ guide }: { guide: Guide }) {
-  return (
-    <Link
-      href={`/guides/${guide.slug}`}
-      className="card group flex flex-col p-6 transition-colors hover:border-edge"
-    >
-      <div className="flex items-start justify-between gap-4">
-        <h3 className="text-lg leading-snug text-bone">{guide.name}</h3>
-        <span className="shrink-0 font-display text-lg font-bold text-flare">
-          {money(guide.price)}
-        </span>
-      </div>
-      <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">{guide.covers}</p>
-      <p className="mt-4 flex-1 text-sm leading-relaxed text-muted">{guide.blurb}</p>
-      <p className="mt-5 text-sm font-semibold text-bone group-hover:text-flare">
-        What&rsquo;s inside <span aria-hidden>&rarr;</span>
-      </p>
-    </Link>
-  );
-}
 
 export function SessionCard({
   session,

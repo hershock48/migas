@@ -71,7 +71,7 @@ export default function Connect() {
               fields={[
                 { id: "name", label: "Name", required: true },
                 { id: "email", label: "Email", type: "email", required: true },
-                { id: "topic", label: "Topic", placeholder: "Guides, consulting, facility work, merch…", wide: true },
+                { id: "topic", label: "Topic", placeholder: "Consulting, co-management, the Patreon…", wide: true },
                 {
                   id: "message",
                   label: "What do you need?",

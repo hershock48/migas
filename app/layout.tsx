@@ -37,7 +37,7 @@ export const metadata: Metadata = {
     template: `%s - ${SITE.name}`,
   },
   description:
-    "Commercial cannabis cultivation consulting, SOPs and grow guides from the director of a licensed Michigan facility. Book a call, or buy the flower, veg and run-off programs.",
+    "Commercial cannabis cultivation consulting and facility co-management from the director of a licensed Michigan facility. Book a call, or put your room on the program.",
   /**
    * THE LINK PREVIEW CARD. There was no og:image at all, which is why pasting the URL into
    * a text produced a bare row of words: with nothing to show, iMessage falls back to a
@@ -63,7 +63,7 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `${SITE.name} - ${SITE.tagline}`,
     description:
-      "Consulting, SOPs and grow guides for indoor cultivators, from a working commercial facility.",
+      "Consulting calls and facility co-management for indoor cultivators, from a working commercial facility.",
     /**
      * NOT SITE.url, and the /demo is load-bearing until they sign.
      *
@@ -121,6 +121,14 @@ function StructuredData() {
       "@id": `${SITE.url}/consulting#service`,
       name: "Cannabis cultivation consulting",
       serviceType: "Cultivation consulting",
+      provider: { "@id": `${SITE.url}/#business` },
+      areaServed: { "@type": "Country", name: "US" },
+    },
+    {
+      "@type": "Service",
+      "@id": `${SITE.url}/co-management#service`,
+      name: "Cannabis facility co-management",
+      serviceType: "Facility co-management",
       provider: { "@id": `${SITE.url}/#business` },
       areaServed: { "@type": "Country", name: "US" },
     },

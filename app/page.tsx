@@ -2,23 +2,22 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import Sun from "@/components/Sun";
 import { MirrorLockup } from "@/components/brand";
-import { GuideCard, ReviewCard, SessionCard } from "@/components/cards";
+import { ReviewCard, SessionCard } from "@/components/cards";
 import {
-  BUNDLE,
+  COMANAGEMENT,
   CREDS,
-  GUIDES,
-  MERCH,
+  PATREON,
+  RATE,
   REVIEWS,
   SESSIONS,
   SITE,
-  bundleSeparately,
   money,
 } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: `${SITE.tagline}`,
   description:
-    "Book a consult with the director of a licensed Michigan cultivation facility, or buy the flower, veg and run-off programs. Every call starts with an intake and your photos.",
+    "Consulting calls and facility co-management from the director of a licensed Michigan cultivation facility. Every call starts with an intake and your photos.",
 };
 
 export default function Home() {
@@ -77,16 +76,17 @@ export default function Home() {
               with us
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-              Consulting, SOPs and full grow programs from a cultivator who runs a licensed
-              Michigan facility. What we run, why we run it, and what changes in your room.
+              Consulting calls and facility co-management from a cultivator who runs a
+              licensed Michigan facility. What we run, why we run it, and what changes in
+              your room.
             </p>
 
             <div className="mt-9 flex flex-wrap gap-3">
               <Link href="/consulting#book" className="btn-primary">
                 Book a consult
               </Link>
-              <Link href="/guides" className="btn-ghost">
-                See the programs
+              <Link href="/co-management" className="btn-ghost">
+                Co-management
               </Link>
             </div>
 
@@ -225,7 +225,7 @@ export default function Home() {
         </div>
 
         <p className="reveal mt-8 text-sm text-muted">
-          Rates are a starting proposal, not published prices. See{" "}
+          One rate, {money(RATE)} an hour. See{" "}
           <Link href="/consulting" className="text-flare hover:underline">
             how a consult runs
           </Link>
@@ -233,49 +233,113 @@ export default function Home() {
         </p>
       </section>
 
-      {/* ── Guides ───────────────────────────────────────────────────────────── */}
+      {/* ── Co-management ────────────────────────────────────────────────────
+          The new offer from the 2026-08-27 call, teased here and told in full on its
+          own page. The four service names are enough on the homepage; the conditions
+          and the network are the page's job. */}
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="eyebrow">Programs</p>
-            <h2 className="mt-4 text-3xl sm:text-4xl">Four programs, clone to harvest</h2>
+            <p className="eyebrow">Co-management</p>
+            <h2 className="mt-4 text-3xl sm:text-4xl">We run the room with you</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
-              Four programs covering clone to harvest, the runoff SOP behind all of them,
-              and the transition off hand-watering. Video and PDF.
+              Irrigation and environment steered remotely off your own sensor data, run
+              by run, with your head grower running the floor. Priced per light.
             </p>
           </div>
-          <Link href="/guides" className="btn-ghost">
-            All programs
+          <Link href="/co-management" className="btn-ghost">
+            How it works
           </Link>
         </div>
 
         <div className="reveal mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          {GUIDES.map((g) => (
-            <GuideCard key={g.slug} guide={g} />
+          {COMANAGEMENT.services.map((s) => (
+            <div key={s.name} className="card flex flex-col p-6">
+              <h3 className="text-lg leading-snug text-bone">{s.name}</h3>
+              <p className="mt-4 flex-1 text-sm leading-relaxed text-muted">{s.body}</p>
+            </div>
           ))}
         </div>
 
-        {/* The bundle, given its own weight because it is the highest-value thing on
-            the site and the current site treats it as a fifth tile. */}
         <div className="reveal mt-6 flex flex-col gap-6 rounded-xl2 border border-ember/60 bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9">
           <div className="max-w-2xl">
-            <p className="eyebrow">Best value</p>
-            <h3 className="mt-3 text-2xl text-bone">{BUNDLE.name}</h3>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">{BUNDLE.blurb}</p>
+            <p className="eyebrow">Priced per light</p>
+            <h3 className="mt-3 text-2xl text-bone">
+              {money(COMANAGEMENT.perLight.from)} to {money(COMANAGEMENT.perLight.to)} per
+              light
+            </h3>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              Where yours lands depends on the size of the project. A project minimum
+              applies, and the room needs sensors we can read. Both are on the page.
+            </p>
           </div>
           <div className="shrink-0 sm:text-right">
-            <p className="font-display text-4xl font-extrabold text-bone">
-              {money(BUNDLE.price)}
-            </p>
-            {/* Derived, never typed. The saving is a subtraction the data can do, and
-                a hardcoded "$600" is what goes stale the day a guide price moves. */}
-            <p className="mt-1 text-sm text-muted">
-              <s>{money(bundleSeparately())}</s> bought separately
-            </p>
-            <Link href={`/guides/${BUNDLE.slug}`} className="btn-primary mt-4">
-              Get the package
+            <Link href="/co-management" className="btn-primary mt-4">
+              See the conditions
             </Link>
           </div>
+        </div>
+      </section>
+
+      {/* ── Patreon ──────────────────────────────────────────────────────────
+          One section, per his direction: advertise the Patreon, do not resell it.
+          Every number here is read from lib/site.ts PATREON and was checkable on his
+          public page on the recorded date. The growth strip and member quotes render
+          only when he exports them from his dashboard; nothing is invented in the
+          meantime. */}
+      <section className="wrap mt-24 sm:mt-32">
+        <div className="reveal max-w-2xl">
+          <p className="eyebrow">The Patreon</p>
+          <h2 className="mt-4 text-3xl sm:text-4xl">The full playbook lives on Patreon</h2>
+          <p className="mt-4 text-lg leading-relaxed text-muted">
+            The long-form work: feed programs, runoff SOPs, propagation technique, and the
+            same rooms photographed run after run so you can check the results against the
+            writing.
+          </p>
+        </div>
+
+        <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+          {[
+            { stat: String(PATREON.stats.posts), label: "Posts inside, long-form and searchable" },
+            { stat: String(PATREON.stats.paidMembers), label: "Paid members growing with us" },
+            { stat: `From $${PATREON.stats.priceFrom}/mo`, label: "Membership, cancel whenever" },
+          ].map((c) => (
+            <div key={c.label} className="bg-ink-panel px-6 py-7">
+              <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
+            </div>
+          ))}
+        </dl>
+        <p className="reveal mt-3 text-xs text-muted">
+          Counts read from the public Patreon page on {PATREON.stats.checkedOn}.
+        </p>
+
+        {/* The growth strip. His dashboard has the member history; the seam renders it
+            the moment PATREON.growth carries two or more points. */}
+        {PATREON.growth.length >= 2 && (
+          <div className="reveal mt-8 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-flow-col sm:auto-cols-fr">
+            {PATREON.growth.map((g) => (
+              <div key={g.label} className="bg-ink-panel px-6 py-5">
+                <p className="font-display text-xl font-bold text-bone">{g.members}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">{g.label}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {PATREON.quotes.length > 0 && (
+          <div className="reveal mt-8 grid gap-6 md:grid-cols-3">
+            {PATREON.quotes.map((q) => (
+              <ReviewCard key={q.who} quote={q.quote} who={q.who} />
+            ))}
+          </div>
+        )}
+
+        <div className="reveal mt-8 flex flex-wrap items-center gap-4">
+          <a href={PATREON.url} className="btn-primary">
+            See what is inside
+          </a>
+          <p className="text-sm text-muted">Opens patreon.com. Membership is handled there.</p>
         </div>
       </section>
 
@@ -283,7 +347,7 @@ export default function Home() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">In their words</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Growers on the programs</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Growers, after working with us</h2>
         </div>
         {/* Three identical "to supply" cards side by side read as a rendering fault rather
             than as a gap. While there is no real review text, this is one panel; the moment
@@ -312,29 +376,6 @@ export default function Home() {
             </p>
           </div>
         )}
-      </section>
-
-      {/* ── Shop, told the truth ─────────────────────────────────────────────
-          Every item on the live store is sold out, and a storefront that can only say
-          "sold out" costs trust on every visit. Saying so and taking an email is
-          strictly better than letting somebody discover it item by item.
-          ───────────────────────────────────────────────────────────────────── */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal flex flex-col gap-6 rounded-xl2 border border-line bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9">
-          <div className="max-w-xl">
-            <p className="eyebrow">Merch</p>
-            <h2 className="mt-3 text-2xl text-bone">
-              {MERCH.length} designs, all between runs
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Hoodies, tees and the camo trucker are out of stock. Leave an address and
-              you hear about the restock before the drop.
-            </p>
-          </div>
-          <Link href="/shop" className="btn-ghost shrink-0">
-            Notify me
-          </Link>
-        </div>
       </section>
 
       {/* ── Close ─────────────────────────────────────────────────────────────

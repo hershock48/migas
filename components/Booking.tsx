@@ -1,10 +1,9 @@
 "use client";
 
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
 import { requestBooking } from "@/app/actions";
 import { EMPTY, PHOTO_LIMITS } from "@/lib/forms";
-import { AVAILABILITY, INTAKE, SESSIONS, money } from "@/lib/site";
+import { AVAILABILITY, INTAKE, PATREON, SESSIONS, money } from "@/lib/site";
 import type { SlotDay } from "@/lib/slots";
 
 /**
@@ -313,9 +312,11 @@ export default function Booking({ days }: Props) {
               Add to calendar
             </a>
           )}
-          <Link href="/guides" className="btn-ghost">
-            Read a program while you wait
-          </Link>
+          {/* External on purpose: the guides came off this site (owner call, 2026-08-27)
+              and the reading now lives on his Patreon. */}
+          <a href={PATREON.url} className="btn-ghost">
+            Read on Patreon while you wait
+          </a>
         </div>
         {/* Only claimed when it happened. See FormState.delivered in lib/forms.ts: this
             sentence used to render unconditionally, which made it a promise the build
