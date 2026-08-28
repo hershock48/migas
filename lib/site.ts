@@ -294,6 +294,82 @@ export const COMANAGEMENT = {
 } as const;
 
 /**
+ * The co-management application, from Kevin's notes of the same call: "enter in a
+ * bunch of info about their grow and what they're looking for to become a client."
+ * This is that form's question list, and like INTAKE above, the questions ARE the
+ * product: light count and sensor platform are the two facts that price a room and
+ * qualify it, so the application collects exactly what the first call needs.
+ *
+ * CAPTURE, DO NOT WALL. The sensor list deliberately includes the answers that fail
+ * the stated conditions (TrolMaster, none yet). The page says the conditions plainly;
+ * a facility that applies anyway is a lead he may still want, on his terms, and a
+ * form that refuses to submit teaches nothing except that the site is broken. His
+ * ticket prints the answer and he decides.
+ */
+export const COMANAGE_APPLY = [
+  { id: "name", label: "Your name", type: "text", required: true },
+  { id: "email", label: "Email", type: "email", required: true },
+  { id: "phone", label: "Phone", type: "tel", required: false },
+  { id: "facility", label: "Facility or company", type: "text", required: false },
+  {
+    id: "state",
+    label: "State the rooms are in",
+    type: "text",
+    placeholder: "Calls are remote; other states are case by case.",
+    required: true,
+  },
+  {
+    id: "lights",
+    label: "How many lights?",
+    type: "text",
+    placeholder: "e.g. 120, across two flower rooms",
+    required: true,
+  },
+  {
+    id: "sensors",
+    label: "Substrate sensors",
+    type: "select",
+    options: [
+      "Aroya",
+      "Pinnacle",
+      "Growlink",
+      "Other substrate sensors",
+      "TrolMaster",
+      "No sensors yet",
+    ],
+    required: true,
+  },
+  {
+    id: "media",
+    label: "Growing media",
+    type: "select",
+    // Same list the consult intake uses, so his tickets speak one language.
+    options: ["Rockwool", "Coco", "Soil / living soil", "Peat blend", "Rockwool + coco", "Other"],
+    required: true,
+  },
+  {
+    id: "headGrower",
+    label: "Head grower on the ground",
+    type: "select",
+    options: [
+      "Yes, and they will run the program",
+      "Hiring one now",
+      "No, we would need one",
+    ],
+    required: true,
+  },
+  {
+    id: "goal",
+    label: "What are you looking for out of co-management?",
+    type: "textarea",
+    placeholder:
+      "Where the room is now, where it is losing money or consistency, and what you want it to become.",
+    required: true,
+    wide: true,
+  },
+] as const;
+
+/**
  * The intake questions.
  *
  * This is the part no scheduling tool gives you, and the part worth building: the

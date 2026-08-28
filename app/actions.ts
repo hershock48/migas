@@ -1,7 +1,7 @@
 "use server";
 
 import nodemailer from "nodemailer";
-import { INTAKE, SESSIONS, SITE } from "@/lib/site";
+import { COMANAGE_APPLY, INTAKE, SESSIONS, SITE } from "@/lib/site";
 import { PHOTO_LIMITS, type FormState } from "@/lib/forms";
 import { describeSlot } from "@/lib/slots";
 import { bookableSlot } from "@/lib/availability";
@@ -302,6 +302,115 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
 // Local, because importing the formatter from lib/site into a "use server" file for one
 // string is more indirection than the string is worth.
 const money = (n: number) => (n % 1 === 0 ? `$${n.toLocaleString("en-US")}` : `$${n.toFixed(2)}`);
+
+/* ── Co-management application ──────────────────────────────────────────────── */
+
+/**
+ * The application from his own outline: the room, the sensors, the person on the
+ * floor, and what they want. It validates against COMANAGE_APPLY the way the booking
+ * validates against INTAKE, so adding a question in lib/site.ts is the whole change.
+ *
+ * Answers that fail the stated conditions (TrolMaster, no sensors, no head grower)
+ * still submit — see the capture-not-wall note on COMANAGE_APPLY — and the ticket
+ * leads with the two numbers that price a room, so he can triage from the subject
+ * line alone.
+ */
+export async function requestCoManagement(_prev: FormState, fd: FormData): Promise<FormState> {
+  if (str(fd, "_trap")) return { status: "done", reference: reference(), summary: [] };
+
+  const errors: Record<string, string> = {};
+  const values: Record<string, string> = {};
+
+  for (const q of COMANAGE_APPLY) {
+    const v = str(fd, q.id);
+    values[q.id] = v;
+    if (q.required && !v) errors[q.id] = "Needed to read the room.";
+    if (v && "options" in q && !(q.options as readonly string[]).includes(v)) {
+      errors[q.id] = "Pick one of the listed options.";
+    }
+  }
+  if (values.name && values.name.length < 2) errors.name = "Your name, so we know who we are talking to.";
+  if (values.email && !emailLooksReal(values.email)) errors.email = "An email address we can reply to.";
+
+  if (Object.keys(errors).length) return { status: "error", errors, values };
+
+  const ref = reference();
+  const ticket = [
+    `Co-management application: ${values.lights} lights, ${values.state}`,
+    "",
+    ...COMANAGE_APPLY.map((q) => `${q.label}\n  ${values[q.id] || "not given"}`),
+  ].join("\n");
+
+  const toOwner = await sendMail({
+    to: notifyTo(),
+    subject: `[${ref}] Co-management - ${values.name}${values.facility ? ` (${values.facility})` : ""} - ${values.lights} lights, ${values.state}`,
+    text: ticket,
+  });
+
+  return {
+    status: "done",
+    reference: ref,
+    delivered: { toOwner, toVisitor: true },
+    summary: [
+      toOwner
+        ? "Application received. We read it against the program and come back with a call and a number, or an honest no."
+        : "Sent. Outgoing mail is not switched on for this build yet.",
+    ],
+  };
+}
+
+/* ── Request a call ─────────────────────────────────────────────────────────── */
+
+/**
+ * The light path, from Kevin's notes: "in addition to the calendly link - just
+ * capturing random calls." Some visitors know exactly what they need and book with
+ * the full intake; some just want to talk to a person. Three fields, one of which
+ * can be skipped, so the visitor who will never finish an eight-question form still
+ * converts instead of leaving.
+ */
+export async function requestCall(_prev: FormState, fd: FormData): Promise<FormState> {
+  if (str(fd, "_trap")) return { status: "done", summary: [] };
+
+  const values = {
+    name: str(fd, "name"),
+    phone: str(fd, "phone"),
+    email: str(fd, "email"),
+    about: str(fd, "about"),
+  };
+  const errors: Record<string, string> = {};
+  if (values.name.length < 2) errors.name = "Your name.";
+  // One route back is enough, either route. Requiring both is how a form loses the
+  // exact person this one exists for.
+  if (!values.phone && !values.email) {
+    errors.phone = "A number or an email, either works.";
+  } else if (values.email && !emailLooksReal(values.email)) {
+    errors.email = "That does not look like an email address.";
+  }
+  if (Object.keys(errors).length) return { status: "error", errors, values };
+
+  const toOwner = await sendMail({
+    to: notifyTo(),
+    subject: `Call request - ${values.name}`,
+    text: [
+      `${values.name}`,
+      values.phone ? `Phone: ${values.phone}` : null,
+      values.email ? `Email: ${values.email}` : null,
+      values.about ? `\nAbout:\n${values.about}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  });
+
+  return {
+    status: "done",
+    delivered: { toOwner, toVisitor: true },
+    summary: [
+      toOwner
+        ? "Got it. We call you back."
+        : "Sent. Outgoing mail is not switched on for this build yet.",
+    ],
+  };
+}
 
 /* ── Ask a question ─────────────────────────────────────────────────────────── */
 

@@ -52,7 +52,8 @@ tier covers a site this size.
 | Booking a consult | Instagram DM | Session length → room intake → photos → time → a written brief, the photos and a calendar invite in his inbox before the call |
 | Calendar | none | An `.ics` to both sides, his calendar read back so booked times drop off the grid, and his hours editable at `/admin` |
 | Consulting price | Never published | $250 an hour, his number from the 2026-08-27 call, one constant |
-| Co-management | Nowhere | Its own page, in his own terms: per-light pricing, the sensor requirement, the head-grower condition |
+| Co-management | Nowhere | Its own page, in his own terms: per-light pricing, the sensor requirement, the head-grower condition, and an application at `#apply` that collects the room (capture, not wall: disqualifying answers still send, flagged in his ticket) |
+| The visitor who will not do an intake | Lost | Three fields at `/consulting#call`: name, one of phone or email, and we call them |
 | The Patreon | A bare link | One section with the checkable numbers off his public page and a seam for his dashboard data |
 | Contact | Instagram DM only, no email anywhere | A question form with a topic, plus the email constant wired everywhere it appears |
 | Reviews | Six PNG screenshots | Text, indexable and readable by a screen reader |
@@ -272,7 +273,8 @@ lib/busy.ts         His calendar's iCal feed, parsed into busy intervals. Fails 
 lib/admin-auth.ts   The PIN gate for /admin. One operator, one cookie, no store.
 lib/ics.ts          Calendar invites, hand-rolled. Timezone conversion and RFC 5545 folding.
 lib/forms.ts        Form types and limits — NOT in app/actions.ts, see below.
-app/actions.ts      The booking and question actions, SMTP, and photo attachments.
+app/actions.ts      The four actions: booking, co-management application, call
+                    request, question. SMTP and photo attachments.
 app/admin/          The availability editor. Plain forms, no client JavaScript.
 app/globals.css     Component classes and every @keyframes on the site.
 tailwind.config.ts  The whole palette, with measured contrast ratios.

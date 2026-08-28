@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Booking from "@/components/Booking";
+import MiniForm from "@/components/MiniForm";
+import { requestCall } from "@/app/actions";
 import { SessionCard } from "@/components/cards";
 import { AVAILABILITY, FAQ, PROCESS, RATE, SESSIONS, money } from "@/lib/site";
 import { openSlots } from "@/lib/availability";
@@ -134,6 +136,44 @@ export default async function Consulting() {
         </div>
         <div className="reveal mt-10">
           <Booking days={days} />
+        </div>
+      </section>
+
+      {/* ── The light path ───────────────────────────────────────────────────
+          From Kevin's call notes: "in addition to the calendly link - just capturing
+          random calls." The intake above is the fast lane for somebody who knows
+          their room; this is for somebody who does not know what they need yet, and
+          the wording has to hold both without talking down to either. Three fields,
+          one skippable, no intake. */}
+      <section id="call" className="wrap mt-24 scroll-mt-24 sm:mt-32">
+        <div className="reveal grid gap-10 rounded-xl2 border border-line bg-ink-panel p-7 sm:p-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
+          <div>
+            <p className="eyebrow">Not sure yet?</p>
+            <h2 className="mt-4 text-2xl sm:text-3xl">Rather just talk first</h2>
+            <p className="mt-4 text-[15px] leading-relaxed text-muted">
+              The booking above works best when you already know what the room needs
+              from you. If you are not there yet, or you would rather size us up by
+              voice, leave a way to reach you and we call you. No intake to fill in,
+              and if a full consult is the right next step we say so on the phone.
+            </p>
+          </div>
+          <MiniForm
+            action={requestCall}
+            fields={[
+              { id: "name", label: "Name", required: true },
+              { id: "phone", label: "Phone", type: "tel", required: false },
+              { id: "email", label: "Email", type: "email", required: false },
+              {
+                id: "about",
+                label: "What is it about?",
+                type: "textarea",
+                placeholder: "A sentence is plenty. Blank is fine too.",
+                required: false,
+              },
+            ]}
+            submit="Have us call you"
+            note="One of phone or email is enough. This goes to the same inbox the bookings land in."
+          />
         </div>
       </section>
 

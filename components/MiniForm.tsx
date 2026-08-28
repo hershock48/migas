@@ -22,8 +22,11 @@ import { EMPTY, type FormState } from "@/lib/forms";
 export type MiniField = {
   id: string;
   label: string;
-  type?: "text" | "email" | "tel" | "textarea";
+  type?: "text" | "email" | "tel" | "textarea" | "select";
   placeholder?: string;
+  /** For type "select". Rendered with an empty first option so "no answer" posts
+   *  as empty and the server's required check still means something. */
+  options?: readonly string[];
   required?: boolean;
   /** Full-width in a two-column grid. */
   wide?: boolean;
@@ -39,7 +42,7 @@ export default function MiniForm({
   className = "",
 }: {
   action: (prev: FormState, fd: FormData) => Promise<FormState>;
-  fields: MiniField[];
+  fields: readonly MiniField[];
   submit: string;
   note?: string;
   hidden?: Record<string, string>;
@@ -52,9 +55,18 @@ export default function MiniForm({
     return (
       <div className={`rounded-xl2 border border-ember/60 bg-ember/[0.07] p-6 ${className}`} aria-live="polite">
         <p className="eyebrow">Done</p>
-        <p className="mt-3 text-[15px] leading-relaxed text-bone">
-          {state.summary?.[0] ?? "Sent. We will be in touch."}
-        </p>
+        {(state.summary?.length ? state.summary : ["Sent. We will be in touch."]).map((line) => (
+          <p key={line} className="mt-3 text-[15px] leading-relaxed text-bone">
+            {line}
+          </p>
+        ))}
+        {state.reference && (
+          <p className="mt-3 text-sm text-muted">
+            Reference{" "}
+            <span className="font-display font-bold text-bone">{state.reference}</span>. Quote
+            it when you follow up.
+          </p>
+        )}
       </div>
     );
   }
@@ -86,6 +98,22 @@ export default function MiniForm({
                 aria-invalid={!!state.errors?.[f.id]}
                 className="field mt-2 resize-y"
               />
+            ) : f.type === "select" ? (
+              <select
+                id={f.id}
+                name={f.id}
+                defaultValue={state.values?.[f.id] ?? ""}
+                aria-required={f.required}
+                aria-invalid={!!state.errors?.[f.id]}
+                className="field mt-2"
+              >
+                <option value="">Choose…</option>
+                {(f.options ?? []).map((o) => (
+                  <option key={o} value={o}>
+                    {o}
+                  </option>
+                ))}
+              </select>
             ) : (
               <input
                 id={f.id}

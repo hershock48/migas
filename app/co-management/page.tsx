@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import FeedRig from "@/components/FeedRig";
+import MiniForm, { type MiniField } from "@/components/MiniForm";
 import SteerLoop from "@/components/SteerLoop";
-import { COMANAGEMENT, money } from "@/lib/site";
+import { requestCoManagement } from "@/app/actions";
+import { COMANAGE_APPLY, COMANAGEMENT, money } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Co-Management",
@@ -94,7 +96,9 @@ export default function CoManagement() {
             </p>
           </div>
           <div className="shrink-0 lg:text-right">
-            <Link href="/consulting#book" className="btn-primary">
+            {/* Straight to the application rather than the consult booking: it collects
+                the exact two facts a price needs, light count and sensors. */}
+            <Link href="#apply" className="btn-primary">
               Price your room
             </Link>
           </div>
@@ -148,6 +152,41 @@ export default function CoManagement() {
               <p className="mt-4 flex-1 text-[15px] leading-relaxed text-muted">{r.body}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* ── The application ──────────────────────────────────────────────────
+          His outline, from the call: "enter in a bunch of info about their grow and
+          what they're looking for to become a client." It sits AFTER the conditions
+          on purpose: a facility that reaches this form has read what the room has to
+          bring, and the sensor answer here still accepts the disqualifying options —
+          see the capture-not-wall note on COMANAGE_APPLY in lib/site.ts. */}
+      <section id="apply" className="wrap mt-24 scroll-mt-24 sm:mt-32">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
+          <div className="reveal">
+            <p className="eyebrow">Apply</p>
+            <h2 className="mt-4 text-3xl sm:text-4xl">Tell us about the room</h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted">
+              Light count and sensors are what price a room; the rest is what the
+              first call is built from. We read it against the program and come back
+              with a call and a per-light number, or an honest no.
+            </p>
+            <p className="mt-4 text-sm leading-relaxed text-muted">
+              Rather talk before you type?{" "}
+              <Link href="/consulting#call" className="text-flare hover:underline">
+                Leave a number and we call you
+              </Link>
+              .
+            </p>
+          </div>
+          <MiniForm
+            className="reveal"
+            action={requestCoManagement}
+            columns={2}
+            fields={COMANAGE_APPLY as readonly MiniField[]}
+            submit="Send the application"
+            note="Goes straight to us, nowhere else. Answers that miss a condition still send; we would rather tell you what the room needs than bounce you at a form."
+          />
         </div>
       </section>
 
