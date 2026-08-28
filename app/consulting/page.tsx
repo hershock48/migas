@@ -114,7 +114,10 @@ export default async function Consulting() {
             {money(RATE)} an hour is your number. The {money(RATE / 2)} half hour and the{" "}
             {money((RATE * 3) / 2)} ninety minutes are that number divided and multiplied,
             not prices you said. If calls should start at a full hour, say so and the
-            half hour comes off.
+            half hour comes off. The bullets on the cards, written actions after the
+            call and the follow-up threads, are still our draft of what a session
+            includes: confirm them or trim them, because each one is a promise made in
+            your name.
           </p>
         </div>
       </section>

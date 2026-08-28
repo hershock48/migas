@@ -132,14 +132,30 @@ export const SITE = {
 export const PATREON = {
   url: "https://www.patreon.com/Mi_gas_",
   stats: {
+    /** Free and paid together, Patreon's own figure on his public page. This is the
+     *  "followers" number and the one the section leads with. */
+    totalMembers: 756,
     paidMembers: 45,
     posts: 162,
     priceFrom: 100,
-    /** The day the three numbers above were read off the public page. */
-    checkedOn: "August 27, 2026",
+    /** The day the numbers above were read off the public page. */
+    checkedOn: "August 28, 2026",
   },
-  /** PLACEHOLDER seam: [{ label: "2024", members: 12 }, ...] from his dashboard.
-   *  Renders a growth strip the moment it has two or more points. */
+  /**
+   * PLACEHOLDER seam: [{ label: "2024", members: 12 }, ...]. Renders a growth strip
+   * the moment it has two or more points.
+   *
+   * FILL THIS FROM HIS DASHBOARD'S TOTAL-MEMBER OR FOLLOWER HISTORY, NOT THE PAID
+   * LINE, and here is why that warning earns this much comment. Graphtreon has
+   * tracked his paid members daily since launch, and the public history reads:
+   * Oct 2021: 6 → end 2021: 62 → end 2022: 110 → peak Dec 2023: 129 → end 2024: 85
+   * → end 2025: 73 → Aug 2026: 45 (read 2026-08-28). A strip built from that line
+   * showcases a three-year decline on his own homepage. The 756 total members are
+   * the growing audience (Patreon's free tier arrived in 2023 and absorbed it), and
+   * only his dashboard has that history. If his dashboard's line does not rise
+   * either, the honest move is to ship no strip at all, and the section already
+   * stands without one.
+   */
   growth: [] as { label: string; members: number }[],
   /** PLACEHOLDER seam: member comments he picks, with whatever attribution each
    *  member agreed to. Same rule as REVIEWS: nothing invented, gaps shown honestly. */
@@ -260,7 +276,7 @@ export const COMANAGEMENT = {
   extras: [
     {
       name: "Head growers, ready to relocate",
-      body: "A network of proven commercial head growers, available if your room needs its person on the ground.",
+      body: "A network of proven, experienced commercial head growers, available and ready to relocate if your room needs its person on the ground.",
     },
     {
       name: "On-site visits, if you want them",

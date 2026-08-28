@@ -71,9 +71,13 @@ export default function CoManagement() {
         <div className="reveal flex flex-col gap-6 rounded-xl2 border border-ember/60 bg-ink-panel p-7 sm:p-9 lg:flex-row lg:items-center lg:justify-between">
           <div className="max-w-2xl">
             <p className="eyebrow">Priced per light</p>
+            {/* No billing cadence on this heading, deliberately. His words were "$50-150
+                per light depending on size with a project minimum" and he named no
+                period; "per month" stood here for a day as an assumption dressed as a
+                price. The dashed panel below asks him for it. */}
             <h2 className="mt-3 text-2xl text-bone sm:text-3xl">
               {money(COMANAGEMENT.perLight.from)} to {money(COMANAGEMENT.perLight.to)} per
-              light, per month
+              light
             </h2>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
               Where yours lands depends on the size of the project: a bigger room spreads
@@ -91,10 +95,12 @@ export default function CoManagement() {
         {/* Addressed to him, not to a visitor, same convention as every dashed panel on
             the site: he named a minimum on the call and did not put a figure on it. */}
         <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">One number to supply</p>
+          <p className="eyebrow">Two numbers to supply</p>
           <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            You said a project minimum exists. The page says so without a figure until you
-            set one; with it, the copy above can say it plainly and filter better.
+            You said a project minimum exists; the page says so without a figure until you
+            set one. And you named no billing period for the per-light rate, so the page
+            does not guess one. Monthly, per run, or something else, say the word and it
+            goes in.
           </p>
         </div>
       </section>

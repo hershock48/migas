@@ -206,7 +206,10 @@ to leave alone.
       `SESSIONS` and nothing else changes.
 - [ ] **Patreon growth data and member quotes.** `PATREON.growth` and `PATREON.quotes`. Both
       come from his own dashboard; the section renders without them until they land. Refresh
-      `PATREON.stats` from the public page and bump `checkedOn` when touched.
+      `PATREON.stats` from the public page and bump `checkedOn` when touched. **Read the
+      warning on `PATREON.growth` first**: the public paid-member history declines from a
+      Dec 2023 peak of 129 to 45 now, so the strip must come from his total-member or
+      follower history — and if that line does not rise either, ship no strip.
 - [ ] **Review text.** `REVIEWS`. Transcribe the six images on the live site. Highest-return
       hour on the project — the cards render as visible empty slots until then, because
       inventing a testimonial is not a placeholder.

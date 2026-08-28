@@ -299,10 +299,14 @@ export default function Home() {
         </div>
 
         <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+          {/* Total members leads, not paid members: 756 is Patreon's own figure on his
+              public page and it is the "followers" number he asked to showcase. The
+              paid count stays out of the tiles on purpose — see the warning on
+              PATREON.growth in lib/site.ts before adding any number that moves. */}
           {[
+            { stat: String(PATREON.stats.totalMembers), label: "Growers in the community, free tier included" },
             { stat: String(PATREON.stats.posts), label: "Posts inside, long-form and searchable" },
-            { stat: String(PATREON.stats.paidMembers), label: "Paid members growing with us" },
-            { stat: `From $${PATREON.stats.priceFrom}/mo`, label: "Membership, cancel whenever" },
+            { stat: `From $${PATREON.stats.priceFrom}/mo`, label: "Full membership, cancel whenever" },
           ].map((c) => (
             <div key={c.label} className="bg-ink-panel px-6 py-7">
               <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
