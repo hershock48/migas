@@ -150,13 +150,14 @@ page happens to request.
 | --- | --- |
 | **Logo, primary** | `1c64c4cd-f109-4d1f-9f54-acbad40f7296/FullLogo.png` |
 | **Logo, white** | `2ade2437-7442-470b-8be5-813d7b14838c/Social+Signature+Logo-white.png` |
-| Hero image | `01ec6738-16ae-4a59-ac49-993c52e440d1/IMG_5497+2.png` |
+| **The wordmark artwork, letterforms only** | `01ec6738-16ae-4a59-ac49-993c52e440d1/IMG_5497+2.png`. Recorded here as "hero image" until 2026-08-28, when actually looking at it showed the interlocked MIGAS lockup in solid black on white — the exact letterforms the checklist item below has been waiting for, at 2500w. |
 | Flower Guide cover | `b07c8fa5-5ea0-4e5e-ac6c-d3a8adfa404e/FGbutton2.png` |
 | Veg Guide cover | `6e2acba9-6ede-4684-97a2-714b9a6f5a73/VGbutton2.png` |
 | Hand-Water to Automation cover | `695c835f-a131-4967-9ffc-54155b4e2143/HWGButton2.png` |
 | The Complete Package cover | `c57047d7-d9da-40a1-ab00-c13da3d4cc10/TCPbutton2.png` |
 | Run-Off Guide cover | `bfbe6a96-ab4a-4d25-9c40-aa3dd48add9e/ROGbutton2.png` |
-| Grow gallery | `IMG_9011.jpg` – `IMG_9014.jpg`, same prefix, individual UUIDs |
+| Merch/lifestyle shoot | `IMG_9011.jpg` – `IMG_9060.jpg`, same prefix, timestamped UUIDs. Recorded as "grow gallery" until 2026-08-28; rendering them showed a beach merch shoot, no rooms in it. |
+| **Room photos, shipped** | `public/assets/rooms/{bench,canopy,cola}.webp`, on the home Patreon section. The three homepage gallery images with no photographer credit; several others are credited to @greenmitten and stay off until he clears them, because the owner's permission covers his photographs, not a third photographer's. Sources are Instagram-sized (720w originals); the fourth candidate existed only at 320px and was dropped rather than upscaled. |
 
 The five covers mapped one-to-one onto the guide list this build used to sell — retired
 2026-08-27 when he took guide selling off the site. The URLs stay recorded because
@@ -183,6 +184,12 @@ What is still worth having beyond the PNG:
 
 Until one of those arrives the PNG is a straight upgrade on the stand-in and should be
 dropped in as `public/brand/logo.png`, with `Mark.tsx` swapped for an `<Image>`.
+
+**Update, 2026-08-28: the letterforms exist as a file after all.** `IMG_5497+2.png` in
+the assets table above is the interlocked lockup in solid black on white at 2500w — no
+sun behind it, so the tracing problem this section describes does not apply to it. That
+makes the wordmark swap (or a proper trace to SVG from clean black-on-white) unblocked
+work rather than a request to him. The typeface question stands.
 
 ## Before launch
 

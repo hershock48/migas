@@ -1,6 +1,10 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { Metadata } from "next";
 import Sun from "@/components/Sun";
+import roomBench from "@/public/assets/rooms/bench.webp";
+import roomCanopy from "@/public/assets/rooms/canopy.webp";
+import roomCola from "@/public/assets/rooms/cola.webp";
 import { MirrorLockup } from "@/components/brand";
 import { ReviewCard, SessionCard } from "@/components/cards";
 import {
@@ -298,7 +302,33 @@ export default function Home() {
           </p>
         </div>
 
-        <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+        {/* His rooms, off his own feed — the three of the homepage gallery images that
+            carry no photographer credit (several are shot by @greenmitten, and the
+            owner's permission covers his photographs, not necessarily a third
+            photographer's; those stay off until he clears them). Three stages, left to
+            right: the bench before a run, the canopy in flower, the finish. His own
+            posts say the rooms are the proof, so the rooms sit above the numbers.
+            720x900 native-resolution crops; the fourth candidate shot existed only at
+            320px and an upscale is not a photograph, so three it is. */}
+        <div className="reveal mt-10 grid grid-cols-3 gap-3 sm:gap-4">
+          {[
+            { src: roomBench, alt: "Pots staked and lined out on the transplant bench before a run, drip emitters already placed." },
+            { src: roomCanopy, alt: "The flower canopy at lights-off, colas standing through the trellis net." },
+            { src: roomCola, alt: "A frosted cola held in the net, late in flower." },
+          ].map((p) => (
+            <div key={p.alt} className="overflow-hidden rounded-xl2 border border-line">
+              <Image
+                src={p.src}
+                alt={p.alt}
+                sizes="(min-width: 1152px) 368px, 33vw"
+                className="aspect-[4/5] h-auto w-full object-cover"
+              />
+            </div>
+          ))}
+        </div>
+        <p className="reveal mt-3 text-xs text-muted">The rooms the posts are written from.</p>
+
+        <dl className="reveal mt-8 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
           {/* Total members leads, not paid members: 756 is Patreon's own figure on his
               public page and it is the "followers" number he asked to showcase. The
               paid count stays out of the tiles on purpose — see the warning on
