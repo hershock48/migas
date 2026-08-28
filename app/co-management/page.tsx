@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import FeedRig from "@/components/FeedRig";
+import SteerLoop from "@/components/SteerLoop";
 import { COMANAGEMENT, money } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -43,10 +44,10 @@ export default function CoManagement() {
               </Link>
             </div>
           </div>
-          {/* The fertigation diagram, moved here from the retired guides page. Irrigation
-              steering is the first service on this page, so the drawing finally sits next
-              to the thing it illustrates. */}
-          <FeedRig className="reveal mx-auto w-full max-w-[290px] lg:max-w-[360px]" />
+          {/* The page's own picture: the steering circuit, with the sensor platforms and
+              the head grower drawn into it, because both are conditions and the drawing
+              should say so before the prose does. */}
+          <SteerLoop className="reveal mx-auto w-full max-w-[320px] lg:max-w-[380px]" />
         </div>
       </section>
 
@@ -54,15 +55,21 @@ export default function CoManagement() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">What we run</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Four things, watched daily</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Four things we take over</h2>
         </div>
-        <div className="reveal mt-12 grid gap-6 sm:grid-cols-2">
-          {COMANAGEMENT.services.map((s) => (
-            <div key={s.name} className="card flex flex-col p-7">
-              <h3 className="text-xl leading-snug text-bone">{s.name}</h3>
-              <p className="mt-4 flex-1 text-[15px] leading-relaxed text-muted">{s.body}</p>
-            </div>
-          ))}
+        <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
+          <div className="reveal grid gap-6 sm:grid-cols-2">
+            {COMANAGEMENT.services.map((s) => (
+              <div key={s.name} className="card flex flex-col p-7">
+                <h3 className="text-xl leading-snug text-bone">{s.name}</h3>
+                <p className="mt-4 flex-1 text-[15px] leading-relaxed text-muted">{s.body}</p>
+              </div>
+            ))}
+          </div>
+          {/* The fertigation cross-section, moved here from the retired guides page:
+              irrigation is the first card in this grid, and the drawing shows the thing
+              that card steers — feed in, wet front down, runoff read at the bottom. */}
+          <FeedRig className="reveal mx-auto w-full max-w-[290px] lg:mx-0 lg:max-w-none" />
         </div>
       </section>
 
@@ -92,6 +99,25 @@ export default function CoManagement() {
             </Link>
           </div>
         </div>
+        {/* The range, made concrete. Every figure is derived from perLight in
+            lib/site.ts, so the ladder can never disagree with the range above it —
+            and no billing period appears anywhere in it, same rule as the heading. */}
+        <dl className="reveal mt-6 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+          {[10, 40, 100].map((n) => (
+            <div key={n} className="bg-ink-panel px-6 py-5">
+              <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
+                A {n}-light room
+              </dt>
+              <dd className="mt-2 font-display text-xl font-bold text-bone">
+                {money(COMANAGEMENT.perLight.from * n)} to {money(COMANAGEMENT.perLight.to * n)}
+              </dd>
+            </div>
+          ))}
+        </dl>
+        <p className="reveal mt-3 text-sm text-muted">
+          Bigger rooms land nearer the bottom of the per-light range. The smallest rooms
+          are where the project minimum does the talking.
+        </p>
         {/* Addressed to him, not to a visitor, same convention as every dashed panel on
             the site: he named a minimum on the call and did not put a figure on it. */}
         <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">

@@ -1209,6 +1209,61 @@ select.field {
   }
 }
 
+/* ───────────────────────────────────────────────────────────────────────────
+   The co-management steering loop — components/SteerLoop.tsx.
+   Same contract as .mg-rig above: keyframes here, next to their rules, or Tailwind
+   purges them (see the long note above the sun block). The only motion is the ring's
+   dash offset; the resting state is a static dashed circuit with arrowheads, which
+   still reads as a loop with a direction, so the global reduced-motion freeze below
+   costs travel and nothing else.
+   ─────────────────────────────────────────────────────────────────────────── */
+.mg-loop svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.mg-loop .loop-name {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  fill: theme("colors.bone");
+}
+.mg-loop .loop-sub {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 8.5px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  fill: theme("colors.muted");
+}
+.mg-loop .loop-eyebrow {
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  fill: theme("colors.muted");
+}
+.mg-loop .loop-value {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  fill: theme("colors.bone");
+}
+/* The dash cycle is 14 units and the offset travels exactly two cycles, so the loop
+   has no seam. Slower than the rig's feed line on purpose: this circuit is a day,
+   not a pump. */
+.mg-loop .loop-flow {
+  stroke-dasharray: 5 9;
+  animation: loopFlow 2.6s linear infinite;
+}
+@keyframes loopFlow {
+  to {
+    stroke-dashoffset: -28;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after {
