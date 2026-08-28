@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Booking from "@/components/Booking";
+import Faq from "@/components/Faq";
 import MiniForm from "@/components/MiniForm";
 import { requestCall } from "@/app/actions";
 import { SessionCard } from "@/components/cards";
@@ -211,60 +212,9 @@ export default async function Consulting() {
           <p className="eyebrow">Before you ask</p>
           <h2 className="mt-4 text-3xl sm:text-4xl">Questions we get asked</h2>
         </div>
-        <div className="reveal mt-10 divide-y divide-line border-y border-line">
-          {FAQ.map((f) => {
-            /**
-             * FOUR OF THESE ANSWERS ARE DRAFTS AWAITING HIS DECISION, and until now they
-             * printed the literal word PLACEHOLDER straight into the page, in the same
-             * grey as the finished answers. Two of them are also written in third person
-             * about him — "he needs to write this one himself" — because they were only
-             * ever addressed to us. That is backstage text on the front stage, and it was
-             * on the one page this build exists to show off.
-             *
-             * The convention for pending content is already set everywhere else in this
-             * codebase — components/cards.tsx does it for the reviews: a dashed panel and
-             * an eyebrow saying what is owed. The FAQ was the one surface that had the
-             * PLACEHOLDER check missing rather than a different opinion about it.
-             *
-             * The token is stripped and the draft is kept, because lib/site.ts is right
-             * that an empty FAQ is worse than a draft one. Delete the marker in
-             * lib/site.ts when he answers and the panel becomes an ordinary answer with
-             * no code change.
-             */
-            const pending = f.a.startsWith("PLACEHOLDER");
-            // The drafts were written to follow the marker, so they all begin lowercase
-            // once it comes off. Capitalised here rather than in lib/site.ts so the data
-            // stays exactly as authored and deleting the marker is still the only edit.
-            const stripped = f.a.replace(/^PLACEHOLDER:?\s*/, "");
-            const answer = pending ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : f.a;
-            return (
-              // <details> rather than a JS accordion: it opens without hydration, it is
-              // findable with the browser's own find-in-page in current engines, and it
-              // needs no aria wiring to be announced correctly.
-              <details key={f.q} className="group py-5">
-                <summary className="flex cursor-pointer list-none items-start justify-between gap-6 text-[17px] font-semibold text-bone">
-                  {f.q}
-                  <span
-                    aria-hidden
-                    className="mt-1 shrink-0 text-flare transition-transform group-open:rotate-45"
-                  >
-                    +
-                  </span>
-                </summary>
-                {pending ? (
-                  <div className="mt-3 max-w-2xl rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-                    <p className="eyebrow">Draft, awaiting his answer</p>
-                    <p className="mt-2 text-[15px] leading-relaxed text-muted">{answer}</p>
-                  </div>
-                ) : (
-                  <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">
-                    {answer}
-                  </p>
-                )}
-              </details>
-            );
-          })}
-        </div>
+        {/* The draft-vs-answered rendering moved to components/Faq.tsx, reasoning
+            included, the day /co-management grew its own question list. */}
+        <Faq items={FAQ} />
         <p className="reveal mt-8 text-sm text-muted">
           Times shown across the site are {AVAILABILITY.timeZoneLabel}. Something not
           covered?{" "}

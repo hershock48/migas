@@ -294,6 +294,39 @@ export const COMANAGEMENT = {
 } as const;
 
 /**
+ * The co-management FAQ: what a licensed operation asks before letting outsiders
+ * steer its rooms. Same convention as FAQ below — the answers only he can give are
+ * marked PLACEHOLDER and render as drafts addressed to him, because the questions
+ * get asked whether or not the page answers them.
+ */
+export const COMANAGE_FAQ = [
+  {
+    q: "Is what we share with you confidential?",
+    a: "PLACEHOLDER: he needs to write this one himself. A facility will not hand over its sensor feed and its numbers without it, and for co-management this is the first question, not the fifth.",
+  },
+  {
+    q: "Who is actually reading our data?",
+    a: "We are. Your sensor feed is read by the same cultivator running the licensed facility's own rooms, against the same program.",
+  },
+  {
+    q: "What happens in the first week?",
+    a: "PLACEHOLDER: his to write. The sequence from signed to steady state is his process, and inventing one here would be selling a program the service does not contain.",
+  },
+  {
+    q: "How long are we committing for?",
+    a: "PLACEHOLDER: term and notice are his call, and they belong in the same conversation as the project minimum and the billing cadence.",
+  },
+  {
+    q: "Why a per-light rate?",
+    a: "Because it is a number you can budget. It scales with the size of the room, not with the price of your pound, and the light count tells you what the program costs before we ever talk.",
+  },
+  {
+    q: "Where do you co-manage?",
+    a: "Remote steering is remote; the program works anywhere the sensors reach. In-person visits and rooms outside Michigan are case by case.",
+  },
+];
+
+/**
  * The co-management application, from Kevin's notes of the same call: "enter in a
  * bunch of info about their grow and what they're looking for to become a client."
  * This is that form's question list, and like INTAKE above, the questions ARE the

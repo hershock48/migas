@@ -5,7 +5,8 @@ import GlazedPlate from "./GlazedPlate";
 
 export default function Footer() {
   return (
-    <footer className="mt-24 border-t border-line bg-ink-panel">
+    // print:hidden for the same reason as the Nav: printed pages are documents.
+    <footer className="mt-24 border-t border-line bg-ink-panel print:hidden">
       <div className="wrap grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
         <div className="lg:col-span-2">
           <Graffiti className="h-12 w-auto" />

@@ -1251,6 +1251,20 @@ select.field {
   letter-spacing: -0.01em;
   fill: theme("colors.bone");
 }
+/* Paper tone, for the printed one-pager. Declared after the dark fills above so the
+   same-specificity override lands the right way. Sub and eyebrow use dark tokens
+   rather than `muted`, which is a dark-ground colour and measures ~2:1 on bone. */
+.mg-loop-paper .loop-name,
+.mg-loop-paper .loop-value {
+  fill: theme("colors.ink.DEFAULT");
+}
+.mg-loop-paper .loop-sub {
+  fill: theme("colors.line");
+}
+.mg-loop-paper .loop-eyebrow {
+  fill: theme("colors.ember.deep");
+}
+
 /* The dash cycle is 14 units and the offset travels exactly two cycles, so the loop
    has no seam. Slower than the rig's feed line on purpose: this circuit is a day,
    not a pump. */
@@ -1395,6 +1409,12 @@ select.field {
    supports it. */
 .og-graffiti {
   width: 460px;
+  /* height: auto is load-bearing since the brand SVGs gained explicit width/height
+     attributes (the iOS 150px-fallback fix): with only width set here, the height
+     attribute kept winning and the mark's box came out ~490px tall, shoving the
+     headline onto the disc. The committed og.jpg predates that drift; this line
+     makes the source frame produce its own output again. */
+  height: auto;
   color: theme("colors.bone");
 }
 .og-head {
@@ -1413,4 +1433,16 @@ select.field {
    rest, and the resting style is the authored one. */
 .og-still {
   animation: none !important;
+}
+/* The co-management card's support line. flare rather than bone, so the card's
+   hierarchy is mark, then the page name in bone, then what it means in the accent —
+   measured against the scrim's near-opaque top, where flare carries ~9:1. */
+.og-sub {
+  margin: -6px 0 0;
+  font-family: var(--font-sans), system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 30px;
+  letter-spacing: 0.01em;
+  color: theme("colors.flare");
+  white-space: nowrap;
 }

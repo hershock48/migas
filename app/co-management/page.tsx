@@ -1,15 +1,40 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Faq from "@/components/Faq";
 import FeedRig from "@/components/FeedRig";
 import MiniForm, { type MiniField } from "@/components/MiniForm";
 import SteerLoop from "@/components/SteerLoop";
 import { requestCoManagement } from "@/app/actions";
-import { COMANAGE_APPLY, COMANAGEMENT, money } from "@/lib/site";
+import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, CREDS, SITE, money } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Co-Management",
   description:
     "Facility co-management: irrigation and environment steered remotely off your sensor data, scheduling planned with your labor, priced per light. Your head grower runs the floor.",
+  /**
+   * This page gets its own link card, because it is the page that gets forwarded:
+   * into a facility's ownership group, and into the division conversations. Next
+   * does not deep-merge openGraph (see OG_IMAGE in lib/site.ts), so the block
+   * restates everything; the url carries the same /demo seam as app/layout.tsx and
+   * loses it in the same cutover commit.
+   */
+  openGraph: {
+    type: "website",
+    siteName: SITE.name,
+    title: `Co-Management - ${SITE.name}`,
+    description:
+      "Irrigation and environment steered remotely off your own sensor data. Your head grower runs the floor. Priced per light.",
+    url: `${SITE.url}/demo/co-management`,
+    images: [
+      {
+        url: "/og-comanagement.jpg",
+        width: 1200,
+        height: 630,
+        alt: "The MI Gas mark over a burning sun, with the words Co-management",
+      },
+    ],
+  },
+  twitter: { card: "summary_large_image", images: ["/og-comanagement.jpg"] },
 };
 
 /**
@@ -72,6 +97,41 @@ export default function CoManagement() {
               irrigation is the first card in this grid, and the drawing shows the thing
               that card steers — feed in, wet front down, runoff read at the bottom. */}
           <FeedRig className="reveal mx-auto w-full max-w-[290px] lg:mx-0 lg:max-w-none" />
+        </div>
+      </section>
+
+      {/* ── The record ───────────────────────────────────────────────────────
+          The proof, on the page that costs the most. The home page has carried these
+          three since the creds strip was rebuilt out of his own posts; a facility
+          director who lands here directly, off a forwarded link, was seeing the
+          biggest ask on the site with no evidence anywhere on it. Same data, one
+          source (CREDS in lib/site.ts), so the two pages can never disagree. */}
+      <section className="wrap mt-24 sm:mt-32">
+        <div className="reveal max-w-2xl">
+          <p className="eyebrow">The record</p>
+          <h2 className="mt-4 text-3xl sm:text-4xl">The numbers behind the program</h2>
+          <p className="mt-4 text-lg leading-relaxed text-muted">
+            All three are ours, from our own published posts, and the rooms they came
+            out of are photographed run after run so you can check the claim against
+            the pictures.
+          </p>
+        </div>
+        <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+          {CREDS.map((c) => (
+            <div key={c.label} className="bg-ink-panel px-6 py-7">
+              <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
+              <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
+            </div>
+          ))}
+        </dl>
+        {/* Same dashed note as the home strip, shorter: these figures are his, from
+            dated posts, and go live only once he confirms they still hold. */}
+        <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
+          <p className="eyebrow">Your figures, needing a re-check</p>
+          <p className="mt-2 text-[15px] leading-relaxed text-muted">
+            Same three as the home page, same ask: the posts they came from are dated,
+            so confirm they still hold before launch.
+          </p>
         </div>
       </section>
 
@@ -178,6 +238,13 @@ export default function CoManagement() {
               </Link>
               .
             </p>
+            <p className="mt-3 text-sm leading-relaxed text-muted">
+              Deciding with partners?{" "}
+              <Link href="/co-management/one-pager" className="text-flare hover:underline">
+                The whole model prints on one page
+              </Link>
+              .
+            </p>
           </div>
           <MiniForm
             className="reveal"
@@ -204,6 +271,18 @@ export default function CoManagement() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── FAQ ──────────────────────────────────────────────────────────────
+          What a licensed operation asks before letting outsiders steer its rooms.
+          Half the answers are drafts awaiting him, rendered as drafts, because the
+          questions get asked whether or not the page answers them. */}
+      <section className="wrap mt-24 sm:mt-32">
+        <div className="reveal max-w-2xl">
+          <p className="eyebrow">Before you apply</p>
+          <h2 className="mt-4 text-3xl sm:text-4xl">What facilities ask first</h2>
+        </div>
+        <Faq items={COMANAGE_FAQ} />
       </section>
 
       {/* ── Close ────────────────────────────────────────────────────────────── */}

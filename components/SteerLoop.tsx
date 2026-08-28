@@ -26,9 +26,27 @@ const NODES = [
   { x: 8, y: 214, name: "Your head grower", sub: "Runs the day on the floor" },
 ] as const;
 
-export default function SteerLoop({ className = "" }: { className?: string }) {
+export default function SteerLoop({
+  className = "",
+  tone = "dark",
+}: {
+  className?: string;
+  /** "paper" restyles the drawing for the printed one-pager: dark strokes and text
+   *  on a light sheet, node boxes outlined rather than filled, so the circuit
+   *  survives browsers stripping backgrounds at print time. Text fills switch via
+   *  the mg-loop-paper block in globals.css. */
+  tone?: "dark" | "paper";
+}) {
+  const paper = tone === "paper";
+  const ring = paper ? "fill-none stroke-ink/25" : "fill-none stroke-line";
+  const flow = paper ? "loop-flow fill-none stroke-ember/80" : "loop-flow fill-none stroke-flare/60";
+  const arrow = paper ? "fill-ember-deep" : "fill-flare";
+  // On paper the boxes are outlines: a filled box would vanish the moment a print
+  // dialog strips backgrounds, and the ring behind them is hidden by the sheet
+  // itself being the same ground.
+  const node = paper ? "fill-bone stroke-ink/40" : "fill-ink-panel stroke-edge/70";
   return (
-    <figure className={`mg-loop ${className}`}>
+    <figure className={`mg-loop ${paper ? "mg-loop-paper" : ""} ${className}`}>
       <svg
         viewBox="0 0 300 300"
         role="img"
@@ -37,20 +55,20 @@ export default function SteerLoop({ className = "" }: { className?: string }) {
         {/* The circuit, drawn through the node centres; the opaque node boxes sit on
             top and hide the ring behind them, which is cheaper and cleaner than four
             hand-trimmed legs. */}
-        <rect x="72" y="58" width="156" height="184" rx="30" className="fill-none stroke-line" strokeWidth="1.25" />
-        <rect x="72" y="58" width="156" height="184" rx="30" className="loop-flow fill-none stroke-flare/60" strokeWidth="2" strokeLinecap="round" />
+        <rect x="72" y="58" width="156" height="184" rx="30" className={ring} strokeWidth="1.25" />
+        <rect x="72" y="58" width="156" height="184" rx="30" className={flow} strokeWidth="2" strokeLinecap="round" />
 
         {/* Direction, stated statically. Clockwise: report up and across, execute down
             and back. */}
-        <polygon points="145,54 157,60 145,66" className="fill-flare" />
-        <polygon points="222,145 228,157 234,145" className="fill-flare" />
-        <polygon points="155,234 143,240 155,246" className="fill-flare" />
-        <polygon points="78,155 72,143 66,155" className="fill-flare" />
+        <polygon points="145,54 157,60 145,66" className={arrow} />
+        <polygon points="222,145 228,157 234,145" className={arrow} />
+        <polygon points="155,234 143,240 155,246" className={arrow} />
+        <polygon points="78,155 72,143 66,155" className={arrow} />
 
         {/* The four stations. */}
         {NODES.map((n) => (
           <g key={n.name}>
-            <rect x={n.x} y={n.y} width="128" height="56" rx="10" className="fill-ink-panel stroke-edge/70" strokeWidth="1.25" />
+            <rect x={n.x} y={n.y} width="128" height="56" rx="10" className={node} strokeWidth="1.25" />
             <text x={n.x + 64} y={n.y + 25} textAnchor="middle" className="loop-name">
               {n.name}
             </text>
@@ -69,7 +87,11 @@ export default function SteerLoop({ className = "" }: { className?: string }) {
           Watched daily
         </text>
       </svg>
-      <figcaption className="mt-3 max-w-[38ch] text-sm leading-relaxed text-muted">
+      {/* muted is a dark-ground token and measures ~2:1 on the paper sheet, so the
+          caption switches with the tone. */}
+      <figcaption
+        className={`mt-3 max-w-[38ch] text-sm leading-relaxed ${paper ? "text-ink/70" : "text-muted"}`}
+      >
         Your sensors report, we set the day&rsquo;s numbers, your head grower runs them.
         Then the room answers, and the loop goes again.
       </figcaption>

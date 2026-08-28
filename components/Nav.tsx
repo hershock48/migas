@@ -38,7 +38,10 @@ export default function Nav() {
   useEffect(() => setOpen(false), [path]);
 
   return (
-    <header className="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur">
+    // print:hidden site-wide: a printed page is a document, and site chrome on a
+    // document is clutter. Added for the co-management one-pager and correct for
+    // every page (a printed booking confirmation reads better without a nav bar).
+    <header className="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur print:hidden">
       <div className="wrap flex h-[68px] items-center justify-between">
         {/* The graffiti mark rather than the mirrored lockup, and the reason is size. A
             reflected lockup at nav scale puts each row under 14px and the reflection turns to

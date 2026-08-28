@@ -276,6 +276,12 @@ lib/forms.ts        Form types and limits — NOT in app/actions.ts, see below.
 app/actions.ts      The four actions: booking, co-management application, call
                     request, question. SMTP and photo attachments.
 app/admin/          The availability editor. Plain forms, no client JavaScript.
+app/co-management/one-pager/  The model as a printable document: ink on bone,
+                    strokes-only diagram, survives print background-stripping.
+                    Reads the same constants as the page, so it cannot drift.
+app/og-card/co-management/    Source frame for public/og-comanagement.jpg, the
+                    /co-management page's own link card (that page gets forwarded).
+components/Faq.tsx  Draft-vs-answered FAQ rendering, shared by both FAQ pages.
 app/globals.css     Component classes and every @keyframes on the site.
 tailwind.config.ts  The whole palette, with measured contrast ratios.
 components/Sun.tsx      His sun, drawn and alive.
