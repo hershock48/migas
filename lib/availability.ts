@@ -48,6 +48,8 @@ export const storeConfigured = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
 
+const DAY_WORDS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+
 /** Refuse anything that would render a broken grid. Returns the cleaned document or a
  *  sentence saying what is wrong, never both. */
 export function validate(doc: StoredAvailability): { ok?: StoredAvailability; error?: string } {
@@ -57,6 +59,20 @@ export function validate(doc: StoredAvailability): { ok?: StoredAvailability; er
     if (!HHMM.test(w.from) || !HHMM.test(w.to)) return { error: "Times must be HH:MM, 24-hour." };
     if (w.from >= w.to) return { error: `A window opens at ${w.from} and closes at ${w.to}, which closes it before it opens.` };
     windows.push({ day: w.day, from: w.from, to: w.to });
+  }
+  // No overlaps within a day. Two windows covering the same 11:00 would render that
+  // slot twice: two radios with one value, duplicate React keys, and a grid that
+  // looks glitched. Caught here with a sentence instead of shipped as a glitch.
+  // Back-to-back (12:00 close, 12:00 open) is allowed; HH:MM compares as strings.
+  for (let day = 0; day < 7; day++) {
+    const ordered = windows.filter((w) => w.day === day).sort((a, b) => (a.from < b.from ? -1 : 1));
+    for (let i = 1; i < ordered.length; i++) {
+      if (ordered[i].from < ordered[i - 1].to) {
+        return {
+          error: `${DAY_WORDS[day]}'s windows overlap: ${ordered[i - 1].from}-${ordered[i - 1].to} and ${ordered[i].from}-${ordered[i].to}. Merge them or move one.`,
+        };
+      }
+    }
   }
   for (const d of doc.blockedDates) {
     if (!DATE.test(d)) return { error: `Blocked dates must be YYYY-MM-DD; "${d}" is not.` };

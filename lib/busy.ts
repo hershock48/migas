@@ -39,12 +39,28 @@ let cache: { at: number; url: string; intervals: BusyInterval[] } | null = null;
 const unfold = (text: string) => text.replace(/\r?\n[ \t]/g, "");
 
 /**
+ * Windows timezone names, the ones Outlook writes into TZID. Intl only speaks IANA
+ * and throws RangeError on these, and an Outlook meeting invite is a certainty on a
+ * US consultant's calendar. The four US zones cover the realistic traffic; anything
+ * else unrecognized skips that one event (see the per-event catch in parseBusy)
+ * rather than blanking the feed, which is the fault this map exists to prevent.
+ */
+const WINDOWS_ZONES: Record<string, string> = {
+  "Eastern Standard Time": "America/New_York",
+  "Central Standard Time": "America/Chicago",
+  "Mountain Standard Time": "America/Denver",
+  "Pacific Standard Time": "America/Los_Angeles",
+};
+
+/**
  * One DTSTART/DTEND value, in any of the three shapes calendars actually emit:
  *   DTSTART:20260827T130000Z                    an instant
  *   DTSTART;TZID=America/Detroit:20260827T0900  wall time in a named zone
  *   DTSTART;VALUE=DATE:20260827                 an all-day date
  * Returns epoch ms, or null when the value cannot be read. All-day dates resolve in
- * the availability zone, since that is the zone the slot grid lives in.
+ * the availability zone, since that is the zone the slot grid lives in. An unknown
+ * TZID throws (Intl's RangeError), which the per-event catch in parseBusy turns
+ * into one skipped event.
  */
 function parseWhen(params: string, value: string): number | null {
   const v = value.trim();
@@ -58,8 +74,10 @@ function parseWhen(params: string, value: string): number | null {
   if (!m) return null;
   const local = `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}`;
   if (m[7] === "Z") return Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? 0));
-  const tzid = /TZID=([^;:]+)/.exec(params)?.[1];
-  return toInstantIn(local, tzid ?? AVAILABILITY.timeZone).getTime();
+  // Outlook quotes some TZIDs; strip the quotes before the lookup.
+  const raw = /TZID=([^;:]+)/.exec(params)?.[1]?.replace(/^"|"$/g, "");
+  const tzid = raw ? (WINDOWS_ZONES[raw] ?? raw) : AVAILABILITY.timeZone;
+  return toInstantIn(local, tzid).getTime();
 }
 
 /** Parse the events of one ICS document into busy intervals. Exported for the admin
@@ -67,35 +85,44 @@ function parseWhen(params: string, value: string): number | null {
 export function parseBusy(ics: string, windowStart: number, windowEnd: number): BusyInterval[] {
   const intervals: BusyInterval[] = [];
   let recurring = 0;
+  let unreadable = 0;
 
   for (const block of unfold(ics).split("BEGIN:VEVENT").slice(1)) {
-    const body = block.split("END:VEVENT")[0];
-    // Free time and cancellations do not block. TRANSP:TRANSPARENT is how "free" is
-    // spelled; STATUS:CANCELLED is an event that no longer exists.
-    if (/^TRANSP:TRANSPARENT\s*$/m.test(body)) continue;
-    if (/^STATUS:CANCELLED\s*$/m.test(body)) continue;
-    if (/^RRULE[:;]/m.test(body)) {
-      recurring++;
-      continue;
+    // Per-event isolation, and it was earned the hard way: before this try, one
+    // event carrying a TZID Intl does not know threw out of the whole function,
+    // getBusyIntervals caught it, and a single Outlook invite silently blanked
+    // every busy block on the calendar. One unreadable event costs that event.
+    try {
+      const body = block.split("END:VEVENT")[0];
+      // Free time and cancellations do not block. TRANSP:TRANSPARENT is how "free" is
+      // spelled; STATUS:CANCELLED is an event that no longer exists.
+      if (/^TRANSP:TRANSPARENT\s*$/m.test(body)) continue;
+      if (/^STATUS:CANCELLED\s*$/m.test(body)) continue;
+      if (/^RRULE[:;]/m.test(body)) {
+        recurring++;
+        continue;
+      }
+
+      const dtstart = /^DTSTART([^:]*):(.+)$/m.exec(body);
+      if (!dtstart) continue;
+      const start = parseWhen(dtstart[1], dtstart[2]);
+      if (start === null) continue;
+
+      const dtend = /^DTEND([^:]*):(.+)$/m.exec(body);
+      let end = dtend ? parseWhen(dtend[1], dtend[2]) : null;
+      if (end === null) {
+        // No DTEND: an all-day event runs a day, anything else defaults to zero length
+        // per the spec; a zero-length event cannot collide, so give it an hour instead
+        // of pretending precision the data does not have.
+        const allDay = /VALUE=DATE/.test(dtstart[1]) || /^\d{8}$/.test(dtstart[2].trim());
+        end = start + (allDay ? 86_400_000 : 3_600_000);
+      }
+
+      if (end <= windowStart || start >= windowEnd) continue;
+      intervals.push({ start, end });
+    } catch {
+      unreadable++;
     }
-
-    const dtstart = /^DTSTART([^:]*):(.+)$/m.exec(body);
-    if (!dtstart) continue;
-    const start = parseWhen(dtstart[1], dtstart[2]);
-    if (start === null) continue;
-
-    const dtend = /^DTEND([^:]*):(.+)$/m.exec(body);
-    let end = dtend ? parseWhen(dtend[1], dtend[2]) : null;
-    if (end === null) {
-      // No DTEND: an all-day event runs a day, anything else defaults to zero length
-      // per the spec; a zero-length event cannot collide, so give it an hour instead
-      // of pretending precision the data does not have.
-      const allDay = /VALUE=DATE/.test(dtstart[1]) || /^\d{8}$/.test(dtstart[2].trim());
-      end = start + (allDay ? 86_400_000 : 3_600_000);
-    }
-
-    if (end <= windowStart || start >= windowEnd) continue;
-    intervals.push({ start, end });
   }
 
   if (recurring > 0) {
@@ -103,6 +130,12 @@ export function parseBusy(ics: string, windowStart: number, windowEnd: number): 
       `[migas] Busy feed: ${recurring} recurring event(s) not expanded. ` +
         `Recurring commitments belong in the availability windows (see /admin), ` +
         `not in the feed.`
+    );
+  }
+  if (unreadable > 0) {
+    console.warn(
+      `[migas] Busy feed: ${unreadable} event(s) skipped as unreadable ` +
+        `(usually a timezone name Intl does not know). Those events do not block slots.`
     );
   }
   return intervals;
