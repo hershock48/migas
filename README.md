@@ -117,6 +117,53 @@ is filled:
   work done twice. First question on that path: what settles his existing Squarespace
   store sales today, and does it know what it is settling?
 
+## The agreement, at /agreement
+
+**The Anchor order's custom-order clickwrap, ported, minus the money.** The proposal's
+"Say yes or say no" step links to `/agreement`, which is the deal in plain English: the
+published glazedweb Client Agreement v1.1 linked and incorporated by reference (never
+restated, so it cannot drift from glazedweb.com/agreement; v1.1 names glazedweb LLC as
+the Provider), and the Exhibit A the master leaves blank, rendered from
+`lib/agreement.ts`: part 1 the scope, part 2 the pricing ($3,500, $1,750 deposit, $99 a
+month, the edit allowance and hourly rate), and part 3 a paragraph saying that no money
+moves through the site, standing where Anchor's online-payment terms and DeVine's
+card-payment row would be. That is not an omission: this site takes no card (see the
+booking flow above), so there is no processor, no customer-paid fee and no platform
+charge to write terms for. If a checkout is ever added it is a written addition to
+Exhibit A, not a quiet edit to the constant.
+
+**The wording pass is in the scope, on purpose.** On September 3 the owner said there is
+"a lot of wording that would need to be adjusted on that section and others" and that he
+would dive in with us. Scope item 5 records that pass, section by section with him, as
+part of the build fee: not an edit against the monthly allowance, not billed by the hour.
+Nothing else on the page changed for it; the copy itself waits for him.
+
+He types his name, ticks the box, and **the email is the record**: both parties get a
+copy carrying the version, the exhibit, the numbers, his name and the server's time, over
+the same SMTP mailbox as the bookings, to `AGREEMENT_TO` (default Kevin's address, never
+`MIGAS_NOTIFY_TO`, which is his inbox at launch). There is **no database row**, and that
+is deliberate rather than lazy: this build's only store is the public-read availability
+document, and a name, an email and an IP address do not belong in a public-read store.
+The server log carries the full record before anything can fail. When mail cannot go out,
+which is every acceptance until SMTP is set, the page hands him a prefilled mailto
+carrying the same record rather than a false "you're all set."
+
+It is a server action (`app/agreement/actions.ts`) rather than a fetch to a route, like
+every other form here, so it posts natively with JavaScript off. It does not share
+`sendMail` from `app/actions.ts`: exporting that from a `"use server"` file would make it
+an endpoint any browser could call with any recipient. The transport is the same shape,
+private to the file.
+
+**Two things to confirm before the link goes to him**, both flagged in
+`lib/agreement.ts`: the registered form of the business (the page says "MI Gas" and lets
+him correct it on the form, but the exhibit line should carry the real name), and the
+edit allowance and hourly rate, which are the house numbers from the DeVine and Anchor
+orders and the two fields the earlier MI Gas paper draft left open. The proposal repeats
+the build fee and the monthly fee in prose and is named in the constant file as a surface
+that cannot read it. The page wears his own header and footer (he is reading his deal on
+his own site), carries its own noindex so it survives launch day, and is linked from
+nowhere but the proposal.
+
 ## Environment
 
 Set these in the hosting dashboard. Never in the repo, never in a commit, never pasted into
@@ -129,6 +176,7 @@ a chat window.
 | `SMTP_USER` / `SMTP_PASS` | Omitted means an unauthenticated relay, which almost no provider allows. |
 | `SMTP_FROM` | Falls back to `SMTP_USER`. Must be an address that mailbox is allowed to send as. |
 | `MIGAS_NOTIFY_TO` | Falls back to `SITE.email`, which is a placeholder — so notification is skipped until one or the other is real. |
+| `AGREEMENT_TO` | Where the signed record from `/agreement` lands. Defaults to `kevin@glazedweb.com`. Deliberately not `MIGAS_NOTIFY_TO`, which is his inbox at launch: the countersignature copy is the studio's. |
 | `MIGAS_ADMIN_PIN` | `/admin` says it is not switched on and nothing can sign in. |
 | `BLOB_READ_WRITE_TOKEN` | Availability edits cannot be saved; the grid serves the `lib/site.ts` defaults and `/admin` says so. Written by Vercel when a Blob store is attached to the project. |
 | `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address; treat that URL as a secret. |
@@ -246,6 +294,16 @@ to leave alone.
       grower, slightly off-message to an institutional buyer, on a site otherwise built in a
       deliberately commercial register. It is our joke in his footer, so it is his call.
       Removing it, or changing the line, is one line in `components/Footer.tsx`.
+- [ ] **The wording pass, with him.** His words, September 3, 2026: "There's a lot of
+      wording that would need to be adjusted on that section and others. I'll have to dive
+      in with you." Which section he meant is not recorded; ask, then go page by page with
+      him until each reads as his. Scope item 5 in `lib/agreement.ts` puts this inside the
+      build fee, so it is owed work, not a request. The house-voice notes at the top of
+      `lib/site.ts` are the measure to check the result against.
+- [ ] **Two facts before the agreement link goes out.** `lib/agreement.ts`: the registered
+      business name for the exhibit line, and the edit allowance and hourly rate, which are
+      house numbers (2 hours a month, $125 an hour) and not his. Then send
+      `migas.glazedweb.com/agreement`.
 - [ ] **Confidentiality and rescheduling.** `FAQ`. Licensed operators will ask about the
       first before they book.
 
@@ -273,9 +331,12 @@ lib/busy.ts         His calendar's iCal feed, parsed into busy intervals. Fails 
 lib/admin-auth.ts   The PIN gate for /admin. One operator, one cookie, no store.
 lib/ics.ts          Calendar invites, hand-rolled. Timezone conversion and RFC 5545 folding.
 lib/forms.ts        Form types and limits — NOT in app/actions.ts, see below.
+lib/agreement.ts    The deal: Exhibit A scope, numbers, the no-payments paragraph,
+                    and the acceptance record type. Read by /agreement and its action.
 app/actions.ts      The four actions: booking, co-management application, call
                     request, question. SMTP and photo attachments.
 app/admin/          The availability editor. Plain forms, no client JavaScript.
+app/agreement/      The custom-order clickwrap and the action that emails the record.
 app/co-management/one-pager/  The model as a printable document: ink on bone,
                     strokes-only diagram, survives print background-stripping.
                     Reads the same constants as the page, so it cannot drift.
@@ -384,6 +445,9 @@ outside.
 1. `app/robots.ts` — allow `/`, add `sitemap`
 2. `next.config.ts` — delete the `headers()` block
 3. `app/layout.tsx` — delete `robots` from the `metadata` export
+
+`/admin` and `/agreement` carry their own page-level noindex and keep it; neither is a
+page a visitor should ever find from a search result.
 
 And a fourth that is easy to miss because it is not about robots at all: **`SITE.url` in
 `lib/site.ts` points at `https://mi-gas.net`.** Every canonical, every Open Graph URL and
