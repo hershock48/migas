@@ -40,6 +40,19 @@ const nextConfig: NextConfig = {
     };
   },
 
+  /**
+   * The agreement lived in this repo at /agreement from September 3 to
+   * September 10, 2026 (Anchor's clickwrap ported, lib/agreement.ts), then
+   * moved to the studio site with the other custom orders: the migas row in
+   * glazedweb/lib/customOrders.js renders glazedweb.com/agreement/migas and the
+   * build page beside it. One home. Anyone holding the old link, including the
+   * proposal as it was texted around between those dates, lands on the right
+   * page. permanent: true is a 308, which preserves method.
+   */
+  async redirects() {
+    return [{ source: "/agreement", destination: "https://www.glazedweb.com/agreement/migas", permanent: true }];
+  },
+
   // This build is a pitch, not the client's live site. Until MI Gas signs, every
   // path must stay out of the index: it is a full copy of their content and must
   // never compete with mi-gas.net for their own name. Delete this block on the day
