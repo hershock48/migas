@@ -123,7 +123,7 @@ is filled:
 `glazedweb/lib/customOrders.js` renders two pages, and the proposal closes on the second:
 
 - `glazedweb.com/agreement/migas`: the published glazedweb Client Agreement v1.1 by
-  reference, Exhibit A (scope, $3,500 half and half, $99 a month, the edit allowance and
+  reference, Exhibit A (scope, $3,500 half and half, $150 a month, the edit allowance and
   hourly rate, which are house numbers until he confirms them), part 3 for the mailbox
   login, the private calendar address, what a grower sends through the intake, his hours
   document, no card taken and no legal advice on licence wording, and the clickwrap.
