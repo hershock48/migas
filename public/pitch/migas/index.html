@@ -75,7 +75,20 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;heigh
 nav{display:flex;gap:20px;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
 nav a{color:var(--mute);text-decoration:none}
 nav a:hover{color:var(--pink-i)}
-@media(max-width:720px){nav{display:none}.brand .bw~span{display:none}}
+/* The one action, reachable from any scroll position (glaze/launch-page.md):
+   the build page. On a phone the section links go, the pill stays. */
+nav .navcta{border:1.5px solid var(--pink);color:var(--pink-i);padding:7px 14px;border-radius:999px;transition:all .16s}
+nav .navcta:hover{background:var(--pink-d);color:#fff}
+@media(max-width:900px){nav a:not(.navcta){display:none}}
+@media(max-width:720px){.brand .bw~span{display:none}}
+
+/* hero actions: the demo, and the same Launch as the header, as a ghost */
+.herocta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:26px 0 0}
+.herocta a{display:inline-block;background:var(--pink-d);color:#fff;font-family:var(--sans);font-weight:700;font-size:.82rem;letter-spacing:.05em;text-transform:uppercase;padding:15px 26px;border-radius:999px;text-decoration:none;box-shadow:0 6px 16px -6px rgba(232,77,138,.55);transition:transform .15s ease,background .15s ease}
+.herocta a:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
+.herocta a.ghost{background:transparent;color:var(--ink);box-shadow:none;border:1.5px solid var(--line)}
+.herocta a.ghost:hover{background:var(--ink);color:#fff;border-color:var(--ink)}
+@media(max-width:520px){.herocta a{width:100%;text-align:center}}
 
 /* hero */
 .hero{padding:66px 0 54px;text-align:left}
@@ -166,20 +179,25 @@ nav a:hover{color:var(--pink-i)}
  letter-spacing:.09em;text-transform:uppercase;padding:15px 30px;border-radius:999px;text-decoration:none;transition:all .18s}
 .demo a:hover{background:var(--green);color:var(--ink);transform:translateY(-2px)}
 
-/* the second way to the demo, at the end of the read. The first one is three
-   sections up by the time anyone reaches "what happens next", and step one of that
-   list is "use the demo", so the link belongs next to the instruction as well. */
-.enddemo{display:flex;flex-wrap:wrap;align-items:center;gap:16px;margin:26px 0 4px}
-.enddemo a{display:inline-block;background:var(--pink-d);color:#fff;font-family:var(--sans);
- font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;
- padding:15px 30px;border-radius:999px;text-decoration:none;
- box-shadow:0 6px 16px -6px rgba(232,77,138,.55);transition:all .18s}
-.enddemo a:hover{background:var(--ink);color:#fff;transform:translateY(-2px)}
-.enddemo span{font-size:.9rem;color:var(--mute)}
+/* closing band: one action (glaze/launch-page.md). Its own class rather than
+   .demo, because .demo styles every anchor as the button and the lines under
+   this button are plain links. */
+.closing{background:linear-gradient(135deg,#201712,#3A2416);color:#F6EFE4;border-radius:18px;padding:32px;margin:26px 0 4px;text-align:center}
+.closing .k{color:var(--green)}
+.closing h3{color:#fff;margin:10px 0 8px;font-size:1.4rem}
+.closing p{color:#D8CBBA;font-size:.98rem;max-width:34em;margin:0 auto 20px}
+.closing a.cta{display:inline-block;background:var(--pink-d);color:#fff;font-family:var(--sans);font-weight:700;font-size:.82rem;letter-spacing:.09em;text-transform:uppercase;padding:15px 30px;border-radius:999px;text-decoration:none;box-shadow:0 6px 16px -6px rgba(232,77,138,.55);transition:all .18s}
+.closing a.cta:hover{background:var(--green);color:var(--ink);transform:translateY(-2px)}
+.closing .after{font-size:.9rem;line-height:1.55;margin:14px auto 0}
+.closing .after a{color:#fff;font-weight:700;overflow-wrap:anywhere}
 
 /* steps */
 .step{display:flex;gap:18px;padding:18px 0;border-bottom:1px solid var(--line)}
 .step:last-child{border-bottom:0}
+/* A bare URL as link text must be able to break; the agreement address pushed
+   step four 2px past 320 (the same fault glaze/launch-page.md records). */
+.step>div{min-width:0}
+.step a{overflow-wrap:anywhere}
 .step .no{font-family:var(--sans);font-weight:800;font-size:.78rem;color:#fff;background:var(--pink-d);width:28px;height:28px;
  border-radius:50%;display:flex;align-items:center;justify-content:center;flex:0 0 auto}
 .step h4{font-family:var(--sans);font-size:1rem;font-weight:800;color:var(--ink);margin-bottom:4px}
@@ -241,6 +259,7 @@ blockquote.pull:before{content:none}
     <a href="#matters">What matters</a>
     <a href="#build">What we'd build</a>
     <a href="#cost">Cost</a>
+    <a class="navcta" href="https://www.glazedweb.com/build/migas" target="_blank" rel="noopener">Launch &#8599;</a>
   </nav>
 </div></header>
 
@@ -255,7 +274,12 @@ blockquote.pull:before{content:none}
     </p>
     <div class="forwho">For the director of MI Gas · Prepared by Glazed Web · August 2026<br>
     <b>Revised August 28</b> after our call: the store and guide sections below now record
-    what changed at your direction, and the build sections describe what the demo does today.</div>
+    what changed at your direction, and the build sections describe what the demo does today.<br>
+    <b>Revised September 10</b>: it now ends on one page, your build page, where everything after yes lives.</div>
+    <p class="herocta">
+      <a href="/demo">Open the demo &#8599;</a>
+      <a class="ghost" href="https://www.glazedweb.com/build/migas" target="_blank" rel="noopener">Launch &#8599;</a>
+    </p>
   </div>
 
   <div class="tldr">
@@ -481,35 +505,39 @@ blockquote.pull:before{content:none}
   <h2>What happens next.</h2>
 
   <div class="step"><div class="no">1</div>
-    <div><strong>Use the demo.</strong> Book yourself a consult on it, from your phone, with real photos. Ten minutes. If the flow is wrong for how you actually work, that is the most useful thing you can tell us.</div>
+    <div><strong>Launch.</strong> Everything from here lives on one page, yours: <a href="https://www.glazedweb.com/build/migas" target="_blank" rel="noopener">glazedweb.com/build/migas</a>. Where things stand, the short list of what only you can supply, what happens in what order, and where your stuff is. We keep it current as things land, so if a circle is still open there, we have not received it yet. Nothing to remember; the page remembers.</div>
   </div>
   <div class="step"><div class="no">2</div>
-    <div><strong>Send two things first.</strong> An email address you will read, and the text of your six reviews. They are the two that unblock the most, and the rest of the list is below.</div>
+    <div><strong>Use the demo.</strong> Book yourself a consult on it, from your phone, with real photos. Ten minutes. If the flow is wrong for how you actually work, that is the most useful thing you can tell us.</div>
   </div>
   <div class="step"><div class="no">3</div>
-    <div><strong>Say yes or say no.</strong> If it is a no, the demo comes down and nothing is owed. If it is a yes, <a href="/agreement">the agreement is digital and short enough to read</a>: the same plain-English terms published at glazedweb.com/agreement, with your scope and pricing attached and no payment terms, because nothing is paid through the site. You type your name, both of us get the signed record by email, the deposit invoice follows, and we point mi-gas.net at it and hand you the keys.</div>
+    <div><strong>Send two things first.</strong> An email address you will read, and the text of your six reviews. They are the two that unblock the most, and the rest of the list is on your build page.</div>
+  </div>
+  <div class="step"><div class="no">4</div>
+    <div><strong>Say yes or say no.</strong> If it is a no, the demo comes down and nothing is owed. If it is a yes, the agreement is waiting at <a href="https://www.glazedweb.com/agreement/migas" target="_blank" rel="noopener">glazedweb.com/agreement/migas</a>: the plain-English terms every client gets, with your scope and your numbers attached. You type your name, both of us get the signed record by email, and we point mi-gas.net at it and hand you the keys.</div>
   </div>
 
   <h3>What we would need from you</h3>
   <p>
-    The same seven, in the order they matter. An email address. The six review
-    transcriptions. The drafted FAQ answers on both pages, starting with whether what a
-    client tells you is confidential, because facilities ask that one first. The
-    co-management project minimum and how the per-light fee is billed. Confirmation of
-    the figures on the credentials strip, which came from your own posts and posts have
-    dates on them. The feed and runoff numbers on the diagram, which are illustrative
-    right now and should be yours or generic. And the member history from your Patreon
-    dashboard, so the growth section can show it. Your hours are no longer on this
-    list: you set those yourself in the availability editor once your PIN is live.
+    The same seven from the call, an email address and the six reviews first, and every one
+    of them is on your build page with the reason it is needed, in the order they block other
+    work. The list lives there and not here on purpose: one copy, ticked as it arrives, so it
+    can never say two different things. Your hours are not on it. You set those yourself in
+    the availability editor once your PIN is live.
   </p>
   <p class="note">
     A decision on what the site may say about your licence sits outside that list, because
     it is your lawyer's answer rather than either of ours.
   </p>
 
-  <div class="enddemo">
-    <a href="/demo">Open the demo</a>
-    <span>It is the same site this proposal is about. Nothing to install, nothing owed.</span>
+  <div class="closing">
+    <div class="k">The one thing to do</div>
+    <h3>Everything from here is on one page.</h3>
+    <p>Where things stand, what we need from you, what happens in what order, and where your stuff is.</p>
+    <a class="cta" href="https://www.glazedweb.com/build/migas" target="_blank" rel="noopener">Launch &#8599;</a>
+    <p class="after"><a href="https://www.glazedweb.com/agreement/migas" target="_blank" rel="noopener">Ready to say yes? The agreement is digital and short enough to read</a>: the same plain-English terms published at glazedweb.com/agreement, with your scope, your numbers and the terms for the booking, your calendar and your mail attached. You type your name, both of us get the signed record by email, and the deposit invoice follows. Nothing is owed before the invoice arrives.</p>
+    <p class="after">Or <a href="mailto:kevin@glazedweb.com?subject=MI%20Gas%20website%20proposal">email Kevin</a>, or <a href="/demo">open the demo one more time</a>. It is the same site this proposal is about. Nothing to install, nothing owed.</p>
+    <p class="after">Glazed Web is one person in Marshall. You would be working with Kevin, start to finish.</p>
   </div>
 </div></section>
 
