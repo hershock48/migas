@@ -72,8 +72,10 @@ header .wrap{display:flex;align-items:center;justify-content:space-between;heigh
 .brand .bw{font-family:var(--sans);font-weight:800;font-size:19px;color:var(--ink);letter-spacing:-.6px;line-height:1.1}
 .brand .bw span{font-weight:350;color:var(--mute)}
 .brand span{font-size:.72rem;color:var(--mute);font-style:italic}
-nav{display:flex;gap:20px;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
-nav a{color:var(--mute);text-decoration:none}
+/* Centered on the pill's axis and kept clear of the brand: without align-items
+   the text links sat at the top of a row the 34px pill sets the height of. */
+nav{display:flex;align-items:center;gap:22px;margin-left:32px;font-size:.72rem;font-weight:600;letter-spacing:.09em;text-transform:uppercase}
+nav a{color:var(--mute);text-decoration:none;white-space:nowrap}
 nav a:hover{color:var(--pink-i)}
 /* The one action, reachable from any scroll position (glaze/launch-page.md):
    the build page. On a phone the section links go, the pill stays. */
@@ -255,9 +257,9 @@ blockquote.pull:before{content:none}
     <span>proposal</span>
   </a>
   <nav>
-    <a href="#found">What we found</a>
+    <a href="#found">Findings</a>
     <a href="#matters">What matters</a>
-    <a href="#build">What we'd build</a>
+    <a href="#build">The build</a>
     <a href="#cost">Cost</a>
     <a class="navcta" href="https://www.glazedweb.com/build/migas" target="_blank" rel="noopener">Launch &#8599;</a>
   </nav>
