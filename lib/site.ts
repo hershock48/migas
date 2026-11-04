@@ -355,8 +355,8 @@ export const COMANAGE_FAQ = [
     a: "PLACEHOLDER: term and notice are his call, and they belong in the same conversation as the project minimum and the billing cadence.",
   },
   {
-    q: "Why a per-light rate?",
-    a: "Because it is a number you can budget. It scales with the size of the room, not with the price of your pound, and the light count tells you what the program costs before we ever talk.",
+    q: "Why tiers by rooms and lights?",
+    a: "Because they are numbers you can budget from before we ever talk. Room count says how much there is to manage and light count says how big the production is; the tier is set by whichever is higher, and it does not move with the price of your pound.",
   },
   {
     q: "Where do you co-manage?",
