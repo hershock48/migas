@@ -10,7 +10,7 @@ import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, CREDS, SITE, money } from "
 export const metadata: Metadata = {
   title: "Co-Management",
   description:
-    "Facility co-management: irrigation and environment steered remotely off your sensor data, scheduling planned with your labor, priced per light. Your head grower runs the floor.",
+    "Facility co-management: irrigation and environment steered remotely off your sensor data, scheduling planned with your labor, priced by the room count or the light count, whichever is higher. Your head grower runs the floor.",
   /**
    * This page gets its own link card, because it is the page that gets forwarded:
    * into a facility's ownership group, and into the division conversations. Next
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `Co-Management - ${SITE.name}`,
     description:
-      "Irrigation and environment steered remotely off your own sensor data. Your head grower runs the floor. Priced per light.",
+      "Irrigation and environment steered remotely off your own sensor data. Your head grower runs the floor. Four tiers by rooms or lights.",
     url: `${SITE.url}/demo/co-management`,
     images: [
       {
@@ -211,7 +211,7 @@ export default function CoManagement() {
             <p className="mt-4 text-lg leading-relaxed text-muted">
               Light count and sensors are what price a room; the rest is what the
               first call is built from. We read it against the program and come back
-              with a call and a per-light number, or an honest no.
+              with a call, the tier your facility lands in, and a start date, or an honest no.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-muted">
               Rather talk before you type?{" "}
@@ -274,7 +274,7 @@ export default function CoManagement() {
           <h2 className="mt-4 text-3xl sm:text-4xl">The first call prices the room</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
             Light count, sensors, media and where the room is losing money. Bring those
-            and the call ends with a per-light number and a start date, or with an honest
+            and the call ends with the tier your facility lands in and a start date, or with an honest
             reason it is not a fit yet.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">

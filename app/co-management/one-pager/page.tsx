@@ -8,7 +8,7 @@ import { COMANAGEMENT, CREDS, SITE, money } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Co-Management, on one page",
   description:
-    "The co-management model as a single printable page: the loop, the services, the conditions, and the per-light structure. Made to be handed to a partner.",
+    "The co-management model as a single printable page: the loop, the services, the conditions, and the four tiers. Made to be handed to a partner.",
 };
 
 /**
