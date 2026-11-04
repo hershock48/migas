@@ -137,61 +137,43 @@ export default function CoManagement() {
 
       {/* ── Price ────────────────────────────────────────────────────────────── */}
       <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal flex flex-col gap-6 rounded-xl2 border border-ember/60 bg-ink-panel p-7 sm:p-9 lg:flex-row lg:items-center lg:justify-between">
-          <div className="max-w-2xl">
-            <p className="eyebrow">Priced per light</p>
-            {/* No billing cadence on this heading, deliberately. His words were "$50-150
-                per light depending on size with a project minimum" and he named no
-                period; "per month" stood here for a day as an assumption dressed as a
-                price. The dashed panel below asks him for it. */}
-            <h2 className="mt-3 text-2xl text-bone sm:text-3xl">
-              {money(COMANAGEMENT.perLight.from)} to {money(COMANAGEMENT.perLight.to)} per
-              light
-            </h2>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Where yours lands depends on the size of the project: a bigger room spreads
-              the same watching across more lights. A project minimum applies, and both
-              numbers get settled on the first call, against your light count and your
-              sensor setup.
-            </p>
-          </div>
-          <div className="shrink-0 lg:text-right">
-            {/* Straight to the application rather than the consult booking: it collects
-                the exact two facts a price needs, light count and sensors. */}
-            <Link href="#apply" className="btn-primary">
-              Price your room
-            </Link>
-          </div>
+        <div className="reveal max-w-2xl">
+          <p className="eyebrow">Price breakdown</p>
+          <h2 className="mt-3 text-2xl text-bone sm:text-3xl">Four tiers, by rooms or lights, whichever is higher</h2>
+          <p className="mt-3 text-[15px] leading-relaxed text-muted">{COMANAGEMENT.rule}</p>
         </div>
-        {/* The range, made concrete. Every figure is derived from perLight in
-            lib/site.ts, so the ladder can never disagree with the range above it —
-            and no billing period appears anywhere in it, same rule as the heading. */}
-        <dl className="reveal mt-6 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
-          {[10, 40, 100].map((n) => (
-            <div key={n} className="bg-ink-panel px-6 py-5">
-              <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">
-                A {n}-light room
-              </dt>
-              <dd className="mt-2 font-display text-xl font-bold text-bone">
-                {money(COMANAGEMENT.perLight.from * n)} to {money(COMANAGEMENT.perLight.to * n)}
-              </dd>
+        <div className="reveal mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {COMANAGEMENT.tiers.map((t, i) => (
+            <div key={t.name} className={`card p-6 ${i === 1 ? "border-ember/60" : ""}`}>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.name}</p>
+              <p className="mt-2 font-display text-3xl font-extrabold text-bone">
+                {money(t.monthly)}
+                {t.open ? "+" : ""}
+                <span className="text-sm font-semibold text-muted">/mo</span>
+              </p>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                {t.rooms}, or {t.lights}.
+              </p>
             </div>
           ))}
-        </dl>
-        <p className="reveal mt-3 text-sm text-muted">
-          Bigger rooms land nearer the bottom of the per-light range. The smallest rooms
-          are where the project minimum does the talking.
-        </p>
-        {/* Addressed to him, not to a visitor, same convention as every dashed panel on
-            the site: he named a minimum on the call and did not put a figure on it. */}
-        <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">Two numbers to supply</p>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            You said a project minimum exists; the page says so without a figure until you
-            set one. And you named no billing period for the per-light rate, so the page
-            does not guess one. Monthly, per run, or something else, say the word and it
-            goes in.
-          </p>
+        </div>
+        <ul className="reveal mt-6 grid gap-2 sm:grid-cols-2">
+          {COMANAGEMENT.cadence.map((c) => (
+            <li key={c} className="flex gap-3 text-sm leading-relaxed text-muted">
+              <span className="mt-2 dot bg-ember" aria-hidden="true" />
+              {c}
+            </li>
+          ))}
+        </ul>
+        <div className="reveal mt-8 flex flex-wrap items-center gap-4">
+          {/* Straight to the application: it collects the two facts a tier needs,
+              room count and light count, and the sensors. */}
+          <Link href="#apply" className="btn-primary">
+            Apply for co-management
+          </Link>
+          <a href={COMANAGEMENT.software.demo} rel="noopener" className="text-sm font-semibold text-flare hover:underline">
+            See the software it runs on
+          </a>
         </div>
       </section>
 

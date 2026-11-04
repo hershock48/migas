@@ -147,6 +147,65 @@ those dates, still lands. If a number changes, it changes in the registry row an
 paper draft in the studio's private contracts folder, in the same commit; the proposal
 repeats the build fee and the monthly in prose and is a surface that cannot read either.
 
+## The home page, in his four sections (2026-11-04)
+
+Jake's email of 2026-11-04 set the shape of the site in four sections, and
+`app/page.tsx` follows it in his order and stops where he stopped:
+
+1. **Intro.** The sun, his canopy, and a statement that says rooms like that
+   are a program and there are three ways to get it: learn it, ask about your
+   own, or run yours with us. The three buttons are the three sections below.
+2. **Patreon and Instagram.** Both clickable. Four Instagram tiles and four
+   Patreon tiles, two by two, a line each on what they are for. `INSTAGRAM_POSTS`
+   and `PATREON_POSTS` in `lib/site.ts`. **PLACEHOLDER: he has not named the
+   four posts of each.** Until he does, the Instagram tiles are three of his own
+   room photographs linking to the profile plus one tile that asks for the
+   fourth, and the Patreon tiles are his four guide topics linking to the page.
+3. **Schedule a consulting call.** Fill in the facility profile, pick a time,
+   pay. **Prices changed:** a half hour at $250, a full hour at $400, his
+   numbers from the email, written in `SESSIONS` rather than derived. The
+   90-minute facility call is gone. The intake gained three facility-profile
+   questions at the top (rooms and lights, sensors, HVAC).
+4. **Co-management.** The KPIs it is judged on, the results so far, the
+   service, a real screenshot of the Remote Grow Solutions platform
+   (`public/assets/rgs/`, captured from the live demo), and the price
+   breakdown in the proposal's own shape. **Pricing changed:** the per-light
+   range from August is retired everywhere (home, `/co-management`, the
+   one-pager). Co-management now runs on the platform and is priced by its
+   four tiers, which are his numbers from his November planning notes and
+   live in `COMANAGEMENT.tiers`. The same four are in the platform's
+   `lib/pricing.ts`; change both together. Remote Grow Solutions is a product
+   within MI Gas; the platform has its own repo (`RemoteGrowSolutions`).
+
+The reviews page and the closing band that used to end the home page are
+reachable from the nav and the footer. They are not on the home page.
+
+## Schedule and pay, and the reminder
+
+Three things the email asked for around the calendar, and what each one is:
+
+- **Set and change availability.** Already his: `/admin`, behind
+  `MIGAS_ADMIN_PIN`, plus his calendar's private feed removing taken times.
+- **Pay at booking.** `lib/pay.ts`: Stripe Checkout behind `STRIPE_SECRET_KEY`.
+  With a key set, the confirmation screen and the confirmation email carry a
+  payment link, Stripe sends the paid event to `/api/stripe/webhook`
+  (`STRIPE_WEBHOOK_SECRET`), and he gets an email saying who paid. With no
+  key, nothing changes: book, then an invoice by email. **The processor is not
+  settled.** Stripe's restricted-business list names cultivation courses and
+  information; Square's and PayPal's are no kinder. The step is built and works
+  against a test key so the flow can be shown; whether it goes live on Stripe,
+  elsewhere, or stays an invoice is his decision with whoever underwrites him.
+  Read the header of `lib/pay.ts` before setting a live key.
+- **The reminder before the call.** `lib/bookings.ts` keeps one small JSON
+  document per booking in the project's Blob store (the same store as his
+  availability). `/api/cron/reminders` runs hourly (`vercel.json`), guarded by
+  `CRON_SECRET`, and emails the grower and him for every call in the next 24
+  hours, once. Needs Blob and SMTP. **A text message is not built:** it needs a
+  messaging provider and a number to send from, a cost and a contract he has
+  not chosen. The .ics invite that goes out at booking already puts the call
+  on the grower's phone with the phone's own alert, which is the phone
+  reminder the email asked for until he picks a provider.
+
 ## Environment
 
 Set these in the hosting dashboard. Never in the repo, never in a commit, never pasted into
@@ -162,6 +221,9 @@ a chat window.
 | `MIGAS_ADMIN_PIN` | `/admin` says it is not switched on and nothing can sign in. |
 | `BLOB_READ_WRITE_TOKEN` | Availability edits cannot be saved; the grid serves the `lib/site.ts` defaults and `/admin` says so. Written by Vercel when a Blob store is attached to the project. |
 | `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address; treat that URL as a secret. |
+| `STRIPE_SECRET_KEY` | No card step: book, then an invoice by email. With a key, the confirmation and the email carry a Stripe Checkout link. **Read `lib/pay.ts` before setting a live key; the processor is not settled.** |
+| `STRIPE_WEBHOOK_SECRET` | Payments complete on Stripe but the site is not told, so he gets no "paid" email and the booking record stays unpaid. |
+| `CRON_SECRET` | The hourly reminder run at `/api/cron/reminders` refuses every call, so no day-before reminders go out. Any long random string; Vercel sends it back as a bearer token. |
 
 Any mailbox with SMTP works: his own domain mail, Google Workspace, Fastmail, whatever he
 already has. No new account and no new bill.
@@ -236,12 +298,15 @@ to leave alone.
       calendar's private iCal address, and the SMTP set. `/admin` shows all four as a status
       panel, red until real. Done means: a test booking arrives in his inbox with photos and
       invite, lands on his phone calendar, and the slot disappears from the grid.
-- [ ] **The co-management project minimum.** `COMANAGEMENT`. He said a minimum exists and
-      did not put a figure on it. The page says "a project minimum applies" without a number
-      until he sets one.
-- [ ] **Confirm the 30 and 90 minute prices.** $250/hr is his; $125 and $375 are pro-rata
-      arithmetic on it. If calls start at a full hour, delete the 30-minute session from
-      `SESSIONS` and nothing else changes.
+- [ ] **The four Instagram posts and the four Patreon posts.** `INSTAGRAM_POSTS` and `PATREON_POSTS`.
+      Send the eight links (and the four images, or permission to pull them) and the tiles
+      become his picks instead of the stand-ins.
+- [ ] **The payment processor.** `lib/pay.ts`. Stripe is built and works against a test key;
+      whether a cultivation consult can run on Stripe at all is his call with his bank. Until
+      that call, leave `STRIPE_SECRET_KEY` unset and the booking goes on the invoice path.
+- [ ] **The reminder.** `CRON_SECRET` set, Blob and SMTP on, and one test booking reminded
+      the day before. A text message needs a provider he has not chosen; the invite on the
+      phone is the phone reminder until then.
 - [ ] **Patreon growth data and member quotes.** `PATREON.growth` and `PATREON.quotes`. Both
       come from his own dashboard; the section renders without them until they land. Refresh
       `PATREON.stats` from the public page and bump `checkedOn` when touched. **Read the

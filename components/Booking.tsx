@@ -284,9 +284,16 @@ export default function Booking({ days }: Props) {
         <p className="eyebrow">Request sent</p>
         <h3 className="mt-4 text-3xl">We have your room before you dial in</h3>
         <p className="mt-4 max-w-xl leading-relaxed text-muted">
-          Your intake is with us now. We read it before the call, and confirm the time by
-          email, along with the invoice to settle beforehand.
+          {state.payUrl
+            ? "Your facility profile is with us now. Pay below to hold the time; we read everything before the call."
+            : "Your facility profile is with us now. We read it before the call, and confirm the time by email, along with the invoice to settle beforehand."}
+          {state.reminder ? " A reminder goes out the day before." : ""}
         </p>
+        {state.payUrl && (
+          <a href={state.payUrl} className="btn-primary mt-6">
+            Pay for the call
+          </a>
+        )}
         {state.summary && state.summary.length > 0 && (
           <dl className="mt-8 divide-y divide-line border-y border-line">
             {state.summary.map((line) => (
@@ -395,7 +402,7 @@ export default function Booking({ days }: Props) {
         <fieldset className={`bk-step mt-8 ${step === 0 ? "" : "bk-hide"}`}>
           <legend className="text-xl text-bone">How much time do you need?</legend>
           <p className="mt-2 text-sm text-muted">
-            Rates are a proposal, not published prices. We invoice before the call.
+            A half hour or a full hour. You pay when you book, or by invoice if the card step is not showing.
           </p>
           <div className="mt-6 grid gap-3">
             {SESSIONS.map((s) => (
@@ -684,8 +691,8 @@ export default function Booking({ days }: Props) {
             {pending ? "Sending…" : "Send booking request"}
           </button>
           <p className="mt-4 max-w-xl text-xs leading-relaxed text-muted">
-            No card taken here. We confirm the time by email and send an invoice to
-            settle before the call.
+            The invite lands on both calendars straight away, with a reminder the day before. Payment follows on the
+            next screen, or by invoice if the card step is not switched on.
           </p>
         </div>
 

@@ -175,11 +175,12 @@ export const PATREON = {
  * spoke. If he would rather hold a one-hour minimum, delete the 30-minute session and
  * nothing else changes.
  */
-export const RATE = 250;
-
-/** Pro-rata on RATE. Kept as a function so a price can never disagree with the rate. */
-const atRate = (minutes: number) => Math.round((RATE * minutes) / 60);
-
+/**
+ * Two lengths, two prices, his numbers from the 2026-11-04 email: a half hour
+ * at $250, a full hour at $400. Not pro-rata (the hour is less than twice the
+ * half), so each price is written, not derived. The 90-minute facility call
+ * is gone with the email's two-option list.
+ */
 export type SessionType = {
   slug: string;
   name: string;
@@ -192,41 +193,53 @@ export type SessionType = {
 
 export const SESSIONS: SessionType[] = [
   {
-    slug: "triage",
-    name: "Room Triage",
+    slug: "half",
+    name: "Half hour",
     minutes: 30,
-    price: atRate(30),
-    summary: "Something is wrong right now and you need an answer this week.",
-    forWho: "A run in trouble: deficiency, pests, a runoff number that will not settle.",
-    includes: ["Photo review before the call", "Written next actions after"],
+    price: 250,
+    summary: "One room, one problem, an answer this week.",
+    forWho: "A run in trouble, a number that will not settle, or a decision you want a second opinion on first.",
+    includes: ["Your facility profile and photos read before the call", "Written next actions after"],
   },
   {
-    slug: "program",
-    name: "Program Review",
+    slug: "hour",
+    name: "Full hour",
     minutes: 60,
-    price: atRate(60),
-    summary: "Your whole feed and environment program, examined end to end.",
-    forWho: "A grow that works but underperforms, or one you are about to scale.",
-    includes: [
-      "Full intake and photo review",
-      "Written recommendations",
-      "One follow-up question thread",
-    ],
-  },
-  {
-    slug: "facility",
-    name: "Facility Call",
-    minutes: 90,
-    price: atRate(90),
-    summary: "Rooms, SOPs and team, walked end to end with the people who run them.",
-    forWho: "Licensed operations, new builds, or a facility weighing co-management.",
-    includes: [
-      "Full intake and photo review",
-      "Written recommendations",
-      "Two follow-up question threads",
-    ],
+    price: 400,
+    summary: "Your program, your build-out, or your whole facility, end to end.",
+    forWho: "A grow that works but underperforms, a design or build-out, or a facility weighing co-management.",
+    includes: ["Your facility profile and photos read before the call", "Written recommendations", "One follow-up question thread"],
   },
 ];
+
+/** What a call is for, in his words from the email. */
+export const CONSULT_TOPICS = [
+  "Advice on a project you are planning",
+  "Cultivation practices, and the issues they cause",
+  "Design and build-out",
+  "Troubleshooting a run that is going wrong",
+] as const;
+
+/**
+ * The four Instagram posts and four Patreon posts the home page shows, two by
+ * two, per the email. PLACEHOLDER: he has not named the four of each yet. Until
+ * he does, the Instagram tiles are three of his own room photographs linking
+ * to the profile plus one tile that asks for the fourth, and the Patreon tiles
+ * are his four guide topics linking to the Patreon page.
+ */
+export const INSTAGRAM_POSTS = [
+  { href: SITE.instagram, caption: "The bench, staked and lined out before a run" },
+  { href: SITE.instagram, caption: "The canopy at lights-off" },
+  { href: SITE.instagram, caption: "Late flower, in the net" },
+  { href: SITE.instagram, caption: "PLACEHOLDER" },
+] as const;
+
+export const PATREON_POSTS = [
+  { title: "Flower, start to finish", blurb: "The bloom program by phase, with the feed and runoff targets for each.", href: PATREON.url },
+  { title: "Veg, from clone to flip", blurb: "Rooting, transplant, and the vegetative run that sets up the flower.", href: PATREON.url },
+  { title: "Runoff, the SOP", blurb: "How to collect it, read it, and what to change when the numbers move.", href: PATREON.url },
+  { title: "Hand-water to automation", blurb: "Moving a room onto drip and sensors without losing a run to the change.", href: PATREON.url },
+] as const;
 
 /**
  * CO-MANAGEMENT. His outline from the 2026-08-27 call, close to verbatim: we run the
@@ -234,16 +247,41 @@ export const SESSIONS: SessionType[] = [
  * program, and the room gets the results of the licensed facility's playbook without
  * hiring its director.
  *
- * Facts that are his, from the call: the service list, $50 to $150 per light by
- * project size, the sensor requirement including the TrolMaster exclusion, the
- * head-grower condition, the relocation network, optional site visits, genetic
- * sourcing through Bractworx or another nursery, and design-build as an ask.
+ * Facts that are his, from the call: the service list, the sensor requirement
+ * including the TrolMaster exclusion, the head-grower condition, the relocation
+ * network, optional site visits, genetic sourcing through Bractworx or another
+ * nursery, and design-build as an ask.
  *
- * PLACEHOLDER, one number: the project minimum. He said a minimum exists and did not
- * put a figure on it, so the copy says "project minimum" without one. Get the number.
+ * PRICING CHANGED 2026-11-04. The per-light range from the August call ($50 to
+ * $150 a light, project minimum unnamed) is retired. Co-management now runs on
+ * the Remote Grow Solutions platform and is priced by its tiers, which are his
+ * numbers from his November planning notes: four tiers set by flowering lights
+ * or flower rooms, the higher one wins. The same four live in the platform's
+ * lib/pricing.ts; change both together.
  */
 export const COMANAGEMENT = {
-  perLight: { from: 50, to: 150 },
+  tiers: [
+    { name: "Essential", rooms: "1 to 2 flower rooms", lights: "up to 100 lights", monthly: 2000, open: false },
+    { name: "Professional", rooms: "3 to 5 flower rooms", lights: "101 to 400 lights", monthly: 4000, open: false },
+    { name: "Advanced", rooms: "6 to 8 flower rooms", lights: "401 to 750 lights", monthly: 6000, open: false },
+    { name: "Enterprise", rooms: "9 or more flower rooms", lights: "751 or more lights", monthly: 8000, open: true },
+  ],
+  rule: "Either count can move a facility up a tier, and the higher one sets the price. The two are never added. Every tier gets the same service.",
+  cadence: [
+    "Three check-ins a week per flower room, from a phone, three to five minutes each",
+    "One 60-minute call a week, with action items that land on a shared calendar",
+    "A weekly written report: the week behind, the week ahead",
+    "Clone, mother and veg advisory included at no extra cost",
+  ],
+  /** The KPIs co-management is judged on, his list. */
+  kpis: ["Runs per year", "Yield per square foot", "Consistency, run to run", "Quality: potency, terpenes, appearance", "Revenue per pound"],
+  software: {
+    name: "Remote Grow Solutions",
+    url: "https://remotegrowsolutions.vercel.app",
+    demo: "https://remotegrowsolutions.vercel.app/login",
+    blurb:
+      "Every room's readings against its own targets, the rooms that need a look first, the run as a bar from flip to harvest, a shared calendar, and the weekly report with the charts in it. Your team enters what the sensors cannot; we read it before the call.",
+  },
   services: [
     {
       name: "Irrigation, run remotely",
@@ -413,6 +451,30 @@ export const COMANAGE_APPLY = [
  * He will have a better list than this. That list IS the product; get it from him.
  */
 export const INTAKE = [
+  // The facility profile, first, per the 2026-11-04 email: "fill out facility
+  // profile onboarding form for time efficiency." Three questions that place
+  // the room before the room questions start.
+  {
+    id: "facility",
+    label: "Your facility: rooms and lights",
+    type: "text" as const,
+    placeholder: "e.g. 4 flower rooms and 168 lights, plus a veg and a mother room",
+    required: true,
+  },
+  {
+    id: "sensors",
+    label: "Sensors you run",
+    type: "select" as const,
+    options: ["Aroya", "Pinnacle", "Growlink", "TrolMaster", "Other", "None yet"],
+    required: false,
+  },
+  {
+    id: "climate",
+    label: "HVAC and dehumidification",
+    type: "text" as const,
+    placeholder: "Brand and capacity per room, if you know it",
+    required: false,
+  },
   {
     id: "stage",
     label: "What stage is the room in right now?",
@@ -634,7 +696,7 @@ export const PROCESS = [
     step: "Before",
     title: "The room comes before the calendar",
     body:
-      "Stage, canopy, media, feed, lights, runoff numbers, and photos of the problem. Eight questions, two minutes, and they are the questions we would otherwise spend the first twenty minutes of your call asking.",
+      "Your facility profile: rooms, lights, sensors, stage, media, feed, runoff, and photos of the problem. A few minutes, and they are the questions we would otherwise spend the first twenty minutes of your call asking.",
   },
   {
     step: "The call",
@@ -667,7 +729,7 @@ export const FAQ = [
     // marijuana", and Calendly, Acuity and Setmore all settle through Stripe, Square
     // or PayPal. This is the single biggest open question on the build and the reason
     // the booking flow deliberately stops before taking a card.
-    a: "PLACEHOLDER: payment route to be confirmed. Right now a booking request reaches us and we send you an invoice to settle before the call.",
+    a: "By card when you book: a half hour is $250, a full hour is $400, and the payment page follows the booking. If the card step is not showing, we send an invoice to settle before the call.",
   },
   {
     q: "What if I need to move it?",

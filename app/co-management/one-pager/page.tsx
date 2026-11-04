@@ -109,27 +109,26 @@ export default function OnePager() {
         {/* ── Price ────────────────────────────────────────────────────────── */}
         <div className="mt-8">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-ember-deep">
-            Priced per light
+            Price breakdown
           </h2>
-          <p className="mt-2 text-2xl font-extrabold tracking-tight text-ink">
-            {money(COMANAGEMENT.perLight.from)} to {money(COMANAGEMENT.perLight.to)} per light
-          </p>
-          <div className="mt-3 grid grid-cols-3 gap-px overflow-hidden rounded-lg border border-ink/20 bg-ink/20">
-            {[10, 40, 100].map((n) => (
-              <div key={n} className="bg-bone px-4 py-3">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink/60">
-                  A {n}-light room
+          <p className="mt-2 text-sm leading-relaxed text-ink/75">{COMANAGEMENT.rule}</p>
+          <div className="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-ink/20 bg-ink/20 sm:grid-cols-4">
+            {COMANAGEMENT.tiers.map((t) => (
+              <div key={t.name} className="bg-bone px-4 py-3">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-ink/60">{t.name}</p>
+                <p className="mt-1 text-lg font-extrabold tracking-tight text-ink">
+                  {money(t.monthly)}
+                  {t.open ? "+" : ""}
+                  <span className="text-xs font-semibold text-ink/60">/mo</span>
                 </p>
-                <p className="mt-1 text-[15px] font-bold text-ink">
-                  {money(COMANAGEMENT.perLight.from * n)} to {money(COMANAGEMENT.perLight.to * n)}
+                <p className="mt-1 text-xs leading-snug text-ink/75">
+                  {t.rooms}, or {t.lights}
                 </p>
               </div>
             ))}
           </div>
           <p className="mt-2 text-sm leading-relaxed text-ink/75">
-            Bigger rooms land nearer the bottom of the range. A project minimum applies;
-            it and the billing cadence get settled on the first call, against your light
-            count and your sensor setup.
+            {COMANAGEMENT.cadence.join(". ")}.
           </p>
         </div>
 

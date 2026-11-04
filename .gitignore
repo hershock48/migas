@@ -16,3 +16,4 @@ next-env.d.ts
 # CDN problem, or deployment protection. It was one line in this file.
 #
 # Ignore scratch scripts by name if they turn up. Never by extension.
+.claude/

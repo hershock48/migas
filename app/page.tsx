@@ -5,523 +5,303 @@ import Sun from "@/components/Sun";
 import roomBench from "@/public/assets/rooms/bench.webp";
 import roomCanopy from "@/public/assets/rooms/canopy.webp";
 import roomCola from "@/public/assets/rooms/cola.webp";
+import rgsOverview from "@/public/assets/rgs/rgs-overview.webp";
 import { MirrorLockup } from "@/components/brand";
-import { ReviewCard, SessionCard } from "@/components/cards";
-import {
-  COMANAGEMENT,
-  CREDS,
-  PATREON,
-  RATE,
-  REVIEWS,
-  SESSIONS,
-  SITE,
-  money,
-} from "@/lib/site";
+import { SessionCard } from "@/components/cards";
+import { COMANAGEMENT, CONSULT_TOPICS, CREDS, INSTAGRAM_POSTS, PATREON, PATREON_POSTS, SESSIONS, SITE, money } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: `${SITE.tagline}`,
   description:
-    "Consulting calls and facility co-management from the director of a licensed Michigan cultivation facility. Every call starts with an intake and your photos.",
+    "Learn it on Patreon and Instagram, book a half hour or an hour with a cultivator who runs a licensed Michigan facility, or put your rooms on co-management with weekly review.",
 };
 
+/**
+ * FOUR SECTIONS, HIS ORDER, from his email of 2026-11-04:
+ *
+ *   1. Intro: the sun, the canopy, and a statement that makes a grower think
+ *      "that looks better than anything I have done, I want that, and I can
+ *      see several ways to get it."
+ *   2. Patreon and Instagram: both clickable, four posts from each in a 2x2
+ *      grid, a line each on what they are for.
+ *   3. Schedule a consulting call: fill the facility profile first, what a
+ *      call is for, half hour $250, full hour $400, the calendar.
+ *   4. Co-management: the KPIs and results, the service, a visual of the
+ *      software, the price breakdown in the proposal's own style.
+ *
+ * Nothing else. The reviews page and the close band that used to follow are
+ * reachable from the nav and the footer; the home page stops where he said.
+ */
 export default function Home() {
+  const igImages = [roomBench, roomCanopy, roomCola];
   return (
     <>
-      {/* ── Hero ──────────────────────────────────────────────────────────────
-          The one job of this screen is to say what he does and for whom, in a
-          sentence, above the fold. The live site opens on a logo and a slideshow, so
-          a facility director landing on it has to scroll to find out it is for them.
-          ───────────────────────────────────────────────────────────────────── */}
+      {/* ── 1. Intro ──────────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden">
-        <div className="wrap relative grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:min-h-[680px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16">
-          {/* z-10 so the copy paints above the sun wrapper, which comes AFTER it in the DOM.
-              The scrim below needs to sit over the fire and under the text, and with
-              everything at auto z the first attempt put opaque ink straight over the
-              paragraph instead: text luminance fell to 0.006 and contrast to 1.08:1, worse
-              than the problem. Order has to be fire, then scrim, then words. */}
+        <div className="wrap relative grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:min-h-[640px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16">
           <div className="reveal relative z-10">
             <p className="eyebrow">{SITE.region} &middot; Indoor cultivators worldwide</p>
-            {/* HIS WORDS, AND THE ONE WORD THAT EARNS AN ANIMATION.
-                "grow with us" is his own headline, lifted whole. What it buys that "Run the room
-                like a facility" could not: that line only spoke to somebody who does NOT yet run a
-                facility, while the tagline and metadata under it target licensed operators — the
-                h1 and the positioning were addressing two different buyers. His line has no such
-                problem, and it is unimpeachably his.
-
-                `aria-label` on the heading rather than a visually-hidden duplicate: GROW is split
-                into four spans so each letter can rise on its own, and some screen readers spell
-                out a word broken into inline-blocks. The label gives assistive tech the clean
-                string; the DOM text still concatenates to "Grow with us" for a crawler. */}
-            <h1
-              aria-label="Grow with us"
-              className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]"
-            >
+            <h1 aria-label="Grow with us" className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]">
               <span className="grow-word text-flare">
                 {"Grow".split("").map((c, i) => (
-                  <span
-                    key={i}
-                    className="grow-letter"
-                    style={{
-                      animationDelay: `${0.12 + i * 0.09}s`,
-                      // Alternating lean, so they uncurl in opposite directions like real shoots
-                      // rather than rising as one rigid block.
-                      ["--lean" as string]: `${i % 2 ? 5 : -5}deg`,
-                    }}
-                  >
+                  <span key={i} className="grow-letter" style={{ animationDelay: `${0.12 + i * 0.09}s`, ["--lean" as string]: `${i % 2 ? 5 : -5}deg` }}>
                     {c}
                   </span>
                 ))}
-              </span>
-              {/* A real space before the break: <br /> contributes nothing to textContent, so
-                  without this the heading reads "Growwith us." to anything parsing the DOM rather
-                  than rendering it — a crawler, a reader mode, a scraper. The old headline had the
-                  same fault ("Run the roomlike a facility."). Invisible on screen either way. */}{" "}
+              </span>{" "}
               <br />
               with us
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-              Consulting calls and facility co-management from a cultivator who runs a
-              licensed Michigan facility. What we run, why we run it, and what changes in
-              your room.
+              Rooms that look like the one below are not luck. They are a program, run the same way every time, by
+              somebody who runs a licensed Michigan facility for a living. You can learn it, you can ask about your own
+              room, or you can run your rooms with us.
             </p>
-
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/consulting#book" className="btn-primary">
-                Book a consult
+              <Link href="#learn" className="btn-ghost">
+                Learn it
               </Link>
-              <Link href="/co-management" className="btn-ghost">
-                Co-management
+              <Link href="#call" className="btn-primary">
+                Book a call
+              </Link>
+              <Link href="#co-management" className="btn-ghost">
+                Run it with us
               </Link>
             </div>
-
-            <p className="mt-6 max-w-lg text-sm leading-relaxed text-muted">
-              Eight questions before we talk: stage, canopy, media, feed, lights, runoff,
-              and your photos. We read them first, so the hour goes on your room.
-            </p>
           </div>
 
-          {/* ONE sun, positioned two ways rather than two suns with one hidden. On a
-              phone it sits in the flow beneath the copy at full size. On a wide screen it
-              goes absolute and crops off the right edge, so it reads as something burning
-              past the frame rather than a circle placed on a page — and `-z-10` puts it
-              behind the copy, which matters because `bone` on the disc measures 3.40:
-              enough for a display heading, not enough for a paragraph. No paragraph is
-              ever allowed over it. */}
+          {/* ONE sun, two placements; the rules on contrast over the disc are in git
+              history on this file and still hold: no paragraph over the fire. */}
           <div className="reveal pointer-events-none relative mx-auto w-[86%] max-w-[380px] lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]">
             <Sun />
-            {/* THE SAME RULE AS ABOVE, ENFORCED ON A PHONE TOO. The comment on this wrapper
-                has always said no paragraph is allowed over the disc, and at lg that is kept
-                two ways: the sun is `-z-10` behind the copy and there is a fade across the
-                top of the section. Below lg neither applies. The sun sits in the flow under
-                the copy and looks safely separate — but `.sun-flame` is `inset: -34%`, so the
-                exterior fire reaches about a third of the disc's height ABOVE its own box,
-                and the sun comes after the copy in the DOM. So the fire climbed into the last
-                paragraph unguarded.
-
-                Measured on a 390px viewport, per line of "Every call starts with an
-                eight-question room intake…", text against the ground immediately behind it:
-
-                  line 1   4.85:1   ok
-                  line 2   3.25:1
-                  line 3   1.73:1
-
-                The ground goes 0.003 -> 0.031 -> 0.114 as the fire rises, which is why he
-                described the words as hidden behind the sun: the first line is fine and the
-                sentence fades out from under you. 4.5:1 is the floor for body text.
-
-                This is ink over the bleed and only the bleed. It sits above the wrapper
-                rather than inside it, opaque at the top where it meets a page that is already
-                ink — so the join is invisible — and transparent by the disc's own top edge, so
-                the brightest fire, the part right off the limb, is not touched at all. */}
             <span
               aria-hidden
               className="pointer-events-none absolute inset-x-[-40%] bottom-full h-[200px] bg-[linear-gradient(to_bottom,#060403_0%,#060403_66%,rgba(6,4,3,0.6)_84%,transparent_100%)] lg:hidden"
             />
-            {/* His own device: the mark in near-black, over the fire. It appears only where the
-                disc is whole — on a wide screen the sun is cropped off the frame and there is
-                no room for a 2.4:1 lockup on a crescent.
-
-                On contrast: WCAG 1.4.3 explicitly exempts "text that is part of a logo or brand
-                name", which is the one place on this site where laying type over a gradient is
-                not a machine-checkable-contrast problem being waved away. Everything that is
-                actually text still sits on flat ground. */}
             <MirrorLockup className="absolute left-1/2 top-[47%] h-auto w-[62%] -translate-x-1/2 -translate-y-1/2 text-ink lg:hidden" />
           </div>
         </div>
-        {/* Same emergence as the closing band, and needed for the same reason: at lg the sun
-            goes `absolute -top-[24%]`, which puts 163px of a 512px disc above this section's
-            clip and leaves a 477px-wide flat chord across it, directly under the header. Below
-            lg the sun sits in the flow beneath the copy and nothing is cut, so this is lg-only
-            rather than a fade applied where there is no edge to hide.
-            Sibling of the grid rather than a child of it, so it is positioned against the
-            section — the section owns the clip, so the section owns the fade. `-z-10` matches
-            the sun's own layer and it comes later in the DOM, so it paints over the sun; the
-            copy is at the default z and stays crisp above both. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 hidden h-[124px] bg-gradient-to-b from-ink via-ink/45 to-transparent lg:-z-10 lg:block"
-        />
+        <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 hidden h-[124px] bg-gradient-to-b from-ink via-ink/45 to-transparent lg:-z-10 lg:block" />
       </section>
 
-      {/* Credibility, as three flat statements. No badges, no fake logos. */}
-      <section className="wrap mt-6 sm:mt-12">
-        <dl className="reveal grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+      {/* The canopy: the picture the statement is about. His own room, late in
+          flower. Text sits beside it, never over it. */}
+      <section className="wrap mt-6 sm:mt-10">
+        <div className="reveal overflow-hidden rounded-xl2 border border-line">
+          <Image src={roomCanopy} alt="The flower canopy at lights-off, colas standing through the trellis net." priority sizes="(min-width: 1152px) 1120px, 100vw" className="aspect-[16/7] h-auto w-full object-cover" />
+        </div>
+        <dl className="reveal mt-6 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
           {CREDS.map((c) => (
-            <div key={c.label} className="bg-ink-panel px-6 py-7">
+            <div key={c.label} className="bg-ink-panel px-6 py-6">
               <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
               <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
             </div>
           ))}
         </dl>
-        {/* Unlike everything else marked PLACEHOLDER in this build, these three are HIS
-            numbers — lifted from his own posts rather than invented. What is unconfirmed
-            is whether they still hold, because the posts are dated and he has not checked
-            them for the site. Same dashed treatment as the other pending surfaces, and
-            addressed to him rather than written in his voice. */}
-        <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">Your figures, needing a re-check</p>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            These three came out of your own posts rather than from us. The posts are
-            dated, so confirm they still hold before this goes live.
-          </p>
+      </section>
+
+      {/* ── 2. Patreon and Instagram ──────────────────────────────────────── */}
+      <section id="learn" className="wrap mt-24 scroll-mt-24 sm:mt-32">
+        <div className="reveal max-w-2xl">
+          <p className="eyebrow">Learn it</p>
+          <h2 className="mt-4 text-3xl sm:text-4xl">The work is public. The method is on Patreon.</h2>
+        </div>
+        <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-14">
+          {/* Instagram */}
+          <div className="reveal">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h3 className="text-2xl text-bone">Instagram</h3>
+              <a href={SITE.instagram} className="text-sm font-semibold text-flare hover:underline" rel="noopener">
+                @mi_gas_2.0
+              </a>
+            </div>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              The foundation. Every run photographed in the same rooms, one after another, is the work that built the
+              name. Scroll it and check the results against the writing.
+            </p>
+            <ul className="mt-5 grid grid-cols-2 gap-3">
+              {INSTAGRAM_POSTS.map((p, i) =>
+                p.caption === "PLACEHOLDER" ? (
+                  <li key={i} className="flex aspect-square items-center justify-center rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-4 text-center text-xs text-muted">
+                    Fourth post: send the link and it goes here.
+                  </li>
+                ) : (
+                  <li key={i}>
+                    <a href={p.href} rel="noopener" className="group block overflow-hidden rounded-xl2 border border-line">
+                      <Image src={igImages[i]} alt={p.caption} sizes="(min-width: 1024px) 270px, 45vw" className="aspect-square h-auto w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
+                    </a>
+                  </li>
+                )
+              )}
+            </ul>
+          </div>
+
+          {/* Patreon */}
+          <div className="reveal">
+            <div className="flex flex-wrap items-baseline justify-between gap-3">
+              <h3 className="text-2xl text-bone">Patreon</h3>
+              <a href={PATREON.url} className="text-sm font-semibold text-flare hover:underline" rel="noopener">
+                patreon.com/Mi_gas_
+              </a>
+            </div>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">
+              Where you learn it, from {SITE.name} and other working pros: video SOPs and full clone-to-harvest guides.{" "}
+              {PATREON.stats.totalMembers} growers inside, {PATREON.stats.posts} posts, from ${PATREON.stats.priceFrom} a
+              month.
+            </p>
+            <ul className="mt-5 grid grid-cols-2 gap-3">
+              {PATREON_POSTS.map((p) => (
+                <li key={p.title}>
+                  <a href={p.href} rel="noopener" className="card flex h-full flex-col p-5 transition-colors hover:border-flare">
+                    <span className="eyebrow">Guide</span>
+                    <span className="mt-2 font-display text-lg font-bold leading-snug text-bone">{p.title}</span>
+                    <span className="mt-2 text-sm leading-relaxed text-muted">{p.blurb}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </section>
 
-      {/* ── The router ────────────────────────────────────────────────────────
-          "Streamline my consulting calls" is a routing problem before it is a
-          calendar problem. Somebody with spider mite this morning and somebody
-          standardizing four rooms want different amounts of his time, and if the site
-          does not sort them, the first ten minutes of every call does.
-
-          NO PARAGRAPH UNDER THE HEADING, and that is the fix rather than the omission.
-          There was one: "Three lengths, because a room on fire and a facility writing its
-          SOPs are not the same conversation. Pick one and the intake adapts to it." Three
-          things wrong with it, and only the third is a matter of taste.
-
-          The last clause was not true. All three sessions render the identical eight
-          INTAKE questions — `INTAKE.map` in components/Booking.tsx, with no branch on the
-          chosen session anywhere. What actually narrows is which time slots are offered,
-          via `fits`. The site was promising a form that reshapes itself and shipping one
-          that does not.
-
-          The middle was already used. "A room on fire and a facility writing its SOPs are
-          not the same conversation" also opens the Sessions section on /consulting. The
-          same figure twice on one site stops being an observation and becomes a
-          catchphrase, and antithesis was the exact habit the copy pass flagged for
-          rationing.
-
-          And it was explaining the cards to the reader before the reader got to them.
-          Each SessionCard already carries its own summary in plain language: something is
-          wrong right now, your whole program examined end to end, SOPs for a team that has
-          to run this without you. A paragraph restating that in a more clever register is
-          the studio voice he keeps catching, doing work the cards do better.
-          ───────────────────────────────────────────────────────────────────── */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal max-w-2xl">
-          <p className="eyebrow">Consulting</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Every call starts with your room</h2>
+      {/* ── 3. Schedule a consulting call ─────────────────────────────────── */}
+      <section id="call" className="wrap mt-24 scroll-mt-24 sm:mt-32">
+        <div className="reveal grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-end">
+          <div>
+            <p className="eyebrow">Schedule a consulting call</p>
+            <h2 className="mt-4 text-3xl sm:text-4xl">Fill in your facility profile, then pick a time</h2>
+            <p className="mt-4 text-lg leading-relaxed text-muted">
+              The profile takes a few minutes and saves the first twenty of the call. Rooms, lights, media, feed,
+              sensors, what is happening, and your photos. We read all of it before we dial in.
+            </p>
+          </div>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            {CONSULT_TOPICS.map((t) => (
+              <li key={t} className="card flex items-center gap-3 px-4 py-3 text-[15px] text-bone/90">
+                <span className="dot bg-flare" aria-hidden="true" />
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
 
-        <div className="reveal mt-12 grid gap-6 md:grid-cols-3">
+        <div className="reveal mt-10 grid gap-6 md:grid-cols-2">
           {SESSIONS.map((s, i) => (
-            <SessionCard key={s.slug} session={s} featured={i === 1} />
+            <SessionCard key={s.slug} session={s} href="/consulting#book" featured={i === 1} />
           ))}
         </div>
 
-        <p className="reveal mt-8 text-sm text-muted">
-          One rate, {money(RATE)} an hour. See{" "}
-          <Link href="/consulting" className="text-flare hover:underline">
-            how a consult runs
+        <div className="reveal mt-6 flex flex-col gap-6 rounded-xl2 border border-line bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-8">
+          <p className="max-w-2xl text-[15px] leading-relaxed text-muted">
+            Pick a time from the live calendar, pay, and the invite lands on both calendars with a reminder before the
+            call. Times come off the grid the moment they are taken.
+          </p>
+          <Link href="/consulting#book" className="btn-primary shrink-0">
+            Book a call
           </Link>
-          .
-        </p>
+        </div>
       </section>
 
-      {/* ── Co-management ────────────────────────────────────────────────────
-          The new offer from the 2026-08-27 call, teased here and told in full on its
-          own page. The four service names are enough on the homepage; the conditions
-          and the network are the page's job. */}
-      <section className="wrap mt-24 sm:mt-32">
+      {/* ── 4. Co-management ─────────────────────────────────────────────── */}
+      <section id="co-management" className="wrap mt-24 scroll-mt-24 sm:mt-32">
         <div className="reveal flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
-            <p className="eyebrow">Co-management</p>
+            <p className="eyebrow">{SITE.name} co-management</p>
             <h2 className="mt-4 text-3xl sm:text-4xl">We run the room with you</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
-              Irrigation and environment steered remotely off your own sensor data, run
-              by run, with your head grower running the floor. Priced per light.
+              Irrigation and environment steered off your own sensor data, run by run, with your head grower on the
+              floor and a weekly call that ends in actions with names on them.
             </p>
           </div>
           <Link href="/co-management" className="btn-ghost">
-            How it works
+            The full page
           </Link>
         </div>
 
-        <div className="reveal mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        {/* The KPIs it is judged on, then the results so far. */}
+        <div className="reveal mt-10 grid gap-6 lg:grid-cols-[1fr_1.4fr]">
+          <div className="card p-6">
+            <p className="eyebrow">What we are judged on</p>
+            <ul className="mt-3 space-y-2">
+              {COMANAGEMENT.kpis.map((k) => (
+                <li key={k} className="flex items-center gap-3 text-[15px] text-bone/90">
+                  <span className="dot bg-flare" aria-hidden="true" />
+                  {k}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <dl className="grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+            {CREDS.map((c) => (
+              <div key={c.label} className="bg-ink-panel px-6 py-6">
+                <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
+                <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
+
+        {/* The service. */}
+        <div className="reveal mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {COMANAGEMENT.services.map((s) => (
             <div key={s.name} className="card flex flex-col p-6">
               <h3 className="text-lg leading-snug text-bone">{s.name}</h3>
-              <p className="mt-4 flex-1 text-sm leading-relaxed text-muted">{s.body}</p>
+              <p className="mt-3 flex-1 text-sm leading-relaxed text-muted">{s.body}</p>
             </div>
           ))}
         </div>
+        <ul className="reveal mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
+          {COMANAGEMENT.cadence.map((c) => (
+            <li key={c} className="flex gap-3 text-sm leading-relaxed text-muted">
+              <span className="mt-2 dot bg-ember" aria-hidden="true" />
+              {c}
+            </li>
+          ))}
+        </ul>
 
-        <div className="reveal mt-6 flex flex-col gap-6 rounded-xl2 border border-ember/60 bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-9">
-          <div className="max-w-2xl">
-            <p className="eyebrow">Priced per light</p>
-            <h3 className="mt-3 text-2xl text-bone">
-              {money(COMANAGEMENT.perLight.from)} to {money(COMANAGEMENT.perLight.to)} per
-              light
-            </h3>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Where yours lands depends on the size of the project. A project minimum
-              applies, and the room needs sensors we can read. Both are on the page.
-            </p>
+        {/* The software. A real screenshot of the platform, with the live demo a click away. */}
+        <div className="reveal mt-12 grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+          <a href={COMANAGEMENT.software.demo} rel="noopener" className="group block overflow-hidden rounded-xl2 border border-line" aria-label={`Open the ${COMANAGEMENT.software.name} demo`}>
+            <Image src={rgsOverview} alt={`The ${COMANAGEMENT.software.name} overview: rooms needing a look, each run as a bar from flip to harvest, check-ins due this week.`} sizes="(min-width: 1024px) 640px, 100vw" className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]" />
+          </a>
+          <div>
+            <p className="eyebrow">The software</p>
+            <h3 className="mt-3 text-2xl text-bone">{COMANAGEMENT.software.name}</h3>
+            <p className="mt-3 text-[15px] leading-relaxed text-muted">{COMANAGEMENT.software.blurb}</p>
+            <a href={COMANAGEMENT.software.demo} rel="noopener" className="btn-ghost mt-5">
+              Open the demo
+            </a>
           </div>
-          <div className="shrink-0 sm:text-right">
-            <Link href="/co-management" className="btn-primary mt-4">
-              See the conditions
-            </Link>
+        </div>
+
+        {/* The price breakdown, in the proposal's own shape: the number big, the
+            terms small under it, one box per tier. */}
+        <div className="reveal mt-12">
+          <div className="flex flex-wrap items-baseline justify-between gap-3">
+            <p className="eyebrow">Price breakdown</p>
+            <p className="text-sm text-muted">{COMANAGEMENT.rule}</p>
           </div>
-        </div>
-      </section>
-
-      {/* ── Patreon ──────────────────────────────────────────────────────────
-          One section, per his direction: advertise the Patreon, do not resell it.
-          Every number here is read from lib/site.ts PATREON and was checkable on his
-          public page on the recorded date. The growth strip and member quotes render
-          only when he exports them from his dashboard; nothing is invented in the
-          meantime. */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal max-w-2xl">
-          <p className="eyebrow">The Patreon</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">The full playbook lives on Patreon</h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted">
-            The long-form work: feed programs, runoff SOPs, propagation technique, and the
-            same rooms photographed run after run so you can check the results against the
-            writing.
-          </p>
-        </div>
-
-        {/* His rooms, off his own feed — the three of the homepage gallery images that
-            carry no photographer credit (several are shot by @greenmitten, and the
-            owner's permission covers his photographs, not necessarily a third
-            photographer's; those stay off until he clears them). Three stages, left to
-            right: the bench before a run, the canopy in flower, the finish. His own
-            posts say the rooms are the proof, so the rooms sit above the numbers.
-            720x900 native-resolution crops; the fourth candidate shot existed only at
-            320px and an upscale is not a photograph, so three it is. */}
-        <div className="reveal mt-10 grid grid-cols-3 gap-3 sm:gap-4">
-          {[
-            { src: roomBench, alt: "Pots staked and lined out on the transplant bench before a run, drip emitters already placed." },
-            { src: roomCanopy, alt: "The flower canopy at lights-off, colas standing through the trellis net." },
-            { src: roomCola, alt: "A frosted cola held in the net, late in flower." },
-          ].map((p) => (
-            <div key={p.alt} className="overflow-hidden rounded-xl2 border border-line">
-              <Image
-                src={p.src}
-                alt={p.alt}
-                sizes="(min-width: 1152px) 368px, 33vw"
-                className="aspect-[4/5] h-auto w-full object-cover"
-              />
-            </div>
-          ))}
-        </div>
-        <p className="reveal mt-3 text-xs text-muted">The rooms the posts are written from.</p>
-
-        <dl className="reveal mt-8 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
-          {/* Total members leads, not paid members: 756 is Patreon's own figure on his
-              public page and it is the "followers" number he asked to showcase. The
-              paid count stays out of the tiles on purpose — see the warning on
-              PATREON.growth in lib/site.ts before adding any number that moves. */}
-          {[
-            { stat: String(PATREON.stats.totalMembers), label: "Growers in the community, free tier included" },
-            { stat: String(PATREON.stats.posts), label: "Posts inside, long-form and searchable" },
-            { stat: `From $${PATREON.stats.priceFrom}/mo`, label: "Full membership, cancel whenever" },
-          ].map((c) => (
-            <div key={c.label} className="bg-ink-panel px-6 py-7">
-              <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
-            </div>
-          ))}
-        </dl>
-        <p className="reveal mt-3 text-xs text-muted">
-          Counts read from the public Patreon page on {PATREON.stats.checkedOn}.
-        </p>
-
-        {/* The growth strip. His dashboard has the member history; the seam renders it
-            the moment PATREON.growth carries two or more points. */}
-        {PATREON.growth.length >= 2 && (
-          <div className="reveal mt-8 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-flow-col sm:auto-cols-fr">
-            {PATREON.growth.map((g) => (
-              <div key={g.label} className="bg-ink-panel px-6 py-5">
-                <p className="font-display text-xl font-bold text-bone">{g.members}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.14em] text-muted">{g.label}</p>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {COMANAGEMENT.tiers.map((t, i) => (
+              <div key={t.name} className={`card p-6 ${i === 1 ? "border-ember/60" : ""}`}>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.name}</p>
+                <p className="mt-2 font-display text-3xl font-extrabold text-bone">
+                  {money(t.monthly)}
+                  {t.open ? "+" : ""}
+                  <span className="text-sm font-semibold text-muted">/mo</span>
+                </p>
+                <p className="mt-3 text-sm leading-relaxed text-muted">
+                  {t.rooms}, or {t.lights}.
+                </p>
               </div>
             ))}
           </div>
-        )}
-
-        {PATREON.quotes.length > 0 && (
-          <div className="reveal mt-8 grid gap-6 md:grid-cols-3">
-            {PATREON.quotes.map((q) => (
-              <ReviewCard key={q.who} quote={q.quote} who={q.who} />
-            ))}
-          </div>
-        )}
-
-        <div className="reveal mt-8 flex flex-wrap items-center gap-4">
-          <a href={PATREON.url} className="btn-primary">
-            See what is inside
-          </a>
-          <p className="text-sm text-muted">Opens patreon.com. Membership is handled there.</p>
-        </div>
-      </section>
-
-      {/* ── Reviews ──────────────────────────────────────────────────────────── */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal max-w-2xl">
-          <p className="eyebrow">In their words</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Growers, after working with us</h2>
-        </div>
-        {/* Three identical "to supply" cards side by side read as a rendering fault rather
-            than as a gap. While there is no real review text, this is one panel; the moment
-            any of them is real, the grid comes back on its own. */}
-        {REVIEWS.some((r) => !r.quote.startsWith("PLACEHOLDER")) ? (
-          <>
-            <div className="reveal mt-10 grid gap-6 md:grid-cols-3">
-              {REVIEWS.map((r, i) => (
-                <ReviewCard key={i} quote={r.quote} who={r.who} context={r.context} />
-              ))}
-            </div>
-            <p className="reveal mt-8 text-sm text-muted">
-              <Link href="/reviews" className="text-flare hover:underline">
-                Read all of them
-              </Link>
-            </p>
-          </>
-        ) : (
-          <div className="reveal mt-10 max-w-3xl rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-7">
-            <p className="eyebrow">To supply</p>
-            <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Six reviews exist on the current site, as screenshots, which means Google
-              cannot read a word of them and neither can a screen reader. Send the text and
-              they go here, and into structured data, so they can surface under his name in
-              search results. No invented testimonials in the meantime.
-            </p>
-          </div>
-        )}
-      </section>
-
-      {/* ── Close ─────────────────────────────────────────────────────────────
-          The sun crests the top edge of this band and the copy sits underneath it, in
-          the light. Two reasons it is arranged that way rather than with the heading
-          laid over the disc, which was the first attempt and is closer to his poster:
-          text over the sun cannot be contrast-checked by any tool, because the ground
-          is a gradient rather than a colour — axe reports it as unverifiable and a
-          human has to take it on trust. And an eclipsed heading is a worse heading. The
-          black-on-fire device that makes his logo work is still here, on every primary
-          button on the site: ink on ember, measured at 5.44.
-          ───────────────────────────────────────────────────────────────────── */}
-      <section className="relative isolate mt-24 overflow-hidden sm:mt-32">
-        {/* Fixed widths per breakpoint rather than a vw width, because the horizon below
-            is a fixed offset and the two have to agree. Sized in vw, the disc's bottom edge
-            moved with the viewport while the hairline stayed put — so the sun crested at
-            one width and sank behind the copy at another. The translate puts the disc's
-            bottom just above the line: at 1100px wide, translated -83%, the disc ends at
-            187px and the hairline is at 190px. */}
-        <div className="pointer-events-none absolute inset-x-0 top-0 flex justify-center">
-          <Sun className="w-[600px] shrink-0 -translate-y-[85%] sm:w-[1100px] sm:-translate-y-[83%]" />
-        </div>
-        {/* THE SUN HAS TO EMERGE FROM THE DARK RATHER THAN BE CUT OUT OF IT.
-            This section clips — it has to, a 600px disc inside a 375px phone would push the
-            page sideways, and CSS will not let you clip one axis and not the other, since
-            `overflow-y: visible` computes to `auto` the moment overflow-x is hidden. So the
-            clip stays and instead nothing bright is allowed to touch it.
-            Measured before this existed: the disc's top met the section's edge as a
-            dead-straight chord 826px wide across a 1280px viewport, and an edge detector run
-            over the whole page ranked it the second-strongest horizontal edge on the page —
-            stronger than any real border. That flat line across a sphere is what made the sun
-            read as a picture sitting in a box.
-            A gradient of the page's own ink over the top of the arc turns that step into a
-            ramp. Height is set against the visible arc, not guessed: the disc bottom lands
-            90px into the section on mobile and 187px at sm, so the fade finishes at roughly
-            two thirds of the way down the arc and leaves the limb and its spicule fringe —
-            the part worth seeing — at full strength. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-[62px] bg-gradient-to-b from-ink via-ink/80 to-transparent sm:h-[128px]"
-        />
-        {/* The horizon. A hairline where the disc meets the copy, so the crop reads as a
-            deliberate edge rather than as an image running out. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-[94px] h-px bg-gradient-to-r from-transparent via-ember/50 to-transparent sm:top-[190px]"
-        />
-
-        {/* THE COPY WAS NOT "IN THE LIGHT", IT WAS IN THE FIRE. The note above this section
-            says the arrangement puts the words underneath the disc where nothing bright
-            touches them. That was true of the CLIP — the fade at the top exists to stop the
-            crop reading as a straight chord — and false of the words. The exterior fire spreads
-            well past the disc, and the copy starts about forty pixels below the horizon
-            hairline, which is where that fire is brightest. Measured per line, text against the
-            ground immediately behind it:
-
-              line 1   1.78:1
-              line 2   2.08:1
-              line 3   2.27:1
-
-            against a 4.5:1 floor for body text — worse than the hero note was before it got a
-            scrim, and this is the last thing read before the primary button.
-
-            Raising the text cannot fix it on its own: `bone` at full strength against the
-            brightest of those grounds still only reaches about 4.2:1. The ground has to come
-            down. So this is ink, but RADIAL and centred rather than a full-width band — the
-            copy is max-w-xl and centred, so an ellipse over the column drops the words onto
-            near-black while the fire keeps glowing past both edges of it, which is the thing
-            the section was arranged for in the first place. It sits after the sun and before
-            the copy, so the order is fire, scrim, words. */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-[60px] h-[420px] bg-[radial-gradient(58%_72%_at_50%_46%,#060403_0%,#060403_46%,rgba(6,4,3,0.86)_66%,rgba(6,4,3,0.4)_84%,transparent_100%)] sm:top-[150px] sm:h-[520px]"
-        />
-
-        <div className="wrap relative pt-[130px] text-center sm:pt-[230px]">
-          <p className="eyebrow reveal">Indoors, you are the sun</p>
-          <h2 className="reveal mt-5 text-3xl sm:text-5xl">Every room has one.</h2>
-          {/* THE LAST COPY BEFORE THE BUTTON, so it has to earn the button rather than
-              recap the page. It used to read "Yours has a switch, a schedule and a feed
-              chart. Bring it to the call: eight questions, your photos, and we have read
-              both before you speak." The first sentence is the whole conceit landing and it
-              stays. Everything after it had three faults.
-
-              The list collapsed. "eight questions, your photos, and we have read both"
-              looks like three items and is not: the third is a claim ABOUT the first two,
-              and "both" reaches backwards into the list it sits inside.
-
-              "Bring it to the call" had no referent. The nearest noun is a feed chart; the
-              intended one was the room, which you cannot bring to a call.
-
-              And it was the hero again. "your photos" and "before you" each appeared twice
-              on this page and "intake" three times — counted in the rendered text, not
-              guessed. Restating the top of the page is the weakest thing the bottom of it
-              can do.
-
-              What replaces it finishes the metaphor instead. Outdoors the sun is weather and
-              nobody set it. Indoors it is a switch, a timer and a chart, which means every
-              number in that room is a decision somebody made — flattering to a grower, and
-              also the exact reason to book a call, since a decision can be revisited and
-              weather cannot. Three plain sentences, topic then explanation, and the last one
-              points at the button underneath it. */}
-          <p className="reveal mx-auto mt-5 max-w-xl text-lg leading-relaxed text-muted">
-            Yours has a switch, a schedule and a feed chart. Somebody set every one of
-            those, which means every one can be changed. That is what the call is for.
-          </p>
-          <div className="reveal mt-9 flex flex-wrap justify-center gap-3">
-            <Link href="/consulting#book" className="btn-primary">
-              Book a consult
+          <div className="mt-6 flex flex-wrap items-center gap-4">
+            <Link href="/co-management#apply" className="btn-primary">
+              Apply for co-management
             </Link>
-            <Link href="/connect" className="btn-ghost">
-              Ask a question first
+            <Link href="/co-management#conditions" className="text-sm font-semibold text-flare hover:underline">
+              What your room needs first
             </Link>
           </div>
         </div>

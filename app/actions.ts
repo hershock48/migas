@@ -1,7 +1,10 @@
 "use server";
 
-import nodemailer from "nodemailer";
 import { COMANAGE_APPLY, INTAKE, SESSIONS, SITE } from "@/lib/site";
+import { notifyTo as notifyAddress, sendMail, type Attachment } from "@/lib/mail";
+import { bookingsConfigured, saveBooking } from "@/lib/bookings";
+import { checkoutFor } from "@/lib/pay";
+import { toInstant } from "@/lib/ics";
 import { PHOTO_LIMITS, type FormState } from "@/lib/forms";
 import { describeSlot } from "@/lib/slots";
 import { bookableSlot } from "@/lib/availability";
@@ -68,53 +71,9 @@ const reference = () => `MG-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
  * Stated plainly for whoever deploys this: with no SMTP_HOST, bookings exist only in the
  * server log. Set it before anyone real uses the site.
  */
-type Attachment = { filename: string; content: Buffer; contentType?: string };
-
-function transport() {
-  const host = process.env.SMTP_HOST;
-  if (!host) return null;
-  const port = Number(process.env.SMTP_PORT ?? 587);
-  return nodemailer.createTransport({
-    host,
-    port,
-    // 465 is implicit TLS; 587 starts plaintext and upgrades with STARTTLS. Getting this
-    // backwards is the single most common SMTP misconfiguration and it fails by hanging.
-    secure: port === 465,
-    auth: process.env.SMTP_USER
-      ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS }
-      : undefined,
-  });
-}
-
-async function sendMail(opts: {
-  to: string;
-  subject: string;
-  text: string;
-  attachments?: Attachment[];
-}) {
-  const t = transport();
-  const from = process.env.SMTP_FROM ?? process.env.SMTP_USER;
-  if (!t || !from || opts.to.startsWith("PLACEHOLDER")) {
-    console.warn(
-      `[migas] Not sent: SMTP_HOST/SMTP_FROM unset, or recipient is a placeholder.\n` +
-        `to: ${opts.to}\nsubject: ${opts.subject}\n${opts.text}\n` +
-        `attachments: ${(opts.attachments ?? []).map((a) => a.filename).join(", ") || "none"}`
-    );
-    return false;
-  }
-  try {
-    await t.sendMail({ from, ...opts });
-    return true;
-  } catch (err) {
-    // Logged, not surfaced. The visitor has already done their part correctly.
-    console.error("[migas] SMTP send failed", err);
-    return false;
-  }
-}
-
-/** Where a booking notification goes. His own address, from lib/site.ts, unless the
- *  environment overrides it. */
-const notifyTo = () => process.env.MIGAS_NOTIFY_TO ?? SITE.email;
+// The mailer lives in lib/mail.ts now, so the reminder cron and the payment
+// webhook can send without importing this "use server" file. Same code, moved.
+const notifyTo = () => notifyAddress(SITE.email);
 
 /**
  * Validate the uploaded photos and turn them into mail attachments.
@@ -249,16 +208,49 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     contentType: "text/calendar; charset=utf-8; method=REQUEST",
   };
 
+  // Pay at booking, when the processor is switched on (lib/pay.ts says what
+  // "switched on" means and why it is not yet). Null means the invoice path.
+  const payUrl = await checkoutFor({
+    ref,
+    sessionName: session!.name,
+    minutes: session!.minutes,
+    priceDollars: session!.price,
+    customerEmail: email,
+    siteUrl: SITE.url,
+  });
+
+  // The booking on record, so the reminder cron can find it and a payment can
+  // be matched to it. Without the Blob store this is a no-op and the invite
+  // in his inbox is the record, as before.
+  const stored = await saveBooking({
+    ref,
+    name,
+    email,
+    phone: values.phone ?? "",
+    sessionSlug: session!.slug,
+    sessionName: session!.name,
+    minutes: session!.minutes,
+    price: session!.price,
+    slot,
+    startMs: toInstant(slot).getTime(),
+    createdAt: Date.now(),
+    payUrl: payUrl ?? undefined,
+  }).catch((err) => {
+    console.error("[migas] booking not stored; the email is the record", err);
+    return false;
+  });
+
   const toOwner = await sendMail({
     to: notifyTo(),
     subject: `[${ref}] ${session!.name} - ${name} - ${when}`,
-    text: brief,
+    text: `${brief}\n\nPayment: ${payUrl ? "card link sent with the confirmation" : "invoice"}\nReminder: ${stored ? "automatic, 24 hours before" : "not on (no booking store)"}`,
     attachments: [...photos.attachments, invite],
   });
 
   // And a confirmation to the grower. Deliberately contains NO text they supplied — only the
-  // session name, the time and the reference. A form that will email an arbitrary address is
-  // a relay; one whose body an attacker cannot influence is not worth abusing.
+  // session name, the time, the reference and, when on, the payment link. A form that will
+  // email an arbitrary address is a relay; one whose body an attacker cannot influence is
+  // not worth abusing.
   const toVisitor = await sendMail({
     to: email,
     subject: `${SITE.name} - booking request received (${ref})`,
@@ -267,10 +259,13 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       "",
       `When:      ${when}`,
       `Length:    ${session!.minutes} minutes`,
+      `Price:     ${money(session!.price)}`,
       `Reference: ${ref}`,
       "",
-      "He reads your intake and your photos before the call, and will confirm the time",
-      "by reply along with an invoice to settle beforehand.",
+      payUrl ? `Pay for the call here: ${payUrl}` : "He will confirm the time by reply along with an invoice to settle beforehand.",
+      "",
+      "He reads your facility profile and your photos before the call.",
+      stored ? "A reminder goes out the day before." : "",
       "",
       "A calendar invite is attached.",
     ].join("\n"),
@@ -281,11 +276,13 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     status: "done",
     reference: ref,
     ics: icsDataUrl(ics),
+    payUrl: payUrl ?? undefined,
+    reminder: Boolean(stored),
     delivered: { toOwner, toVisitor },
     summary: [
       `${session!.name}, ${session!.minutes} minutes`,
       when,
-      `${money(session!.price)}, invoiced before the call`,
+      payUrl ? `${money(session!.price)}, pay by card below` : `${money(session!.price)}, invoiced before the call`,
       // "0 photos received" is a worse thing to read than an ask. When somebody skipped the
       // most useful field on the form, the confirmation is the last good moment to get it.
       photos.attachments.length === 0

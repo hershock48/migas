@@ -5,13 +5,13 @@ import Faq from "@/components/Faq";
 import MiniForm from "@/components/MiniForm";
 import { requestCall } from "@/app/actions";
 import { SessionCard } from "@/components/cards";
-import { AVAILABILITY, FAQ, PROCESS, RATE, SESSIONS, money } from "@/lib/site";
+import { AVAILABILITY, CONSULT_TOPICS, FAQ, PROCESS, SESSIONS, money } from "@/lib/site";
 import { openSlots } from "@/lib/availability";
 
 export const metadata: Metadata = {
   title: "Consulting",
   description:
-    "Book a cultivation consult at $250 an hour: room triage, a full program review, or a facility call. Every call starts with an eight-question room intake and your photos, read before you dial in.",
+    "Book a cultivation consult: a half hour at $250 or a full hour at $400. Fill in your facility profile and photos first; they are read before you dial in.",
 };
 
 /**
@@ -42,11 +42,16 @@ export const metadata: Metadata = {
  */
 export const dynamic = "force-dynamic";
 
-export default async function Consulting() {
+export default async function Consulting({ searchParams }: { searchParams: Promise<{ paid?: string; unpaid?: string }> }) {
   // Stored windows minus blocked dates minus his calendar. See lib/availability.ts;
   // the page stays force-dynamic for the same reason it always was, plus one more:
   // the busy feed can change between any two requests.
   const days = await openSlots();
+  // Back from the payment page. Only the reference is echoed, and only its shape.
+  const sp = await searchParams;
+  const refOf = (v?: string) => (v && /^MG-[A-Z0-9]{6}$/.test(v) ? v : null);
+  const paid = refOf(sp.paid);
+  const unpaid = refOf(sp.unpaid);
 
   return (
     <>
@@ -96,31 +101,33 @@ export default async function Consulting() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Sessions</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">One rate, three lengths</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Two lengths</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            {money(RATE)} an hour, and you pick how much of one you need. A room in
-            trouble usually fits in thirty minutes; a facility rarely does.
+            A half hour at {money(SESSIONS[0].price)} for one room and one problem. A full hour at{" "}
+            {money(SESSIONS[1].price)} for a program, a build-out, or a facility. What a call is for:
           </p>
+          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
+            {CONSULT_TOPICS.map((t) => (
+              <li key={t} className="flex items-center gap-3 text-[15px] text-bone/90">
+                <span className="dot bg-flare" aria-hidden="true" />
+                {t}
+              </li>
+            ))}
+          </ul>
         </div>
-        <div className="reveal mt-12 grid gap-6 md:grid-cols-3">
+        <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
           {SESSIONS.map((s, i) => (
             <SessionCard key={s.slug} session={s} href="#book" featured={i === 1} />
           ))}
         </div>
-        {/* The rate is his, from the 2026-08-27 call, which retired the "proposed, not
-            yours yet" panel that used to sit here. What remains open is smaller and
-            still his: the 30 and 90 minute prices are pro-rata arithmetic on his $250
-            an hour, not numbers he spoke. Same dashed convention, addressed to him. */}
+        {/* The two prices are his, from the 2026-11-04 email, so the derivation panel
+            that used to sit here is gone. What is still ours: the bullets on the cards. */}
         <div className="reveal mt-8 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">One derivation to confirm</p>
+          <p className="eyebrow">One thing to confirm</p>
           <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            {money(RATE)} an hour is your number. The {money(RATE / 2)} half hour and the{" "}
-            {money((RATE * 3) / 2)} ninety minutes are that number divided and multiplied,
-            not prices you said. If calls should start at a full hour, say so and the
-            half hour comes off. The bullets on the cards, written actions after the
-            call and the follow-up threads, are still our draft of what a session
-            includes: confirm them or trim them, because each one is a promise made in
-            your name.
+            The prices are yours. The bullets on the cards, written actions after the call and the follow-up
+            threads, are still our draft of what a session includes: confirm them or trim them, because each one is
+            a promise made in your name.
           </p>
         </div>
       </section>
@@ -136,6 +143,18 @@ export default async function Consulting() {
           </p>
         </div>
         <div className="reveal mt-10">
+          {paid && (
+            <p className="mb-8 rounded-xl2 border border-ember/60 bg-ink-panel px-6 py-5 text-[15px] text-bone" role="status">
+              Paid, thank you. Booking <span className="font-display font-bold">{paid}</span> is held, the invite is on your
+              calendar, and a reminder goes out the day before.
+            </p>
+          )}
+          {unpaid && (
+            <p className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="status">
+              Payment for booking <span className="font-display font-bold text-bone">{unpaid}</span> was not completed. The
+              request is still with us; the link to pay is in your confirmation email.
+            </p>
+          )}
           <Booking days={days} />
         </div>
       </section>

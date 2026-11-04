@@ -33,6 +33,10 @@ export type FormState = {
    * about it. Those are different lies and the page needs to be able to tell them apart.
    */
   delivered?: { toOwner: boolean; toVisitor: boolean };
+  /** The hosted payment page for this booking, when the processor is switched on. */
+  payUrl?: string;
+  /** Whether the booking is on record for the day-before reminder. */
+  reminder?: boolean;
 };
 
 export const EMPTY: FormState = { status: "idle" };
