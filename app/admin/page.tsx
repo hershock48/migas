@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, cookieIsValid, pinConfigured } from "@/lib/admin-auth";
-import { availabilityStatus, getAvailability } from "@/lib/availability";
+import { DRAFT_FIELD, DRAFT_MAX, availabilityStatus, getAvailability } from "@/lib/availability";
 import { getBusyIntervals } from "@/lib/busy";
 import { AVAILABILITY, SITE } from "@/lib/site";
 import { adminLogin, adminLogout, saveAvailabilityAction } from "./actions";
@@ -23,11 +23,28 @@ const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
  *  echoing arbitrary query text into the page. */
 const MESSAGES: Record<string, string> = {
   "wrong-pin": "That PIN is not it. Try again.",
-  "signed-out": "You were signed out. Sign in and save again; nothing was lost from the form.",
+  "signed-out": "You were signed out. Sign in and save again; what you typed is kept.",
   "half-window": "A window needs both an open and a close time. One of them has only one.",
   "bad-days": "Lead days and days offered both need to be numbers.",
   invalid: "That could not be saved:",
 };
+
+/** The form as it was typed, handed back by a rejected save (see actions.ts). Only
+ *  the form's own field names are read, and only strings. */
+function readDraft(raw: unknown): Record<string, string> | null {
+  if (typeof raw !== "string" || !raw || raw.length > DRAFT_MAX) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return null;
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(parsed)) {
+      if (DRAFT_FIELD.test(k) && typeof v === "string") out[k] = v;
+    }
+    return out;
+  } catch {
+    return null;
+  }
+}
 
 /**
  * His availability, editable by him. The other half of "make it easy for me to
@@ -47,6 +64,9 @@ export default async function Admin({
   const error = typeof params.error === "string" ? params.error : undefined;
   const detail = typeof params.detail === "string" ? params.detail : undefined;
   const saved = params.saved === "1";
+  const restored = params.restored === "1";
+  const rawDraft = typeof params.draft === "string" ? params.draft : "";
+  const draft = readDraft(rawDraft);
 
   const jar = await cookies();
   const authed = cookieIsValid(jar.get(ADMIN_COOKIE)?.value);
@@ -75,6 +95,8 @@ export default async function Admin({
           </p>
         )}
         <form action={adminLogin} className="mt-8 flex max-w-sm flex-wrap items-end gap-3">
+          {/* What was typed before the sign-in lapsed rides through the sign-in. */}
+          {draft && <input type="hidden" name="draft" value={rawDraft} />}
           <label className="flex-1">
             <span className="block text-sm text-muted">PIN</span>
             <input
@@ -101,6 +123,9 @@ export default async function Admin({
 
   const win = (day: number, half: number) =>
     availability.windows.filter((w) => w.day === day)[half];
+  /* A field's starting value: what was typed, when a save was just rejected (an
+     absent key means he had cleared that field), else what is stored. */
+  const start = (name: string, stored: string | number) => (draft ? draft[name] ?? "" : stored);
 
   const smtpOn = Boolean(process.env.SMTP_HOST);
   const notifyReal = Boolean(
@@ -128,39 +153,49 @@ export default async function Admin({
           Saved. The booking page offers the new times from its next load.
         </p>
       )}
+      {restored && draft && !error && (
+        <p role="status" className="mt-6 max-w-xl rounded-xl2 border border-ember/50 bg-ink-panel p-4 text-[15px] text-bone">
+          You&rsquo;re signed in again, and what you typed is back in the form. It isn&rsquo;t saved yet.
+        </p>
+      )}
       {error && MESSAGES[error] && (
         <p role="alert" className="mt-6 max-w-xl rounded-xl2 border border-alert/50 bg-ink-panel p-4 text-[15px] text-alert">
           {MESSAGES[error]}
           {error === "invalid" && detail ? ` ${detail}` : ""}
+          {draft ? " What you typed is still in the form below." : ""}
         </p>
       )}
 
-      {/* ── Status, before the form: what the machinery around the form is doing ── */}
+      {/* ── Status, before the form: what the machinery around the form is doing ──
+          Written for the owner, who reads this page. The settings behind each, for
+          whoever runs the hosting: a Blob store on the Vercel project
+          (BLOB_READ_WRITE_TOKEN), MIGAS_BUSY_ICS_URL, SMTP_HOST and friends,
+          MIGAS_NOTIFY_TO. They used to be named in the red text itself. */}
       <dl className="mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
         {[
           {
             k: "Saving changes",
             ok: status.configured,
             yes: status.stored ? "On, and your saved hours are live" : "On, saving for the first time works",
-            no: "Off. Add a Blob store to the Vercel project; edits here cannot be kept until then",
+            no: "Off. Storage isn't connected yet, so changes here can't be saved. Ask Glazed Web to connect it",
           },
           {
             k: "Your calendar",
             ok: feedUrl,
             yes: `Connected, ${busy.length} busy ${busy.length === 1 ? "block" : "blocks"} in the next two weeks`,
-            no: "Not connected. Set MIGAS_BUSY_ICS_URL to your calendar's private iCal address and booked times drop off the grid",
+            no: "Not connected. Send Glazed Web your calendar's private iCal link, and the times you're busy will drop off the booking page",
           },
           {
             k: "Outgoing mail",
             ok: smtpOn,
             yes: "On, bookings and invites send",
-            no: "Off. Bookings only reach the server log until SMTP is set",
+            no: "Off. Until your mailbox is connected, bookings aren't emailed to anyone",
           },
           {
             k: "Where bookings land",
             ok: notifyReal,
             yes: process.env.MIGAS_NOTIFY_TO ?? SITE.email,
-            no: "No real address yet, so nothing can be delivered to you",
+            no: "No address yet. Tell Glazed Web which email should get your bookings",
           },
         ].map((s) => (
           <div key={s.k} className="bg-ink-panel px-5 py-5">
@@ -175,56 +210,65 @@ export default async function Admin({
       <form action={saveAvailabilityAction} className="mt-12">
         <h2 className="text-2xl">Weekly hours</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
-          Times are {AVAILABILITY.timeZoneLabel}, up to two windows a day. Leave a row
-          empty and the day is off. Calls are offered inside these windows in{" "}
+          Times are {AVAILABILITY.timeZoneLabel}, up to two windows a day, each an open
+          time and a close time. Leave a day empty and it is off. Calls are offered inside these windows in{" "}
           {AVAILABILITY.stepMinutes}-minute steps.
         </p>
 
-        <div className="mt-6 overflow-x-auto">
-          <table className="w-full min-w-[560px] border-collapse text-sm">
-            <thead>
-              <tr className="text-left text-xs uppercase tracking-[0.14em] text-muted">
-                <th className="py-2 pr-4 font-semibold">Day</th>
-                <th className="py-2 pr-4 font-semibold">Open</th>
-                <th className="py-2 pr-4 font-semibold">Close</th>
-                <th className="py-2 pr-4 font-semibold">Second open</th>
-                <th className="py-2 font-semibold">Second close</th>
-              </tr>
-            </thead>
-            <tbody>
-              {DAY_NAMES.map((name, day) => (
-                <tr key={name} className="border-t border-line">
-                  <th scope="row" className="py-3 pr-4 text-left font-medium text-bone">
-                    {name}
-                  </th>
-                  {([0, 1] as const).flatMap((half) => {
-                    const w = win(day, half);
-                    const prefix = `w${day}${half === 0 ? "a" : "b"}`;
-                    return [
-                      <td key={`${prefix}f`} className="py-3 pr-4">
-                        <input
-                          type="time"
-                          name={`${prefix}_from`}
-                          defaultValue={w?.from ?? ""}
-                          aria-label={`${name}, ${half === 0 ? "first" : "second"} window opens`}
-                          className="rounded-lg border border-edge bg-ink px-3 py-2 text-bone"
-                        />
-                      </td>,
-                      <td key={`${prefix}t`} className="py-3 pr-4">
-                        <input
-                          type="time"
-                          name={`${prefix}_to`}
-                          defaultValue={w?.to ?? ""}
-                          aria-label={`${name}, ${half === 0 ? "first" : "second"} window closes`}
-                          className="rounded-lg border border-edge bg-ink px-3 py-2 text-bone"
-                        />
-                      </td>,
-                    ];
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        {/* A list that stacks, not a table. At 390px the table scrolled sideways: the
+            Close column was cut off mid-field and the second window was off screen
+            with nothing to say it was there (seen 2026-11-12), on the page he uses
+            from a phone. Each day is now two short rows on a phone and one row from
+            640px, under the same five headings as before. */}
+        <div className="mt-6">
+          <div
+            aria-hidden
+            className="hidden grid-cols-[7.5rem_repeat(4,minmax(0,1fr))] gap-x-4 pb-2 text-xs font-semibold uppercase tracking-[0.14em] text-muted sm:grid"
+          >
+            <span>Day</span>
+            <span>Open</span>
+            <span>Close</span>
+            <span>Second open</span>
+            <span>Second close</span>
+          </div>
+          {DAY_NAMES.map((name, day) => (
+            <div
+              key={name}
+              role="group"
+              aria-label={name}
+              className="grid gap-x-4 gap-y-2 border-t border-line py-3 text-sm sm:grid-cols-[7.5rem_repeat(4,minmax(0,1fr))] sm:items-center"
+            >
+              <p aria-hidden className="font-medium text-bone">
+                {name}
+              </p>
+              {([0, 1] as const).map((half) => {
+                const w = win(day, half);
+                const prefix = `w${day}${half === 0 ? "a" : "b"}`;
+                const which = half === 0 ? "first" : "second";
+                return (
+                  <div key={prefix} className="grid grid-cols-[3.75rem_minmax(0,1fr)_minmax(0,1fr)] items-center gap-2 sm:contents">
+                    <span aria-hidden className="text-xs text-muted sm:hidden">
+                      {half === 0 ? "First" : "Second"}
+                    </span>
+                    <input
+                      type="time"
+                      name={`${prefix}_from`}
+                      defaultValue={start(`${prefix}_from`, w?.from ?? "")}
+                      aria-label={`${name}, ${which} window opens`}
+                      className="w-full min-w-0 rounded-lg border border-edge bg-ink px-3 py-2 text-bone"
+                    />
+                    <input
+                      type="time"
+                      name={`${prefix}_to`}
+                      defaultValue={start(`${prefix}_to`, w?.to ?? "")}
+                      aria-label={`${name}, ${which} window closes`}
+                      className="w-full min-w-0 rounded-lg border border-edge bg-ink px-3 py-2 text-bone"
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          ))}
         </div>
 
         <div className="mt-10 grid max-w-2xl gap-8 sm:grid-cols-2">
@@ -236,7 +280,7 @@ export default async function Admin({
             <textarea
               name="blocked"
               rows={5}
-              defaultValue={availability.blockedDates.join("\n")}
+              defaultValue={start("blocked", availability.blockedDates.join("\n"))}
               className="mt-3 w-full rounded-lg border border-edge bg-ink px-4 py-3 font-mono text-sm text-bone"
             />
           </label>
@@ -251,7 +295,7 @@ export default async function Admin({
                 name="leadDays"
                 min={0}
                 max={30}
-                defaultValue={availability.leadDays}
+                defaultValue={start("leadDays", availability.leadDays)}
                 className="mt-3 w-28 rounded-lg border border-edge bg-ink px-4 py-3 text-bone"
               />
             </label>
@@ -265,7 +309,7 @@ export default async function Admin({
                 name="horizonDays"
                 min={1}
                 max={60}
-                defaultValue={availability.horizonDays}
+                defaultValue={start("horizonDays", availability.horizonDays)}
                 className="mt-3 w-28 rounded-lg border border-edge bg-ink px-4 py-3 text-bone"
               />
             </label>

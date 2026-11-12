@@ -31,6 +31,12 @@ export type StoredAvailability = {
   horizonDays: number;
 };
 
+/** The admin form's field names. A rejected save hands these back in the query
+ *  string so the form can be refilled; anything else in a draft is ignored. Open
+ *  hours are the most public fact on the site, so they may ride in a URL. */
+export const DRAFT_FIELD = /^(w[0-6][ab]_(from|to)|blocked|leadDays|horizonDays)$/;
+export const DRAFT_MAX = 2000;
+
 const PATHNAME = "config/availability.json";
 const CACHE_TTL_MS = 60_000;
 
