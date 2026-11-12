@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Faq from "@/components/Faq";
 import FeedRig from "@/components/FeedRig";
@@ -6,6 +7,7 @@ import MiniForm, { type MiniField } from "@/components/MiniForm";
 import SteerLoop from "@/components/SteerLoop";
 import { requestCoManagement } from "@/app/actions";
 import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, CREDS, SITE, money } from "@/lib/site";
+import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 
 export const metadata: Metadata = {
   title: "Co-Management",
@@ -63,8 +65,10 @@ export default function CoManagement() {
               program a licensed facility runs without hiring its director.
             </p>
             <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="/consulting#book" className="btn-primary">
-                Schedule a call today
+              {/* The full hour, already chosen: its own description names "a facility
+                  weighing co-management". */}
+              <Link href="/consulting?session=hour#book" className="btn-primary">
+                Book a call
               </Link>
               <Link href="#conditions" className="btn-ghost">
                 What your room needs
@@ -107,31 +111,45 @@ export default function CoManagement() {
           biggest ask on the site with no evidence anywhere on it. Same data, one
           source (CREDS in lib/site.ts), so the two pages can never disagree. */}
       <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal max-w-2xl">
-          <p className="eyebrow">The record</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">The numbers behind the program</h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted">
-            All three are ours, from our own published posts, and the rooms they came
-            out of are photographed run after run so you can check the claim against
-            the pictures.
-          </p>
-        </div>
-        <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
-          {CREDS.map((c) => (
-            <div key={c.label} className="bg-ink-panel px-6 py-7">
-              <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
+        {/* The paragraph says the rooms "are photographed run after run so you can check
+            the claim against the pictures", and until 2026-11-11 there was not one picture
+            on the page. Now there is one of his rooms beside the numbers. On a phone it
+            follows the figures rather than leading, so the claim is read before the proof. */}
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)] lg:items-center lg:gap-14">
+          <div>
+            <div className="reveal max-w-2xl">
+              <p className="eyebrow">The record</p>
+              <h2 className="mt-4 text-3xl sm:text-4xl">The numbers behind the program</h2>
+              <p className="mt-4 text-lg leading-relaxed text-muted">
+                All three are ours, from our own published posts, and the rooms they came
+                out of are photographed run after run so you can check the claim against
+                the pictures.
+              </p>
             </div>
-          ))}
-        </dl>
-        {/* Same dashed note as the home strip, shorter: these figures are his, from
-            dated posts, and go live only once he confirms they still hold. */}
-        <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">Your figures, needing a re-check</p>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            Same three as the home page, same ask: the posts they came from are dated,
-            so confirm they still hold before launch.
-          </p>
+            <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
+              {CREDS.map((c) => (
+                <div key={c.label} className="bg-ink-panel px-6 py-7">
+                  <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
+                  <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
+                </div>
+              ))}
+            </dl>
+            {/* Same dashed note as the home strip, shorter: these figures are his, from
+                dated posts, and go live only once he confirms they still hold. */}
+            <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
+              <p className="eyebrow">Your figures, needing a re-check</p>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted">
+                Same three as the home page, same ask: the posts they came from are dated,
+                so confirm they still hold before launch.
+              </p>
+            </div>
+          </div>
+          <Image
+            src={flowerDepth}
+            alt="A long bed of flowering plants in the trellis net under LED light bars, the far end of the room out of focus."
+            sizes="(min-width: 1024px) 420px, 100vw"
+            className="reveal aspect-[4/5] h-auto w-full rounded-xl2 border border-line object-cover sm:aspect-[16/10] lg:aspect-[4/5]"
+          />
         </div>
       </section>
 
@@ -278,8 +296,8 @@ export default function CoManagement() {
             reason it is not a fit yet.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="/consulting#book" className="btn-primary">
-              Schedule a call today
+            <Link href="/consulting?session=hour#book" className="btn-primary">
+              Book a call
             </Link>
             <Link href="/connect" className="btn-ghost">
               Ask a question first

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { NAV } from "@/lib/site";
+import { NAV, REVIEWS } from "@/lib/site";
 import { Graffiti } from "./brand";
 
 /**
@@ -32,6 +32,14 @@ import { Graffiti } from "./brand";
  * effect stays as the backstop it should always have been: browser back and forward
  * change the route without anything here being clicked.
  */
+/* Reviews leaves the header while every review is still a placeholder. A top-level
+   link to a page of "To supply" boxes is the one place a visitor was guaranteed to find
+   nothing, and the header is where a doubtful visitor goes looking for proof. The page
+   stays, linked from the footer, and the link comes back by itself the moment the first
+   real quote lands in REVIEWS. */
+const hasReviews = REVIEWS.some((r) => !r.quote.startsWith("PLACEHOLDER"));
+const HEADER_NAV = NAV.filter((i) => i.href !== "/reviews" || hasReviews);
+
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const path = usePathname();
@@ -56,7 +64,7 @@ export default function Nav() {
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main">
-          {NAV.map((i) => {
+          {HEADER_NAV.map((i) => {
             const active = path === i.href;
             return (
               <Link
@@ -72,24 +80,36 @@ export default function Nav() {
             );
           })}
           <Link href="/consulting#book" className="btn-primary !px-5 !py-2">
-            Book a consult
+            Book a call
           </Link>
         </nav>
 
-        <button
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-controls="mobile-nav"
-          className="grid h-11 w-11 place-items-center rounded-lg border border-edge md:hidden"
-        >
-          <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
-          <span aria-hidden className="relative block h-3.5 w-5">
-            <span className={`absolute left-0 h-0.5 w-5 bg-bone transition-all ${open ? "top-1.5 rotate-45" : "top-0"}`} />
-            <span className={`absolute left-0 top-1.5 h-0.5 w-5 bg-bone transition-opacity ${open ? "opacity-0" : ""}`} />
-            <span className={`absolute left-0 h-0.5 w-5 bg-bone transition-all ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
-          </span>
-        </button>
+        {/* On a phone the booking button lived inside the menu, two taps away on the one
+            action the site exists for. It sits beside the menu button now. Measured, mark
+            126px and menu button 44px: at 320 the short label (66px) leaves 34px between
+            the mark and the button, and the full one (105px) would overlap the mark by
+            5px. From 360, the width most Android phones report, the full label leaves
+            35px, so that is where it switches. */}
+        <div className="flex items-center gap-2.5 md:hidden">
+          <Link href="/consulting#book" onClick={() => setOpen(false)} className="btn-primary !px-4 !py-2.5">
+            <span className="min-[360px]:hidden">Book</span>
+            <span className="hidden min-[360px]:inline">Book a call</span>
+          </Link>
+          <button
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-controls="mobile-nav"
+            className="grid h-11 w-11 place-items-center rounded-lg border border-edge"
+          >
+            <span className="sr-only">{open ? "Close menu" : "Open menu"}</span>
+            <span aria-hidden className="relative block h-3.5 w-5">
+              <span className={`absolute left-0 h-0.5 w-5 bg-bone transition-all ${open ? "top-1.5 rotate-45" : "top-0"}`} />
+              <span className={`absolute left-0 top-1.5 h-0.5 w-5 bg-bone transition-opacity ${open ? "opacity-0" : ""}`} />
+              <span className={`absolute left-0 h-0.5 w-5 bg-bone transition-all ${open ? "top-1.5 -rotate-45" : "top-3"}`} />
+            </span>
+          </button>
+        </div>
       </div>
 
       {/* absolute, not in the flow. See the note above: in the flow, closing this panel
@@ -103,7 +123,7 @@ export default function Nav() {
         className="absolute left-0 right-0 top-full border-t border-line bg-ink-panel shadow-xl md:hidden"
       >
         <nav className="wrap flex flex-col gap-1 py-3" aria-label="Main, mobile">
-          {NAV.map((i) => (
+          {HEADER_NAV.map((i) => (
             <Link
               key={i.href}
               href={i.href}
@@ -117,7 +137,7 @@ export default function Nav() {
             </Link>
           ))}
           <Link href="/consulting#book" onClick={() => setOpen(false)} className="btn-primary mt-2">
-            Book a consult
+            Book a call
           </Link>
         </nav>
       </div>

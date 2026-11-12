@@ -35,18 +35,17 @@ export default function Footer() {
             <li>
               <a href={SITE.instagram} className="inline-block py-1 text-muted hover:text-flare">Instagram</a>
             </li>
-            <li>
-              {/* Reads the constant, so when the real address lands it is one edit — and
-                  while it is still a placeholder this renders as plain text rather than a
-                  mailto: link that opens a mail client addressed to nobody. */}
-              {SITE.email.startsWith("PLACEHOLDER") ? (
-                <span className="text-muted">Email: to be supplied</span>
-              ) : (
+            {/* Reads the constant, so when the real address lands it is one edit. While it
+                is still a placeholder the line is left out: it used to print "Email: to be
+                supplied", a note to him in the footer of every page. The missing address is
+                still on the /connect page and in the client note. */}
+            {!SITE.email.startsWith("PLACEHOLDER") && (
+              <li>
                 <a href={`mailto:${SITE.email}`} className="inline-block py-1 text-muted hover:text-flare">
                   {SITE.email}
                 </a>
-              )}
-            </li>
+              </li>
+            )}
           </ul>
         </div>
       </div>

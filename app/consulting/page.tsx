@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import Booking from "@/components/Booking";
 import Faq from "@/components/Faq";
 import MiniForm from "@/components/MiniForm";
 import { requestCall } from "@/app/actions";
-import { SessionCard } from "@/components/cards";
-import { AVAILABILITY, CONSULT_TOPICS, FAQ, PROCESS, SESSIONS, money } from "@/lib/site";
+import { AVAILABILITY, CONSULT_TOPICS, FAQ, HAVE_READY, PROCESS, SESSIONS, money } from "@/lib/site";
 import { openSlots } from "@/lib/availability";
+import { payConfigured } from "@/lib/pay";
+import roomAisle from "@/public/assets/rooms/flower-aisle.webp";
 
 export const metadata: Metadata = {
   title: "Consulting",
@@ -42,7 +44,11 @@ export const metadata: Metadata = {
  */
 export const dynamic = "force-dynamic";
 
-export default async function Consulting({ searchParams }: { searchParams: Promise<{ paid?: string; unpaid?: string }> }) {
+export default async function Consulting({
+  searchParams,
+}: {
+  searchParams: Promise<{ paid?: string; unpaid?: string; session?: string }>;
+}) {
   // Stored windows minus blocked dates minus his calendar. See lib/availability.ts;
   // the page stays force-dynamic for the same reason it always was, plus one more:
   // the busy feed can change between any two requests.
@@ -52,28 +58,62 @@ export default async function Consulting({ searchParams }: { searchParams: Promi
   const refOf = (v?: string) => (v && /^MG-[A-Z0-9]{6}$/.test(v) ? v : null);
   const paid = refOf(sp.paid);
   const unpaid = refOf(sp.unpaid);
+  // A session chosen on the link that brought them here (the home page's price cards).
+  // Only a real slug gets through; anything else opens the wizard at step 1 as before.
+  const initialSession = SESSIONS.some((s) => s.slug === sp.session) ? sp.session : undefined;
 
   return (
     <>
       <section className="wrap pt-14 sm:pt-20">
-        <div className="reveal max-w-3xl">
-          <p className="eyebrow">Consulting</p>
-          <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            A call that starts at the <span className="text-flare">diagnosis</span>
-          </h1>
-          <p className="mt-6 text-lg leading-relaxed text-bone/85">
-            Most paid consults spend their first twenty minutes on questions a form could
-            have asked. This one asks them first: stage, canopy, media, feed, lights,
-            runoff. It takes your photos with them too, so the time you pay for is spent
-            on the answer.
-          </p>
-          <div className="mt-9 flex flex-wrap gap-3">
-            <Link href="#book" className="btn-primary">
-              Book a consult
-            </Link>
-            <Link href="#how" className="btn-ghost">
-              How it runs
-            </Link>
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-center lg:gap-16">
+          <div className="reveal">
+            <p className="eyebrow">Consulting</p>
+            <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
+              A call that starts at the <span className="text-flare">diagnosis</span>
+            </h1>
+            <p className="mt-6 max-w-2xl text-lg leading-relaxed text-bone/85">
+              Most paid consults spend their first twenty minutes on questions a form could
+              have asked. This one asks them first: stage, canopy, media, feed, lights,
+              runoff. It takes your photos with them too, so the time you pay for is spent
+              on the answer.
+            </p>
+            {/* What a call is for, in his words from the 2026-11-04 email. It had its own
+                section further down, under a pair of price cards that repeated step 1 of
+                the form. Here it answers "is this for me" before the visitor scrolls. */}
+            <ul className="mt-6 grid max-w-2xl gap-x-6 gap-y-2 sm:grid-cols-2">
+              {CONSULT_TOPICS.map((t) => (
+                <li key={t} className="flex gap-3 text-[15px] leading-snug text-bone/90">
+                  <span className="dot mt-[7px] shrink-0 bg-flare" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+            {/* Both prices beside the button, so nobody has to open the form to find out
+                what it costs. Each one is a link that opens the form with that session
+                already chosen. */}
+            <div className="mt-9 flex flex-wrap items-center gap-x-6 gap-y-4">
+              <Link href="#book" className="btn-primary">
+                Book a call
+              </Link>
+              <p className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
+                {SESSIONS.map((s) => (
+                  <Link key={s.slug} href={`/consulting?session=${s.slug}#book`} className="py-1 hover:text-flare">
+                    {s.name} <span className="font-semibold text-bone">{money(s.price)}</span>
+                  </Link>
+                ))}
+              </p>
+            </div>
+          </div>
+          {/* His room, beside the promise. Desktop only: on a phone it would put a screen of
+              photograph between the visitor and the form, and the home page carries the
+              pictures there. Lazy, so a phone that never shows it never downloads it. */}
+          <div className="reveal hidden lg:block">
+            <Image
+              src={roomAisle}
+              alt="A flower room late in flower, seen down the aisle, the canopy level under rows of LED light bars."
+              sizes="(min-width: 1280px) 440px, 34vw"
+              className="aspect-[4/5] h-auto w-full rounded-xl2 border border-line object-cover"
+            />
           </div>
         </div>
       </section>
@@ -97,42 +137,11 @@ export default async function Consulting({ searchParams }: { searchParams: Promi
         </ol>
       </section>
 
-      {/* ── Sessions ─────────────────────────────────────────────────────────── */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal max-w-2xl">
-          <p className="eyebrow">Sessions</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Two lengths</h2>
-          <p className="mt-4 text-lg leading-relaxed text-muted">
-            A half hour at {money(SESSIONS[0].price)} for one room and one problem. A full hour at{" "}
-            {money(SESSIONS[1].price)} for a program, a build-out, or a facility. What a call is for:
-          </p>
-          <ul className="mt-4 grid gap-2 sm:grid-cols-2">
-            {CONSULT_TOPICS.map((t) => (
-              <li key={t} className="flex items-center gap-3 text-[15px] text-bone/90">
-                <span className="dot bg-flare" aria-hidden="true" />
-                {t}
-              </li>
-            ))}
-          </ul>
-        </div>
-        <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
-          {SESSIONS.map((s, i) => (
-            <SessionCard key={s.slug} session={s} href="#book" featured={i === 1} />
-          ))}
-        </div>
-        {/* The two prices are his, from the 2026-11-04 email, so the derivation panel
-            that used to sit here is gone. What is still ours: the bullets on the cards. */}
-        <div className="reveal mt-8 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-          <p className="eyebrow">One thing to confirm</p>
-          <p className="mt-2 text-[15px] leading-relaxed text-muted">
-            The prices are yours. The bullets on the cards, written actions after the call and the follow-up
-            threads, are still our draft of what a session includes: confirm them or trim them, because each one is
-            a promise made in your name.
-          </p>
-        </div>
-      </section>
-
-      {/* ── The booking flow ─────────────────────────────────────────────────── */}
+      {/* ── The booking flow ─────────────────────────────────────────────────
+          The "Two lengths" section that sat here is gone: two price cards, each with a
+          Book button, directly above a form whose first step is the same two choices with
+          the same words. The cards' bullets moved into step 1, and the prices into the
+          hero. One place to choose. */}
       <section id="book" className="wrap mt-24 scroll-mt-20 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Book</p>
@@ -142,20 +151,63 @@ export default async function Consulting({ searchParams }: { searchParams: Promi
             read before you speak.
           </p>
         </div>
-        <div className="reveal mt-10">
-          {paid && (
-            <p className="mb-8 rounded-xl2 border border-ember/60 bg-ink-panel px-6 py-5 text-[15px] text-bone" role="status">
-              Paid, thank you. Booking <span className="font-display font-bold">{paid}</span> is held, the invite is on your
-              calendar, and a reminder goes out the day before.
-            </p>
-          )}
-          {unpaid && (
-            <p className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="status">
-              Payment for booking <span className="font-display font-bold text-bone">{unpaid}</span> was not completed. The
-              request is still with us; the link to pay is in your confirmation email.
-            </p>
-          )}
-          <Booking days={days} />
+        <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-10">
+          {/* WHAT TO HAVE READY, BESIDE THE FORM. It was the last section before the FAQ,
+              after the form and after the callback box, so it reached people who had
+              already booked. First in the source so a phone shows it above the form, as a
+              closed disclosure that costs one line until somebody wants it; on a desktop
+              it is an open card beside the form, moved to the right with order-last. The
+              desktop card holds nothing focusable, so the visual order and the tab order
+              never disagree. */}
+          <aside className="reveal lg:sticky lg:top-24 lg:order-last">
+            <details className="card group p-5 lg:hidden">
+              <summary className="flex cursor-pointer list-none items-center gap-3 text-[15px] font-semibold text-bone [&::-webkit-details-marker]:hidden">
+                Have these ready
+                <span className="font-normal text-muted">{HAVE_READY.length} things</span>
+                <svg aria-hidden viewBox="0 0 12 8" className="ml-auto h-2 w-3 text-muted transition-transform group-open:rotate-180">
+                  <path d="M1 1.9 6 6.1 11 1.9" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </summary>
+              <ReadyList />
+            </details>
+            <div className="card hidden p-6 lg:block">
+              <p className="eyebrow">Have it ready</p>
+              <h3 className="mt-3 text-xl leading-snug text-bone">Five minutes now saves twenty on the call</h3>
+              <p className="mt-3 text-sm leading-relaxed text-muted">
+                The form asks for some of this. The rest is worth having open on the call.
+              </p>
+              <ReadyList />
+            </div>
+          </aside>
+
+          <div className="reveal min-w-0">
+            {paid && (
+              <p className="mb-8 rounded-xl2 border border-ember/60 bg-ink-panel px-6 py-5 text-[15px] text-bone" role="status">
+                Paid, thank you. Booking <span className="font-display font-bold">{paid}</span> is held, the invite is on your
+                calendar, and a reminder goes out the day before.
+              </p>
+            )}
+            {unpaid && (
+              <p className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="status">
+                Payment for booking <span className="font-display font-bold text-bone">{unpaid}</span> was not completed. The
+                request is still with us; the link to pay is in your confirmation email.
+              </p>
+            )}
+            {/* Keyed on the session so a link that changes it while the visitor is already
+                on this page (the hero prices) remounts the wizard with the new choice.
+                Same route, new search params: without the key React keeps the old state. */}
+            <Booking key={initialSession ?? "open"} days={days} initialSession={initialSession} cardPayment={payConfigured()} />
+            {/* The two prices are his, from the 2026-11-04 email. What is still ours: the
+                lines under each session in step 1, which used to be bullets on price cards. */}
+            <div className="mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
+              <p className="eyebrow">One thing to confirm</p>
+              <p className="mt-2 text-[15px] leading-relaxed text-muted">
+                The prices are yours. The lines under each session, written actions after the call and the follow-up
+                thread, are still our draft of what a session includes: confirm them or trim them, because each one is a
+                promise made in your name.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -197,34 +249,6 @@ export default async function Consulting({ searchParams }: { searchParams: Promi
         </div>
       </section>
 
-      {/* ── What to have ready ───────────────────────────────────────────────── */}
-      <section className="wrap mt-24 sm:mt-32">
-        <div className="reveal grid gap-10 rounded-xl2 border border-line bg-ink-panel p-7 sm:p-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
-          <div>
-            <p className="eyebrow">Have it ready</p>
-            <h2 className="mt-4 text-2xl sm:text-3xl">Five minutes now saves twenty on the call</h2>
-            <p className="mt-4 text-[15px] leading-relaxed text-muted">
-              All of it except the runoff numbers is needed before we can book you in.
-              It takes about two minutes, and it is why the call opens on your room.
-            </p>
-          </div>
-          <ul className="grid gap-4 text-[15px]">
-            {[
-              "Your last two runs' yields, and what you changed between them.",
-              "Runoff EC and pH if you take them, in and out, for the last week.",
-              "Room temperature, humidity and CO₂ over a 24-hour cycle. Day and night numbers, not averages.",
-              "A wide shot of the canopy plus close-ups of whatever is wrong.",
-              "Your feed chart, even if it is the one off the bottle.",
-            ].map((line) => (
-              <li key={line} className="flex gap-3 border-b border-line pb-4 last:border-0 last:pb-0">
-                <span aria-hidden className="mt-[9px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
-                <span className="leading-relaxed text-bone/90">{line}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
       {/* ── FAQ ──────────────────────────────────────────────────────────────── */}
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
@@ -244,5 +268,19 @@ export default async function Consulting({ searchParams }: { searchParams: Promi
         </p>
       </section>
     </>
+  );
+}
+
+/** The checklist, once, for both the phone disclosure and the desktop card. */
+function ReadyList() {
+  return (
+    <ul className="mt-4 grid gap-3 text-sm">
+      {HAVE_READY.map((line) => (
+        <li key={line} className="flex gap-3 border-t border-line pt-3">
+          <span aria-hidden className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ember" />
+          <span className="leading-relaxed text-bone/90">{line}</span>
+        </li>
+      ))}
+    </ul>
   );
 }

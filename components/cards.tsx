@@ -13,7 +13,7 @@ import { money, type SessionType } from "@/lib/site";
 
 export function SessionCard({
   session,
-  href = "/consulting#book",
+  href,
   featured = false,
 }: {
   session: SessionType;
@@ -49,7 +49,9 @@ export function SessionCard({
           </li>
         ))}
       </ul>
-      <Link href={href} className="btn-primary mt-6 w-full">
+      {/* The link carries the session, so the form opens with it chosen. It used to be
+          /consulting#book for both cards, and the choice was dropped on arrival. */}
+      <Link href={href ?? `/consulting?session=${session.slug}#book`} className="btn-primary mt-6 w-full">
         Book {session.name}
       </Link>
     </div>
