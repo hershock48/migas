@@ -16,7 +16,7 @@ export default function NotFound() {
         That page isn&rsquo;t here.
       </h1>
       <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
-        Some older product links no longer resolve. Everything that exists is one of these.
+        Some links from the old site no longer work. These are the pages that do.
       </p>
       <ul className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-2">
         {NAV.map((i) => (
