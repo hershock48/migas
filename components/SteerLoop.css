@@ -1,0 +1,250 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   The co-management loop: components/SteerLoop.tsx (redrawn 2026-11-11).
+   Its own file, imported by the component, so only the two pages that draw the
+   loop load it (4KB minified, which was riding in globals.css on every page, and the text-led pages
+   paint after the stylesheet arrives). Keyframes next to their rules, as in
+   globals.css. Geometry is in percent of the square stage, matching the SVG's
+   0-100 viewBox: the track is r=30 around the center, and the four stations sit on
+   it at the diagonals, 30 x sin 45deg = 21.213 from the center each way.
+
+   THE TIMING. One lap is 8s and starts at station 1 (rotate -45deg, the top-left
+   diagonal), so the head reaches station n at (n-1) x 2s. Each station's flare is
+   the same 8s keyframe delayed by --i x 2s, peaking at 0%, so it lights on contact
+   and fades over about a second. Nothing else keeps them in step, so both must keep
+   the same duration.
+   ─────────────────────────────────────────────────────────────────────────── */
+.loop {
+  margin: 0;
+}
+.loop-stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  container-type: inline-size;
+}
+.loop-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.loop-track {
+  fill: none;
+  stroke: theme("colors.edge");
+  stroke-opacity: 0.6;
+  stroke-width: 0.45;
+}
+.loop-tick {
+  stroke: theme("colors.edge");
+  stroke-opacity: 0.45;
+  stroke-width: 0.35;
+  stroke-linecap: round;
+}
+.loop-tick-long {
+  stroke-opacity: 0.9;
+  stroke-width: 0.55;
+}
+
+/* The light. The orbit is the track's circle, 3px larger all round so the head can
+   sit on the line without the trail's mask clipping it. */
+.loop-orbit {
+  position: absolute;
+  inset: calc(20% - 3px);
+  border-radius: 50%;
+  pointer-events: none;
+  animation: loop-orbit 8s linear infinite;
+}
+.loop-trail {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg 190deg, rgba(245, 168, 60, 0) 190deg, rgba(245, 168, 60, 0.9) 359deg, transparent 359deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 4.75px), #000 calc(100% - 4.25px), #000 calc(100% - 1.75px), transparent calc(100% - 1.25px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 4.75px), #000 calc(100% - 4.25px), #000 calc(100% - 1.75px), transparent calc(100% - 1.25px));
+}
+.loop-head {
+  position: absolute;
+  left: 50%;
+  top: 3px;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: #fff1d6;
+  box-shadow: 0 0 6px 2px rgba(245, 168, 60, 0.95), 0 0 18px 6px rgba(217, 94, 39, 0.55);
+}
+@keyframes loop-orbit {
+  from {
+    transform: rotate(-45deg);
+  }
+  to {
+    transform: rotate(315deg);
+  }
+}
+
+.loop-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.loop-node {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: theme("colors.bone");
+  background: theme("colors.ink.panel");
+  border: 1px solid theme("colors.edge");
+  /* The ink ring is a gap in the track where it passes under the station. */
+  box-shadow: 0 0 0 4px theme("colors.ink.DEFAULT");
+  animation: loop-flare 8s linear infinite;
+  animation-delay: calc(var(--i) * 2s);
+}
+.loop-step-1 .loop-node { left: 28.787%; top: 28.787%; }
+.loop-step-2 .loop-node { left: 71.213%; top: 28.787%; }
+.loop-step-3 .loop-node { left: 71.213%; top: 71.213%; }
+.loop-step-4 .loop-node { left: 28.787%; top: 71.213%; }
+@keyframes loop-flare {
+  0% {
+    color: theme("colors.ink.DEFAULT");
+    background: theme("colors.flare");
+    border-color: #ffd9a0;
+    box-shadow: 0 0 0 4px theme("colors.ink.DEFAULT"), 0 0 0 7px rgba(245, 168, 60, 0.3), 0 0 26px 8px rgba(217, 94, 39, 0.6);
+    transform: scale(1.14);
+  }
+  14%,
+  100% {
+    color: theme("colors.bone");
+    background: theme("colors.ink.panel");
+    border-color: theme("colors.edge");
+    box-shadow: 0 0 0 4px theme("colors.ink.DEFAULT"), 0 0 0 7px rgba(245, 168, 60, 0), 0 0 26px 8px rgba(217, 94, 39, 0);
+    transform: scale(1);
+  }
+}
+
+/* The labels sit in the four corners, outside the ring: the ring's top is at 20%
+   of the stage and a two-line label is about 50px, so they clear it from a 280px
+   stage up (the one-pager's size). */
+.loop-label {
+  position: absolute;
+  max-width: 46%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.loop-step-1 .loop-label { left: 0; top: 0; }
+.loop-step-2 .loop-label { right: 0; top: 0; align-items: flex-end; text-align: right; }
+.loop-step-3 .loop-label { right: 0; bottom: 0; align-items: flex-end; text-align: right; }
+.loop-step-4 .loop-label { left: 0; bottom: 0; }
+.loop-name {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  color: theme("colors.bone");
+  animation: loop-name 8s linear infinite;
+  animation-delay: calc(var(--i) * 2s);
+}
+@keyframes loop-name {
+  0% {
+    color: theme("colors.flare");
+  }
+  14%,
+  100% {
+    color: theme("colors.bone");
+  }
+}
+.loop-sub {
+  font-size: 12px;
+  line-height: 1.35;
+  color: theme("colors.muted");
+}
+
+.loop-center {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 44%;
+  margin: 0;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  text-align: center;
+}
+.loop-eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: theme("colors.flare");
+}
+.loop-value {
+  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
+  font-size: clamp(15px, 5.4cqw, 21px);
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: theme("colors.bone");
+}
+
+/* Paper: the printed one-pager. Still, dark on the light sheet, and nothing that
+   needs a background to print: the stations are outlined, the gap ring is the sheet. */
+.loop-paper .loop-track,
+.loop-paper .loop-tick {
+  stroke: theme("colors.ink.DEFAULT");
+  stroke-opacity: 0.35;
+}
+.loop-paper .loop-tick-long {
+  stroke-opacity: 0.6;
+}
+.loop-paper .loop-node {
+  color: theme("colors.ink.DEFAULT");
+  background: theme("colors.bone");
+  border-color: rgba(6, 4, 3, 0.45);
+  box-shadow: 0 0 0 4px theme("colors.bone");
+  animation: none;
+}
+.loop-paper .loop-name {
+  color: theme("colors.ink.DEFAULT");
+  animation: none;
+}
+.loop-paper .loop-sub {
+  color: rgba(6, 4, 3, 0.7);
+}
+.loop-paper .loop-eyebrow {
+  color: theme("colors.ember.deep");
+}
+.loop-paper .loop-value {
+  color: theme("colors.ink.DEFAULT");
+}
+
+/* Still, for anyone who asked their system for less motion, and on paper. The
+   global freeze below would stop the light at the end of a lap; this hides it. */
+@media (prefers-reduced-motion: reduce) {
+  .loop-orbit { display: none; }
+  .loop-node,
+  .loop-name { animation: none !important; }
+}
+@media print {
+  .loop-orbit { display: none !important; }
+  .loop-node,
+  .loop-name { animation: none !important; }
+  /* The page-wide print rule strips backgrounds and shadows, which let the track run
+     through the numbers. White discs, printed even with background graphics off. */
+  body .loop .loop-node {
+    background: #fff !important;
+    box-shadow: 0 0 0 4px #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

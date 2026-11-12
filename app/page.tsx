@@ -103,15 +103,15 @@ export default function Home() {
               with us
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-              Rooms like the ones below come from a program run the same way every time. We run one at a licensed
-              facility in Michigan, and we teach it.
+              The rooms below are ours, at a licensed cultivation facility in Michigan, and every run in them
+              follows the same program.
             </p>
             <ul className="mt-9 grid max-w-xl gap-2.5">
               {ways.map((w) => (
                 <li key={w.href}>
                   <Link
                     href={w.href}
-                    className={`group flex items-center gap-4 rounded-xl2 border px-5 py-4 transition-colors ${
+                    className={`lift group flex items-center gap-4 rounded-xl2 border px-5 py-4 ${
                       w.primary ? "border-ember/70 bg-ember/[0.09] hover:border-flare" : "border-line bg-ink-panel/70 hover:border-edge"
                     }`}
                   >
@@ -151,19 +151,19 @@ export default function Home() {
           sit here is in section 4, where Jake asked for "the KPIs and results"; it ran
           twice on the page. */}
       <section aria-label="Our flower rooms" className="wrap mt-6 sm:mt-10">
-        <div className="reveal grid gap-3 md:grid-cols-3">
+        <div className="stagger grid gap-3 md:grid-cols-3">
           {/* Not priority, and low fetch priority: the largest paint on this page is the
               sun, and on a phone this photo sits below it, off the first screen. q60
               because foliage is the worst case for WebP and 75 bought nothing visible. */}
           {ROOMS.map((r, i) => (
-            <div key={r.alt} className={i === 0 ? "" : "hidden md:block"}>
+            <div key={r.alt} className={`overflow-hidden rounded-xl2 border border-line ${i === 0 ? "" : "hidden md:block"}`}>
               <Image
                 src={r.src}
                 alt={r.alt}
                 quality={60}
                 fetchPriority="low"
                 sizes="(min-width: 1152px) 368px, (min-width: 768px) 32vw, calc(100vw - 2.5rem)"
-                className="aspect-[4/5] h-auto w-full rounded-xl2 border border-line object-cover"
+                className="drift aspect-[4/5] h-auto w-full object-cover"
               />
             </div>
           ))}
@@ -189,7 +189,7 @@ export default function Home() {
               We post every run from the same rooms, one after another, so you can scroll back and check the results
               against what we write.
             </p>
-            <ul className="mt-5 grid grid-cols-2 gap-3">
+            <ul className="stagger mt-5 grid grid-cols-2 gap-3">
               {INSTAGRAM_POSTS.map((p, i) =>
                 p.caption === "PLACEHOLDER" ? (
                   /* Until he names a fourth post, the slot is a way through to the
@@ -199,7 +199,7 @@ export default function Home() {
                     <a
                       href={SITE.instagram}
                       rel="noopener"
-                      className="flex aspect-square flex-col justify-end rounded-xl2 border border-line bg-ink-panel bg-[radial-gradient(120%_90%_at_100%_0%,rgba(217,94,39,0.32),transparent_62%)] p-5 transition-colors hover:border-flare"
+                      className="flex aspect-square flex-col justify-end rounded-xl2 border border-line bg-ink-panel bg-[radial-gradient(120%_90%_at_100%_0%,rgba(217,94,39,0.32),transparent_62%)] p-5 hover:border-flare lift"
                     >
                       <span className="eyebrow">More</span>
                       <span className="mt-2 font-display text-lg font-bold leading-snug text-bone">See every run on the profile</span>
@@ -208,7 +208,7 @@ export default function Home() {
                   </li>
                 ) : (
                   <li key={i}>
-                    <a href={p.href} rel="noopener" className="group block overflow-hidden rounded-xl2 border border-line">
+                    <a href={p.href} rel="noopener" className="lift group block overflow-hidden rounded-xl2 border border-line hover:border-edge">
                       <Image src={igImages[i]} alt={p.caption} sizes="(min-width: 1024px) 270px, 45vw" className="aspect-square h-auto w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
                     </a>
                   </li>
@@ -230,15 +230,15 @@ export default function Home() {
               {PATREON.stats.totalMembers} members and {PATREON.stats.posts} posts so far. Paid tiers start at{" "}
               {money(PATREON.stats.priceFrom)} a month.
             </p>
-            <ul className="mt-5 grid grid-cols-2 gap-3">
+            <ul className="stagger mt-5 grid grid-cols-2 gap-3">
               {PATREON_POSTS.map((p) => (
                 <li key={p.title}>
                   {/* The arrow says "link" on a phone, where there is no hover to say it. */}
-                  <a href={p.href} rel="noopener" className="card flex h-full flex-col p-5 transition-colors hover:border-flare">
+                  <a href={p.href} rel="noopener" className="card lift group flex h-full flex-col p-5 hover:border-flare">
                     <span className="eyebrow">Guide</span>
                     <span className="mt-2 font-display text-lg font-bold leading-snug text-bone">{p.title}</span>
                     <span className="mt-2 text-sm leading-relaxed text-muted">{p.blurb}</span>
-                    <span aria-hidden className="mt-auto pt-3 text-flare">
+                    <span aria-hidden className="mt-auto inline-block pt-3 text-flare transition-transform duration-200 group-hover:translate-x-1">
                       &rarr;
                     </span>
                   </a>
@@ -259,7 +259,9 @@ export default function Home() {
         <div className="reveal grid gap-8 lg:grid-cols-[1fr_1.1fr] lg:items-end">
           <div>
             <p className="eyebrow">Schedule a consulting call</p>
-            <h2 className="mt-4 text-3xl sm:text-4xl">Fill in your facility profile, then pick a time</h2>
+            {/* Was "Fill in your facility profile, then pick a time": a do-this-then-that
+                heading, flagged by Kevin 2026-11-11. The paragraph says how it works. */}
+            <h2 className="mt-4 text-3xl sm:text-4xl">Half an hour or a full hour</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
               The profile asks about your rooms, lights, media, feed, sensors and what&rsquo;s going wrong, and you
               can add photos. It takes a few minutes. We read it before the call so we don&rsquo;t spend the first twenty
@@ -278,7 +280,7 @@ export default function Home() {
           </ul>
         </div>
 
-        <div className="reveal mt-10 grid gap-6 md:grid-cols-2">
+        <div className="stagger mt-10 grid gap-6 md:grid-cols-2">
           {SESSIONS.map((s) => (
             <SessionCard key={s.slug} session={s} />
           ))}
@@ -332,7 +334,7 @@ export default function Home() {
         </div>
 
         {/* The service. */}
-        <div className="reveal mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="stagger mt-6 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {COMANAGEMENT.services.map((s) => (
             <div key={s.name} className="card flex flex-col p-6">
               <h3 className="text-lg leading-snug text-bone">{s.name}</h3>
@@ -342,7 +344,7 @@ export default function Home() {
         </div>
 
         {/* The software. A real screenshot of the platform, with the live demo a click away. */}
-        <div className="reveal mt-12 grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
+        <div id="software" className="reveal mt-12 grid scroll-mt-24 gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
           <a href={COMANAGEMENT.software.demo} rel="noopener" className="group block overflow-hidden rounded-xl2 border border-line" aria-label={`Open the ${COMANAGEMENT.software.name} demo`}>
             <Image src={rgsOverview} alt={`The ${COMANAGEMENT.software.name} overview: rooms needing a look, each run as a bar from flip to harvest, check-ins due this week.`} sizes="(min-width: 1024px) 640px, 100vw" className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]" />
           </a>
@@ -353,6 +355,12 @@ export default function Home() {
             <a href={COMANAGEMENT.software.demo} rel="noopener" className="btn-ghost mt-5">
               Open the demo
             </a>
+            {/* The demo opens on a sign-in form. Without these it looked locked. */}
+            <p className="mt-3 text-sm text-muted">
+              Sign in with facility{" "}
+              <span className="font-mono text-bone">{COMANAGEMENT.software.demoLogin.facility}</span> and passcode{" "}
+              <span className="font-mono text-bone">{COMANAGEMENT.software.demoLogin.passcode}</span>.
+            </p>
           </div>
         </div>
 
@@ -363,7 +371,7 @@ export default function Home() {
             <p className="eyebrow">Price breakdown</p>
             <p className="text-sm text-muted">{COMANAGEMENT.rule}</p>
           </div>
-          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          <div className="stagger mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
             {COMANAGEMENT.tiers.map((t) => (
               <div key={t.name} className="card p-4 sm:p-6">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.name}</p>

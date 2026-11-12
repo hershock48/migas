@@ -68,8 +68,11 @@ export const SITE = {
   // language that attracts a facility, where "for growers of all sizes" attracts a
   // hobbyist. The site now leads with the commercial framing.
   tagline: "Commercial cannabis cultivation advice, SOPs, and instruction",
+  // 2026-11-11: was "Teaching, training and advising for indoor cultivators worldwide,
+  // from inside a working commercial facility" (the original build's line, not his),
+  // a three-verb list and a claim. These are the two facts behind "worldwide".
   blurb:
-    "Teaching, training and advising for indoor cultivators worldwide, from inside a working commercial facility.",
+    "We run a licensed cultivation facility in Michigan. Calls and co-management are remote, so your rooms can be anywhere.",
   // PLACEHOLDER. There is no email address anywhere on the current site; the only
   // route to him is an Instagram DM. This is the single biggest fix on the whole
   // build, and the address has to come from him. Everything that says "email" reads
@@ -186,7 +189,6 @@ export type SessionType = {
   name: string;
   minutes: number;
   price: number;
-  summary: string;
   forWho: string;
   includes: string[];
 };
@@ -197,7 +199,6 @@ export const SESSIONS: SessionType[] = [
     name: "Half hour",
     minutes: 30,
     price: 250,
-    summary: "For one room and one problem.",
     forWho: "Usually a run that's in trouble or a number that won't settle. Also good for a second opinion before you change something.",
     includes: ["We read your profile and photos beforehand", "Written next actions after"],
   },
@@ -206,7 +207,6 @@ export const SESSIONS: SessionType[] = [
     name: "Full hour",
     minutes: 60,
     price: 400,
-    summary: "For the whole program or the whole facility.",
     forWho: "A grow that works but underperforms, a design or build-out, or a facility weighing co-management.",
     includes: ["We read your profile and photos beforehand", "Written recommendations", "One follow-up question thread"],
   },
@@ -248,9 +248,12 @@ export const INSTAGRAM_POSTS = [
 ] as const;
 
 export const PATREON_POSTS = [
-  { title: "Flower, start to finish", blurb: "The bloom program by phase, with the feed and runoff targets for each.", href: PATREON.url },
-  { title: "Veg, from clone to flip", blurb: "Rooting and transplant, through to the end of veg.", href: PATREON.url },
-  { title: "Runoff, the SOP", blurb: "Collecting and reading runoff, and what to change when the numbers move.", href: PATREON.url },
+  // Stand-ins until he sends his four. The titles were "Flower, start to finish", "Veg,
+  // from clone to flip" and "Runoff, the SOP": the same comma shape three times, read as
+  // a template (Kevin, 2026-11-11). The first and third name his real posts.
+  { title: "The complete bloom guide", blurb: "The bloom program by phase, with the feed and runoff targets for each.", href: PATREON.url },
+  { title: "Veg and transplant", blurb: "Rooting and transplant, through to the end of veg.", href: PATREON.url },
+  { title: "The runoff guide", blurb: "Collecting and reading runoff, and what to change when the numbers move.", href: PATREON.url },
   { title: "Hand-water to automation", blurb: "Moving a room from hand-watering to drip and sensors.", href: PATREON.url },
 ] as const;
 
@@ -296,12 +299,16 @@ export const COMANAGEMENT = {
     name: "Remote Grow Solutions",
     url: "https://remotegrowsolutions.vercel.app",
     demo: "https://remotegrowsolutions.vercel.app/login",
+    // The demo is a sign-in form, so a button that only links to it reads as locked
+    // (Kevin, 2026-11-11). The platform prints these on its own login page; the
+    // facility's data is sample data that resets on its own.
+    demoLogin: { facility: "demo", passcode: "grow-demo" },
     blurb:
       "It shows each room's readings against its targets, flags the rooms that need a look first, tracks each run from flip to harvest, and holds the shared calendar and the weekly report. Your team logs what the sensors can't measure, and we read it before each call.",
   },
   services: [
     {
-      name: "Irrigation, run remotely",
+      name: "Irrigation",
       body: "We set shot sizes, timings and dryback targets off your sensor data and adjust them run by run. We look at the numbers every day.",
     },
     {
@@ -309,7 +316,7 @@ export const COMANAGEMENT = {
       body: "Temperature, humidity and VPD targets for each phase, with day and night set separately, adjusted as the canopy develops.",
     },
     {
-      name: "Scheduling, with your labor",
+      name: "Labor scheduling",
       body: "Defol, transplant, flip and harvest planned around the crew you have and the days they work.",
     },
     {

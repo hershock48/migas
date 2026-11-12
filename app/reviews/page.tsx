@@ -39,7 +39,7 @@ export default function Reviews() {
       </section>
 
       <section className="wrap mt-14">
-        <div className="reveal grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="stagger grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {REVIEWS.map((r, i) => (
             <ReviewCard key={i} quote={r.quote} who={r.who} context={r.context} />
           ))}

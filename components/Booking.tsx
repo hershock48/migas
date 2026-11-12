@@ -403,7 +403,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
         onChange={clearOn}
         onKeyDown={onKeyDown}
         onSubmit={onSubmit}
-        className="card scroll-mt-24 p-5 sm:p-9"
+        className={`card scroll-mt-24 p-5 sm:p-9 ${touched ? "bk-anim" : ""}`}
       >
         {/* Bots fill everything. Humans never see this. */}
         <div aria-hidden className="absolute h-0 w-0 overflow-hidden">
@@ -429,10 +429,13 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
           <ol className="mt-3 grid grid-cols-4 gap-1.5">
             {STEPS.map((name, i) => {
               const bar = (
-                <span
-                  aria-hidden
-                  className={`block h-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-ember" : "bg-line"}`}
-                />
+                /* The fill runs across as each step is reached, rather than the bar
+                   changing color in place. */
+                <span aria-hidden className="block h-1 overflow-hidden rounded-full bg-line">
+                  <span
+                    className={`block h-full origin-left rounded-full bg-ember transition-transform duration-500 ease-out ${i <= step ? "scale-x-100" : "scale-x-0"}`}
+                  />
+                </span>
               );
               return (
                 <li key={name} aria-current={i === step ? "step" : undefined}>
@@ -519,8 +522,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
                     </span>
                   </span>
                   <span id={`bk-${s.slug}-desc`} className="block">
-                    <span className="mt-2 block text-sm leading-relaxed text-bone/85">{s.summary}</span>
-                    <span className="mt-1.5 block text-sm leading-relaxed text-muted">{s.forWho}</span>
+                    <span className="mt-2 block text-sm leading-relaxed text-bone/85">{s.forWho}</span>
                     {/* What a session includes. These lived on separate price cards above the
                         form on /consulting, which asked the visitor to choose once on the
                         cards and again here. Spans rather than a list: a label may only hold

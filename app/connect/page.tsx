@@ -90,18 +90,18 @@ export default function Connect() {
 
         <div className="reveal">
           <h2 className="text-2xl text-bone">Elsewhere</h2>
-          <ul className="mt-6 grid gap-4">
+          <ul className="stagger mt-6 grid gap-4">
             {CHANNELS.map((c) => (
               <li key={c.name}>
                 <a
                   href={c.href}
-                  className="card group flex items-start justify-between gap-5 p-6 transition-colors hover:border-edge"
+                  className="card lift group flex items-start justify-between gap-5 p-6 hover:border-edge"
                 >
                   <span>
                     <span className="block font-display text-lg font-bold text-bone">{c.name}</span>
                     <span className="mt-1.5 block text-sm leading-relaxed text-muted">{c.label}</span>
                   </span>
-                  <span aria-hidden className="mt-1 shrink-0 text-muted group-hover:text-flare">
+                  <span aria-hidden className="mt-1 shrink-0 text-muted transition-[color,transform] duration-200 group-hover:translate-x-1 group-hover:text-flare">
                     &rarr;
                   </span>
                 </a>
