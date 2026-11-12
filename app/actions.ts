@@ -287,8 +287,8 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       // most useful field on the form, the confirmation is the last good moment to get it.
       photos.attachments.length === 0
         ? toVisitor
-          ? "No photos yet. Reply to your confirmation email with any and we will read them before the call"
-          : "No photos yet. Send them with your reference and we will read them before the call"
+          ? "No photos yet. Reply to your confirmation email with any and we'll read them before the call"
+          : "No photos yet. Send them with your reference and we'll read them before the call"
         : photos.attachments.length === 1
           ? "1 photo sent with your intake"
           : `${photos.attachments.length} photos sent with your intake`,
@@ -403,7 +403,7 @@ export async function requestCall(_prev: FormState, fd: FormData): Promise<FormS
     delivered: { toOwner, toVisitor: true },
     summary: [
       toOwner
-        ? "Got it. We call you back."
+        ? "Got it. We'll call you back."
         : "Sent. Outgoing mail is not switched on for this build yet.",
     ],
   };

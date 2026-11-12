@@ -2,8 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
-import { NAV, REVIEWS } from "@/lib/site";
+import { useEffect, useRef, useState } from "react";
+import { HAS_REVIEWS, NAV } from "@/lib/site";
 import { Graffiti } from "./brand";
 
 /**
@@ -37,13 +37,36 @@ import { Graffiti } from "./brand";
    nothing, and the header is where a doubtful visitor goes looking for proof. The page
    stays, linked from the footer, and the link comes back by itself the moment the first
    real quote lands in REVIEWS. */
-const hasReviews = REVIEWS.some((r) => !r.quote.startsWith("PLACEHOLDER"));
-const HEADER_NAV = NAV.filter((i) => i.href !== "/reviews" || hasReviews);
+const HEADER_NAV = NAV.filter((i) => i.href !== "/reviews" || HAS_REVIEWS);
 
 export default function Nav() {
   const [open, setOpen] = useState(false);
   const path = usePathname();
   useEffect(() => setOpen(false), [path]);
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  /* The open panel covers the page, and only the button closed it. Escape closes it
+     now and puts focus back on the button; a tap anywhere outside the panel closes it
+     too, which is what a phone visitor tries first. */
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape") return;
+      setOpen(false);
+      toggleRef.current?.focus();
+    };
+    const onDown = (e: PointerEvent) => {
+      const t = e.target as Node;
+      if (!panelRef.current?.contains(t) && !toggleRef.current?.contains(t)) setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("pointerdown", onDown);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("pointerdown", onDown);
+    };
+  }, [open]);
 
   return (
     // print:hidden site-wide: a printed page is a document, and site chrome on a
@@ -96,6 +119,7 @@ export default function Nav() {
             <span className="hidden min-[360px]:inline">Book a call</span>
           </Link>
           <button
+            ref={toggleRef}
             type="button"
             onClick={() => setOpen((v) => !v)}
             aria-expanded={open}
@@ -118,6 +142,7 @@ export default function Nav() {
           also just what a mobile menu does — the panel is opaque ink-panel, so there is
           nothing to see through it. */}
       <div
+        ref={panelRef}
         id="mobile-nav"
         hidden={!open}
         className="absolute left-0 right-0 top-full border-t border-line bg-ink-panel shadow-xl md:hidden"

@@ -15,7 +15,10 @@ import { SessionCard } from "@/components/cards";
 import { COMANAGEMENT, CONSULT_TOPICS, CREDS, INSTAGRAM_POSTS, PATREON, PATREON_POSTS, SESSIONS, SITE, money } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: `${SITE.tagline}`,
+  // absolute, because the layout's "%s - MI Gas" template only reaches child segments,
+  // never the page beside it. The plain string made the home page the one title on the
+  // site without the name in it, in the tab and in search results.
+  title: { absolute: `${SITE.name} - ${SITE.tagline}` },
   description:
     "Cultivation advice from a licensed Michigan facility: guides on Patreon from $100 a month, consulting calls at $250 and $400, and co-management from $2,000 a month.",
 };
@@ -80,7 +83,12 @@ export default function Home() {
     <>
       {/* ── 1. Intro ──────────────────────────────────────────────────────── */}
       <section className="relative isolate overflow-hidden">
-        <div className="wrap relative grid gap-10 pb-4 pt-14 sm:gap-14 sm:pt-20 lg:min-h-[640px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16">
+        {/* pb-24 / sm:pb-32: below lg the sun sits in the flow at the foot of this
+            section, and its glow reaches 34% of its width past the disc (the corona's
+            inset in globals.css). With pb-4 the section's overflow-hidden cut the glow
+            16px under the disc at 390px and 66px short at 320px, a hard straight edge
+            across the screen. Measured 2026-11-11; the padding is the overhang. */}
+        <div className="wrap relative grid gap-10 pb-24 pt-14 sm:gap-14 sm:pb-32 sm:pt-20 lg:min-h-[640px] lg:grid-cols-[1.05fr_minmax(0,0.95fr)] lg:items-center lg:gap-16 lg:pb-4 print:pb-4">
           <div className="reveal relative z-10">
             <p className="eyebrow">{SITE.region} &middot; Indoor cultivators worldwide</p>
             <h1 aria-label="Grow with us" className="mt-5 text-[2.6rem] leading-[1.02] sm:text-6xl lg:text-[4.2rem]">
@@ -122,7 +130,7 @@ export default function Home() {
 
           {/* ONE sun, two placements; the rules on contrast over the disc are in git
               history on this file and still hold: no paragraph over the fire. */}
-          <div className="reveal pointer-events-none relative mx-auto w-[86%] max-w-[380px] lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]">
+          <div className="reveal pointer-events-none relative mx-auto w-[86%] max-w-[380px] print:hidden lg:absolute lg:-right-[5%] lg:-top-[24%] lg:-z-10 lg:mx-0 lg:w-[40vw] lg:max-w-[560px]">
             <Sun />
             <span
               aria-hidden
@@ -225,14 +233,23 @@ export default function Home() {
             <ul className="mt-5 grid grid-cols-2 gap-3">
               {PATREON_POSTS.map((p) => (
                 <li key={p.title}>
+                  {/* The arrow says "link" on a phone, where there is no hover to say it. */}
                   <a href={p.href} rel="noopener" className="card flex h-full flex-col p-5 transition-colors hover:border-flare">
                     <span className="eyebrow">Guide</span>
                     <span className="mt-2 font-display text-lg font-bold leading-snug text-bone">{p.title}</span>
                     <span className="mt-2 text-sm leading-relaxed text-muted">{p.blurb}</span>
+                    <span aria-hidden className="mt-auto pt-3 text-flare">
+                      &rarr;
+                    </span>
                   </a>
                 </li>
               ))}
             </ul>
+            {/* Each of the other two ways in ends on a button; this one ended on four
+                cards and a handle in the corner. */}
+            <a href={PATREON.url} rel="noopener" className="btn-ghost mt-6">
+              Join on Patreon
+            </a>
           </div>
         </div>
       </section>
@@ -249,10 +266,12 @@ export default function Home() {
               minutes asking.
             </p>
           </div>
-          <ul className="grid gap-2 sm:grid-cols-2">
+          {/* A plain list, as on /consulting. Bordered chips beside the session cards
+              looked like options to tap, and tapping one did nothing. */}
+          <ul className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
             {CONSULT_TOPICS.map((t) => (
-              <li key={t} className="card flex items-center gap-3 px-4 py-3 text-[15px] text-bone/90">
-                <span className="dot bg-flare" aria-hidden="true" />
+              <li key={t} className="flex gap-3 text-[15px] leading-relaxed text-bone/90">
+                <span className="dot mt-[9px] bg-flare" aria-hidden="true" />
                 {t}
               </li>
             ))}
@@ -321,14 +340,6 @@ export default function Home() {
             </div>
           ))}
         </div>
-        <ul className="reveal mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
-          {COMANAGEMENT.cadence.map((c) => (
-            <li key={c} className="flex gap-3 text-sm leading-relaxed text-muted">
-              <span className="mt-2 dot bg-ember" aria-hidden="true" />
-              {c}
-            </li>
-          ))}
-        </ul>
 
         {/* The software. A real screenshot of the platform, with the live demo a click away. */}
         <div className="reveal mt-12 grid gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
@@ -352,11 +363,11 @@ export default function Home() {
             <p className="eyebrow">Price breakdown</p>
             <p className="text-sm text-muted">{COMANAGEMENT.rule}</p>
           </div>
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {COMANAGEMENT.tiers.map((t, i) => (
-              <div key={t.name} className={`card p-6 ${i === 1 ? "border-ember/60" : ""}`}>
+          <div className="mt-4 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+            {COMANAGEMENT.tiers.map((t) => (
+              <div key={t.name} className="card p-4 sm:p-6">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.name}</p>
-                <p className="mt-2 font-display text-3xl font-extrabold text-bone">
+                <p className="mt-2 whitespace-nowrap font-display text-lg font-extrabold text-bone min-[360px]:text-xl min-[375px]:text-2xl sm:text-3xl">
                   {money(t.monthly)}
                   {t.open ? "+" : ""}
                   <span className="text-sm font-semibold text-muted">/mo</span>
@@ -367,6 +378,18 @@ export default function Home() {
               </div>
             ))}
           </div>
+          {/* What every tier includes. It sat in four columns under the four service
+              cards, where each line read as a caption for the card above it ("Clone,
+              mother and veg advisory" under "Cost reduction"). Here, as on
+              /co-management, and two across so it is not one line per tier either. */}
+          <ul className="mt-6 grid gap-2 sm:grid-cols-2">
+            {COMANAGEMENT.cadence.map((c) => (
+              <li key={c} className="flex gap-3 text-sm leading-relaxed text-muted">
+                <span className="mt-2 dot bg-ember" aria-hidden="true" />
+                {c}
+              </li>
+            ))}
+          </ul>
           <div className="mt-6 flex flex-wrap items-center gap-4">
             <Link href="/co-management#apply" className="btn-primary">
               Apply for co-management

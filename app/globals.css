@@ -38,6 +38,9 @@ h1, h2, h3 {
      beats a colour inherited from a section wrapper, which is how a whole site ends
      up with dark-on-dark headings inside light panels. Set colour at the section. */
   @apply font-display font-semibold tracking-tight;
+  /* Lines of even length, so a phone-width heading does not end on one word
+     ("...around the / call", "...has to / bring"). Browsers without it wrap as before. */
+  text-wrap: balance;
 }
 
 /* Focus is visible everywhere, and uses `edge`-family contrast rather than the
@@ -53,6 +56,13 @@ textarea:focus-visible,
   border-radius: 4px;
 }
 
+/* The site's components. In @layer components, so a utility beside one of these
+   classes wins, which is how Tailwind is meant to work. They used to sit after
+   @tailwind utilities outside any layer, and the class won instead: `card
+   border-ember/40` drew the plain line color, the Professional tier and the
+   co-management conditions never showed their ember borders, and the header's Book
+   button needed !px-5 !py-2 to get its own padding. (Found 2026-11-11.) */
+@layer components {
 .wrap {
   @apply mx-auto w-full max-w-content px-5 sm:px-8;
 }
@@ -98,6 +108,7 @@ select.field {
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 12px 8px;
+}
 }
 
 /* A FIELDSET IS AS WIDE AS ITS WIDEST CHILD UNLESS TOLD OTHERWISE. Browsers give
@@ -1255,11 +1266,14 @@ fieldset {
   letter-spacing: -0.01em;
   fill: theme("colors.bone");
 }
+/* 10 units with no tracking, up from 8.5 with 0.06em: 8.5 rendered at 9px on a phone
+   and 6.8px (about 5pt) on the printed one-pager. Measured 2026-11-11, the longest
+   line ("Aroya, Pinnacle, Growlink") is 121.9 of the node's 128 units at this size. */
 .mg-loop .loop-sub {
   font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 8.5px;
+  font-size: 10px;
   font-weight: 500;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   fill: theme("colors.muted");
 }
 .mg-loop .loop-eyebrow {
@@ -1313,6 +1327,44 @@ fieldset {
   }
   .r-armed .reveal { opacity: 1 !important; transform: none !important; }
 }
+
+/* Print, for everything but the one-pager's sheet (.op-sheet), which has its own paper
+   design. Measured 2026-11-11, /co-management printed from the top of the page: 9
+   pages, the last 6 blank, because every section not yet scrolled past was still at the
+   reveal's opacity 0. What did print was bone text on white paper once the browser
+   dropped the dark background. So: every section shown, and dark text on no background
+   whether or not "Background graphics" is ticked. Photos and the SVG diagrams keep
+   their own colors. text-fill-color too, because "Grow" on the home page is fire
+   clipped to the letters with a transparent fill, and with the fire gone it printed as
+   nothing. The sun hides (print:hidden in app/page.tsx): on paper it was an empty box
+   that pushed the first photo onto page 3 and left page 2 blank.
+   The sheet is excluded with :not(.op-sheet *) rather than a has-selector on body: a
+   browser without :has (Firefox before 121) drops a whole rule over one selector it
+   cannot parse. */
+@media print {
+  .r-armed .reveal { opacity: 1 !important; transform: none !important; }
+  body,
+  body *:not(img, svg, svg *, .op-sheet, .op-sheet *) {
+    background: transparent !important;
+    color: #111 !important;
+    /* currentcolor, not #111: this property inherits, and a fixed color here reached
+       through to the one-pager's own text colors. */
+    -webkit-text-fill-color: currentcolor !important;
+    filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+  /* A 4:5 photo at full print width is taller than the space left on most pages, so it
+     jumped to the next page whole. Capped, it crops (the photos are object-cover). */
+  main img:not(.op-sheet img) { max-height: 4.5in; }
+  /* List bullets are colored dots (a background), so the rule above erased them. */
+  .dot:not(.op-sheet .dot) { background: #111 !important; }
+  /* A card, a figure or a list row moves to the next page whole, and a heading
+     stays with what follows it. */
+  :is(.card, figure, li, img, dl > div):not(.op-sheet *) { break-inside: avoid; }
+  :is(h1, h2, h3, .eyebrow):not(.op-sheet *) { break-after: avoid; }
+}
+
 /* ───────────────────────────────────────────────────────────────────────────
    The signature plate — pairs with components/GlazedPlate.
    Set the three values below per site, in that site's own palette block:

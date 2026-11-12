@@ -71,7 +71,8 @@ export default function Connect() {
               fields={[
                 { id: "name", label: "Name", required: true },
                 { id: "email", label: "Email", type: "email", required: true },
-                { id: "topic", label: "Topic", placeholder: "Consulting, co-management, the Patreon…", wide: true },
+                /* A hint, not a placeholder: at 390px the field cut it off at "the P". */
+                { id: "topic", label: "Topic", hint: "Consulting, co-management or the Patreon, for example.", wide: true },
                 {
                   id: "message",
                   label: "What do you need?",

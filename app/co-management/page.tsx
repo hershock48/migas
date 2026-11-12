@@ -6,7 +6,7 @@ import FeedRig from "@/components/FeedRig";
 import MiniForm, { type MiniField } from "@/components/MiniForm";
 import SteerLoop from "@/components/SteerLoop";
 import { requestCoManagement } from "@/app/actions";
-import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, CREDS, SITE, money } from "@/lib/site";
+import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, CREDS, SESSIONS, SITE, money } from "@/lib/site";
 import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 
 export const metadata: Metadata = {
@@ -60,12 +60,14 @@ export default function CoManagement() {
               Co-management for commercial <span className="text-flare">flower rooms</span>
             </h1>
             <p className="mt-6 text-lg leading-relaxed text-bone/85">{COMANAGEMENT.intro}</p>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-9 flex flex-wrap items-center gap-3">
               {/* The full hour, already chosen: its own description names "a facility
-                  weighing co-management". */}
+                  weighing co-management". Its price sits beside it, as on /consulting:
+                  the button opens a paid booking, and nothing on this page said so. */}
               <Link href="/consulting?session=hour#book" className="btn-primary">
                 Book a call
               </Link>
+              <CallPrice />
               <Link href="#conditions" className="btn-ghost">
                 What your room needs
               </Link>
@@ -155,11 +157,11 @@ export default function CoManagement() {
           <h2 className="mt-3 text-2xl text-bone sm:text-3xl">Priced by flower rooms or lights, whichever is higher</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-muted">{COMANAGEMENT.rule}</p>
         </div>
-        <div className="reveal mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {COMANAGEMENT.tiers.map((t, i) => (
-            <div key={t.name} className={`card p-6 ${i === 1 ? "border-ember/60" : ""}`}>
+        <div className="reveal mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+          {COMANAGEMENT.tiers.map((t) => (
+            <div key={t.name} className="card p-4 sm:p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.name}</p>
-              <p className="mt-2 font-display text-3xl font-extrabold text-bone">
+              <p className="mt-2 whitespace-nowrap font-display text-lg font-extrabold text-bone min-[360px]:text-xl min-[375px]:text-2xl sm:text-3xl">
                 {money(t.monthly)}
                 {t.open ? "+" : ""}
                 <span className="text-sm font-semibold text-muted">/mo</span>
@@ -218,7 +220,9 @@ export default function CoManagement() {
           see the capture-not-wall note on COMANAGE_APPLY in lib/site.ts. */}
       <section id="apply" className="wrap mt-24 scroll-mt-24 sm:mt-32">
         <div className="grid gap-10 lg:grid-cols-[minmax(0,0.85fr)_minmax(0,1.15fr)] lg:gap-16">
-          <div className="reveal">
+          {/* Sticky on desktop: the form beside it is about 1,000px tall, and the intro
+              ended halfway down, leaving a blank column the rest of the way. */}
+          <div className="reveal lg:sticky lg:top-24 lg:self-start">
             <p className="eyebrow">Apply</p>
             <h2 className="mt-4 text-3xl sm:text-4xl">Tell us about the room</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
@@ -290,10 +294,11 @@ export default function CoManagement() {
             is losing money. By the end of the call you&rsquo;ll know your tier and a start
             date, or why it isn&rsquo;t a fit yet.
           </p>
-          <div className="mt-9 flex flex-wrap gap-3">
+          <div className="mt-9 flex flex-wrap items-center gap-3">
             <Link href="/consulting?session=hour#book" className="btn-primary">
               Book a call
             </Link>
+            <CallPrice />
             <Link href="/connect" className="btn-ghost">
               Ask a question first
             </Link>
@@ -301,5 +306,16 @@ export default function CoManagement() {
         </div>
       </section>
     </>
+  );
+}
+
+/** The session the call buttons open, and its price, in the /consulting hero's style. */
+function CallPrice() {
+  const hour = SESSIONS.find((x) => x.slug === "hour");
+  if (!hour) return null;
+  return (
+    <p className="mr-3 text-sm text-muted">
+      {hour.name} <span className="font-semibold text-bone">{money(hour.price)}</span>
+    </p>
   );
 }
