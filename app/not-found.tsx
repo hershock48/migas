@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NAV } from "@/lib/site";
+import { HAS_REVIEWS, NAV, PATREON } from "@/lib/site";
 
 /**
  * A 404 that routes rather than apologises.
@@ -18,8 +18,11 @@ export default function NotFound() {
       <p className="mt-5 max-w-xl text-lg leading-relaxed text-muted">
         Some links from the old site no longer work. These are the pages that do.
       </p>
+      {/* The header's pages (Reviews only once a real review exists, as in the
+          header), plus Patreon: the old links that break are mostly guide pages, and
+          the guides live there now. */}
       <ul className="mt-10 grid max-w-2xl gap-3 sm:grid-cols-2">
-        {NAV.map((i) => (
+        {NAV.filter((i) => i.href !== "/reviews" || HAS_REVIEWS).map((i) => (
           <li key={i.href}>
             <Link
               href={i.href}
@@ -30,6 +33,16 @@ export default function NotFound() {
             </Link>
           </li>
         ))}
+        <li>
+          <a
+            href={PATREON.url}
+            rel="noopener"
+            className="card flex items-center justify-between p-5 text-bone transition-colors hover:border-edge hover:text-flare"
+          >
+            The guides, on Patreon
+            <span aria-hidden>&rarr;</span>
+          </a>
+        </li>
       </ul>
     </section>
   );

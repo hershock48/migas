@@ -233,8 +233,11 @@ export default async function Consulting({
             action={requestCall}
             fields={[
               { id: "name", label: "Name", required: true },
-              { id: "phone", label: "Phone", type: "tel", required: false },
-              { id: "email", label: "Email", type: "email", required: false },
+              /* Either one is required, so neither says "optional". It did, and the
+                 form then refused to send with both blank; the rule was only in the
+                 small print under the button. */
+              { id: "phone", label: "Phone", type: "tel", required: false, tag: null, hint: "Phone or email, either one works." },
+              { id: "email", label: "Email", type: "email", required: false, tag: null },
               {
                 id: "about",
                 label: "What is it about?",
@@ -244,7 +247,7 @@ export default async function Consulting({
               },
             ]}
             submit="Have us call you"
-            note="Phone or email, either one works. It goes to the same inbox as bookings."
+            note="It goes to the same inbox as bookings."
           />
         </div>
       </section>

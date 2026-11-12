@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useMemo, useRef, useState } from "react";
 import { requestBooking } from "@/app/actions";
 import { EMPTY, PHOTO_LIMITS } from "@/lib/forms";
+import { scrollBehavior } from "@/lib/scroll";
 import { AVAILABILITY, INTAKE, PATREON, SESSIONS, money } from "@/lib/site";
 import type { SlotDay } from "@/lib/slots";
 
@@ -139,7 +140,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
   useEffect(() => {
     if (!touched) return;
     headingRef.current?.focus();
-    formRef.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+    formRef.current?.scrollIntoView({ block: "start", behavior: scrollBehavior() });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
@@ -155,8 +156,12 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
     setStep(Math.min(...keys.map(owner)));
   }, [state]);
 
+  /* Focus as well as scroll: the panel mounts with its text already inside, and a live
+     region that arrives that way is not announced. Focus is what gets it read. */
   useEffect(() => {
-    if (state.status === "done") doneRef.current?.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (state.status !== "done") return;
+    doneRef.current?.focus({ preventScroll: true });
+    doneRef.current?.scrollIntoView({ block: "center", behavior: scrollBehavior() });
   }, [state.status]);
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
@@ -308,7 +313,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
 
   if (state.status === "done") {
     return (
-      <div ref={doneRef} className="card p-8 sm:p-10" aria-live="polite">
+      <div ref={doneRef} tabIndex={-1} className="card p-8 sm:p-10" aria-live="polite">
         <p className="eyebrow">Request sent</p>
         <h3 className="mt-4 text-3xl">Thanks, we&rsquo;ve got it</h3>
         <p className="mt-4 max-w-xl leading-relaxed text-muted">
@@ -398,7 +403,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
         onChange={clearOn}
         onKeyDown={onKeyDown}
         onSubmit={onSubmit}
-        className="card scroll-mt-24 p-6 sm:p-9"
+        className="card scroll-mt-24 p-5 sm:p-9"
       >
         {/* Bots fill everything. Humans never see this. */}
         <div aria-hidden className="absolute h-0 w-0 overflow-hidden">
@@ -486,7 +491,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
               // screen reader would read three sentences and a list as a button label.
               <label
                 key={s.slug}
-                className="flex cursor-pointer gap-4 rounded-xl2 border border-edge p-5 transition-colors hover:border-bone/40 has-[:checked]:border-flare has-[:checked]:bg-ember/[0.07]"
+                className="flex cursor-pointer gap-3 rounded-xl2 border border-edge p-4 transition-colors hover:border-bone/40 has-[:checked]:border-flare has-[:checked]:bg-ember/[0.07] sm:gap-4 sm:p-5"
               >
                 <input
                   type="radio"
@@ -543,7 +548,9 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             This is the part we read before we talk.
           </p>
 
-          <div className="mt-6 grid gap-5 sm:grid-cols-2">
+          {/* Three rows of this grid per question (subgrid), as in MiniForm: the
+              controls of a pair share a row however long either label or hint runs. */}
+          <div className="mt-6 grid sm:grid-cols-2 sm:gap-x-5">
             {INTAKE.map((q) => {
               const wide = q.type === "textarea";
               /* A worked example longer than the field is a hint under the label, not a
@@ -551,18 +558,21 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
                  8 × 720W LED, or 12 × 1000W I") and vanish at the first keystroke, which is
                  when somebody checking the format needs them. */
               const hint = "hint" in q ? q.hint : undefined;
-              const described = hint ? `${q.id}-hint` : undefined;
+              const described =
+                [hint && `${q.id}-hint`, errors[q.id] && `${q.id}-error`].filter(Boolean).join(" ") || undefined;
               return (
-                <div key={q.id} className={wide ? "sm:col-span-2" : ""}>
-                  <label htmlFor={q.id} className="block text-sm font-semibold text-bone">
-                    {q.label}
-                    {!q.required && <span className="ml-2 font-normal text-muted">optional</span>}
-                  </label>
-                  {hint && (
-                    <p id={described} className="mt-1 text-[13px] leading-snug text-muted">
-                      {hint}
-                    </p>
-                  )}
+                <div key={q.id} className={`row-span-3 grid grid-rows-subgrid pb-5 last:pb-0 ${wide ? "sm:col-span-2" : ""}`}>
+                  <div className="self-end">
+                    <label htmlFor={q.id} className="block text-sm font-semibold text-bone">
+                      {q.label}
+                      {!q.required && <span className="ml-2 font-normal text-muted">optional</span>}
+                    </label>
+                    {hint && (
+                      <p id={`${q.id}-hint`} className="mt-1 text-[13px] leading-snug text-muted">
+                        {hint}
+                      </p>
+                    )}
+                  </div>
                   {q.type === "select" ? (
                     <select
                       id={q.id}
@@ -605,7 +615,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
                       className="field mt-2"
                     />
                   )}
-                  <Err msg={errors[q.id]} />
+                  <Err id={`${q.id}-error`} msg={errors[q.id]} />
                 </div>
               );
             })}
@@ -786,7 +796,9 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
                 Back
               </button>
             )}
-            <button type="button" onClick={next} className="btn-primary">
+            {/* Full width on a phone, like Send on the last step: it was a small button
+                at the left edge, away from the thumb. */}
+            <button type="button" onClick={next} className="btn-primary flex-1 sm:flex-none">
               Continue
             </button>
           </div>
@@ -821,10 +833,10 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
 
 /* ── Bits ──────────────────────────────────────────────────────────────────── */
 
-function Err({ msg }: { msg?: string }) {
+function Err({ msg, id }: { msg?: string; id?: string }) {
   if (!msg) return null;
   return (
-    <p role="alert" className="mt-2 text-sm text-alert">
+    <p id={id} role="alert" className="mt-2 text-sm text-alert">
       {msg}
     </p>
   );
@@ -861,9 +873,10 @@ function Field({
         defaultValue={state.values?.[id] ?? ""}
         aria-required={required}
         aria-invalid={!!error}
+        aria-describedby={error ? `${id}-error` : undefined}
         className="field mt-2"
       />
-      <Err msg={error} />
+      <Err id={`${id}-error`} msg={error} />
     </div>
   );
 }

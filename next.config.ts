@@ -1,6 +1,11 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // 75 is next/image's default. 60 is the three room photos on the home page (the note
+  // there says why). Next 15 only warns about a quality missing from this list; Next 16
+  // refuses it, and those photos would stop loading on the upgrade.
+  images: { qualities: [60, 75] },
+
   experimental: {
     // Photos of a sick canopy come off a phone at 3–8 MB each, and a serverless
     // function's request body caps out around 4.5 MB on Vercel regardless of what is

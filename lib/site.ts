@@ -787,5 +787,9 @@ export const NAV = [
   { href: "/connect", label: "Connect" },
 ];
 
+/** True once REVIEWS holds a real quote. Until then the Reviews page is a page of
+ *  placeholders, so the header and the 404 leave it out (the footer keeps it). */
+export const HAS_REVIEWS = REVIEWS.some((r) => !r.quote.startsWith("PLACEHOLDER"));
+
 export const money = (n: number) =>
   n % 1 === 0 ? `$${n.toLocaleString("en-US")}` : `$${n.toFixed(2)}`;

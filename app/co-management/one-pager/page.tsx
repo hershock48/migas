@@ -3,7 +3,7 @@ import Link from "next/link";
 import PrintButton from "@/components/PrintButton";
 import SteerLoop from "@/components/SteerLoop";
 import { Graffiti } from "@/components/brand";
-import { COMANAGEMENT, CREDS, SITE, money } from "@/lib/site";
+import { COMANAGEMENT, CREDS, PATREON, SITE, money } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Co-Management, on one page",
@@ -44,6 +44,9 @@ export default function OnePager() {
       {/* Screen-only controls, above the sheet. */}
       <div className="mb-6 flex flex-wrap items-center gap-4 print:hidden">
         <PrintButton />
+        <Link href="/co-management#apply" className="btn-ghost">
+          Apply for co-management
+        </Link>
         <p className="text-sm text-muted">
           Prints on one or two pages. You can also press Ctrl+P, or Cmd+P on a Mac.{" "}
           <Link href="/co-management" className="text-flare hover:underline">
@@ -70,7 +73,8 @@ export default function OnePager() {
         <p className="mt-6 max-w-[60ch] text-[15px] leading-relaxed text-ink/85">{COMANAGEMENT.intro}</p>
 
         {/* ── The loop + what we run ───────────────────────────────────────── */}
-        <div className="mt-8 grid gap-8 sm:grid-cols-[minmax(0,1fr)_240px] sm:items-start">
+        {/* 280, up from 240, so the loop's small labels print at about 7pt, not 5. */}
+        <div className="mt-8 grid gap-8 sm:grid-cols-[minmax(0,1fr)_280px] sm:items-start">
           <div>
             <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-ember-deep">
               What we run
@@ -84,11 +88,15 @@ export default function OnePager() {
               ))}
             </ul>
           </div>
-          <SteerLoop tone="paper" className="mx-auto w-full max-w-[240px]" />
+          <SteerLoop tone="paper" className="mx-auto w-full max-w-[280px]" />
         </div>
 
         {/* ── Conditions ───────────────────────────────────────────────────── */}
-        <div className="mt-8 border-y border-ink/20 py-6">
+        {/* break-inside-avoid on each section below: printed to Letter, the sheet runs
+            to two pages, and the page break fell between "Price breakdown" and the
+            prices, leaving the heading alone at the foot of page one. A section now
+            moves to the next page whole. */}
+        <div className="mt-8 break-inside-avoid border-y border-ink/20 py-6">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-ember-deep">
             What your room has to bring
           </h2>
@@ -103,7 +111,7 @@ export default function OnePager() {
         </div>
 
         {/* ── Price ────────────────────────────────────────────────────────── */}
-        <div className="mt-8">
+        <div className="mt-8 break-inside-avoid">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-ember-deep">
             Price breakdown
           </h2>
@@ -129,7 +137,7 @@ export default function OnePager() {
         </div>
 
         {/* ── Around the program ───────────────────────────────────────────── */}
-        <div className="mt-8">
+        <div className="mt-8 break-inside-avoid">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-ember-deep">
             What comes with it
           </h2>
@@ -143,7 +151,7 @@ export default function OnePager() {
         </div>
 
         {/* ── The record ───────────────────────────────────────────────────── */}
-        <div className="mt-8 rounded-lg border border-ink/20 p-5">
+        <div className="mt-8 break-inside-avoid rounded-lg border border-ink/20 p-5">
           <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-ember-deep">
             The record
           </h2>
@@ -166,13 +174,20 @@ export default function OnePager() {
               the print, and mi-gas.net has no such page until cutover day. This loses
               its /demo in the same commit that retires the host split — search for
               "ON THE DAY THEY SIGN" in app/layout.tsx, which carries the same seam. */}
+          {/* Links, not text: a saved PDF keeps them, so the copy that travels in
+              a group chat is one tap from the application. */}
           <p className="font-bold text-ink">
             Apply, or book a call:{" "}
-            <span className="font-normal text-ink/75">
+            <a
+              href={`${SITE.url}/demo/co-management`}
+              className="font-normal text-ink/75 underline decoration-ink/30 underline-offset-2"
+            >
               {SITE.url.replace("https://", "")}/demo/co-management
-            </span>
+            </a>
           </p>
-          <p className="text-ink/60">Patreon: patreon.com/Mi_gas_</p>
+          <a href={PATREON.url} className="text-ink/60 underline decoration-ink/30 underline-offset-2">
+            Patreon: patreon.com/Mi_gas_
+          </a>
         </footer>
       </div>
     </section>
