@@ -221,6 +221,19 @@ export const CONSULT_TOPICS = [
 ] as const;
 
 /**
+ * What to have open before the call. It sits beside the booking form on
+ * /consulting; it used to sit after the form and after the callback box, which
+ * is to say after anyone needed it.
+ */
+export const HAVE_READY = [
+  "Your last two runs' yields, and what you changed between them.",
+  "Runoff EC and pH if you take them, in and out, for the last week.",
+  "Room temperature, humidity and CO₂ over a 24-hour cycle. Day and night numbers, not averages.",
+  "A wide shot of the canopy plus close-ups of whatever is wrong.",
+  "Your feed chart, even if it is the one off the bottle.",
+] as const;
+
+/**
  * The four Instagram posts and four Patreon posts the home page shows, two by
  * two, per the email. PLACEHOLDER: he has not named the four of each yet. Until
  * he does, the Instagram tiles are three of his own room photographs linking
@@ -386,7 +399,10 @@ export const COMANAGE_APPLY = [
     id: "state",
     label: "State the rooms are in",
     type: "text",
-    placeholder: "Calls are remote; other states are case by case.",
+    // That sentence was the placeholder, which a half-width field cut off at "other
+    // states are c" and which disappeared as soon as the visitor started typing.
+    hint: "Calls are remote. Rooms outside Michigan are case by case.",
+    placeholder: "e.g. Michigan",
     required: true,
   },
   {
@@ -458,7 +474,9 @@ export const INTAKE = [
     id: "facility",
     label: "Your facility: rooms and lights",
     type: "text" as const,
-    placeholder: "e.g. 4 flower rooms and 168 lights, plus a veg and a mother room",
+    // A hint rather than a placeholder when the example is longer than the field.
+    // See the intake loop in components/Booking.tsx for what the placeholder did.
+    hint: "For example: 4 flower rooms and 168 lights, plus a veg and a mother room.",
     required: true,
   },
   {
@@ -472,7 +490,7 @@ export const INTAKE = [
     id: "climate",
     label: "HVAC and dehumidification",
     type: "text" as const,
-    placeholder: "Brand and capacity per room, if you know it",
+    hint: "Brand and capacity per room, if you know it.",
     required: false,
   },
   {
@@ -520,7 +538,7 @@ export const INTAKE = [
     id: "lights",
     label: "Lights: type and wattage per light",
     type: "text" as const,
-    placeholder: "e.g. 8 × 720W LED, or 12 × 1000W DE HPS. Add PPFD or DLI if you have it.",
+    hint: "For example: 8 × 720W LED, or 12 × 1000W DE HPS. Add PPFD or DLI if you have it.",
     required: true,
   },
   {
@@ -538,7 +556,7 @@ export const INTAKE = [
     // them, so the single most useful answer was the one it could not receive.
     label: "Runoff: how much, and EC and pH if you measure them",
     type: "text" as const,
-    placeholder: "e.g. 20% runoff, in 3.0 EC / 5.9 pH, out 4.8 EC / 6.4 pH. Volume alone is useful.",
+    hint: "For example: 20% runoff, in 3.0 EC / 5.9 pH, out 4.8 EC / 6.4 pH. Volume alone is useful.",
     required: false,
   },
   {

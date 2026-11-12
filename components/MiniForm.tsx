@@ -24,6 +24,10 @@ export type MiniField = {
   label: string;
   type?: "text" | "email" | "tel" | "textarea" | "select";
   placeholder?: string;
+  /** Guidance shown under the label and tied to the control with aria-describedby.
+   *  Use it when the text is information rather than an example, or longer than the
+   *  field: a placeholder is cut off at the field's edge and gone at the first key. */
+  hint?: string;
   /** For type "select". Rendered with an empty first option so "no answer" posts
    *  as empty and the server's required check still means something. */
   options?: readonly string[];
@@ -87,6 +91,11 @@ export default function MiniForm({
               {f.label}
               {!f.required && <span className="ml-2 font-normal text-muted">optional</span>}
             </label>
+            {f.hint && (
+              <p id={`${f.id}-hint`} className="mt-1 text-[13px] leading-snug text-muted">
+                {f.hint}
+              </p>
+            )}
             {f.type === "textarea" ? (
               <textarea
                 id={f.id}
@@ -96,6 +105,7 @@ export default function MiniForm({
                 defaultValue={state.values?.[f.id] ?? ""}
                 aria-required={f.required}
                 aria-invalid={!!state.errors?.[f.id]}
+                aria-describedby={f.hint ? `${f.id}-hint` : undefined}
                 className="field mt-2 resize-y"
               />
             ) : f.type === "select" ? (
@@ -105,6 +115,7 @@ export default function MiniForm({
                 defaultValue={state.values?.[f.id] ?? ""}
                 aria-required={f.required}
                 aria-invalid={!!state.errors?.[f.id]}
+                aria-describedby={f.hint ? `${f.id}-hint` : undefined}
                 className="field mt-2"
               >
                 <option value="">Choose…</option>
@@ -123,6 +134,7 @@ export default function MiniForm({
                 defaultValue={state.values?.[f.id] ?? ""}
                 aria-required={f.required}
                 aria-invalid={!!state.errors?.[f.id]}
+                aria-describedby={f.hint ? `${f.id}-hint` : undefined}
                 className="field mt-2"
               />
             )}

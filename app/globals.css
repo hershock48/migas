@@ -76,6 +76,15 @@ textarea:focus-visible,
   @apply rounded-xl2 border border-line bg-ink-panel;
 }
 
+/* The list bullet. Commit 7150362 (2026-11-04) wrote `dot` on five lists across three
+   pages and never defined it, so every one of those bullets was a zero-size span: the
+   KPI list, the call topics and the co-management cadence rendered as indented text
+   with nothing at the indent. Same size and shape as the inline bullets elsewhere on
+   the site; the color comes from the bg- class beside it. */
+.dot {
+  @apply inline-block h-1.5 w-1.5 shrink-0 rounded-full;
+}
+
 .field {
   @apply w-full rounded-lg border border-edge bg-ink px-4 py-3 text-bone
          placeholder:text-muted focus:border-flare;
@@ -89,6 +98,18 @@ select.field {
   background-repeat: no-repeat;
   background-position: right 1rem center;
   background-size: 12px 8px;
+}
+
+/* A FIELDSET IS AS WIDE AS ITS WIDEST CHILD UNLESS TOLD OTHERWISE. Browsers give
+   <fieldset> `min-inline-size: min-content`, so a scroller inside one cannot scroll:
+   the fieldset grows to the scroller's full width instead. The booking wizard's day
+   strip is exactly that, and on a 390px phone it made step 3 524px wide inside a
+   350px card. The page widened to 569px, the phone zoomed out, the second column of
+   times sat off the edge of the card, and the step's own text ran under the border.
+   Every desktop check passed, because at 1440 the strip fits. Zero is the value every
+   other block element already has. */
+fieldset {
+  min-inline-size: 0;
 }
 
 /* The booking wizard hides the steps it is not showing. See components/Booking.tsx —
@@ -251,7 +272,7 @@ select.field {
        More contrast than the disc itself, and hot where the disc's limb is hot. Saturation
        0.73, matching the disc to two decimal places. One layer, no blend mode.
        Verified seamless: the wrap join differs from an adjacent interior row by 0.8/255. */
-    background-image: url("/noise/ember-text.png");
+    background-image: url("/noise/ember-text.webp");
     background-repeat: repeat;
     /* 150% of the line box: big enough that a glyph lands on structure rather than one flat
        patch, small enough that the filaments still read as filaments. */
@@ -522,7 +543,12 @@ select.field {
      and subtracts from it, which is what left a dark gap between the disc and the fire.
      Glowing material has to be additive. */
   mix-blend-mode: screen;
-  background-image: url("/noise/plasma-a.png");
+  /* WebP, lossless, since 2026-11-11. On a throttled phone this texture IS the home
+     page's largest contentful paint, so its bytes are the LCP. The four noise tiles went
+     from 287KB as PNG to 206KB, and every decoded pixel was compared against the PNG it
+     replaced and is identical, so nothing about the sun's look moved. Measured with
+     glaze/scripts/perf-check.mjs; the numbers are in the commit. */
+  background-image: url("/noise/plasma-a.webp");
   background-repeat: repeat;
   background-size: 46% 46%;
   animation: flameOut 7.5s linear infinite;
@@ -535,7 +561,7 @@ select.field {
   animation-delay: 0s;
 }
 .ff-2 {
-  background-image: url("/noise/plasma-b.png");
+  background-image: url("/noise/plasma-b.webp");
   background-size: 30% 30%;
   animation-delay: -2.5s;
 }
@@ -850,7 +876,7 @@ select.field {
 }
 .sun-churn-a {
   opacity: 0.82;
-  background-image: url("/noise/plasma-a.png");
+  background-image: url("/noise/plasma-a.webp");
   /* 9% of a 200%-wide element is 18% of the sun, so the tile repeats about five times
      across the disc. The old 21% put one tile across 42% of the sun and the tendrils
      came out 4-7% of its width; the reference's are 1-2%. */
@@ -892,7 +918,7 @@ select.field {
    change removes the whole class of iOS blend artifacts rather than this one instance. */
 .sun-churn-b {
   opacity: 0.78;
-  background-image: url("/noise/plasma-b-alpha.png");
+  background-image: url("/noise/plasma-b-alpha.webp");
   background-size: 14% 14%;
   animation: sunChurnB 2.1s linear infinite;
 }

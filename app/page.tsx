@@ -1,10 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
+import { preload } from "react-dom";
 import type { Metadata } from "next";
 import Sun from "@/components/Sun";
 import roomBench from "@/public/assets/rooms/bench.webp";
 import roomCanopy from "@/public/assets/rooms/canopy.webp";
 import roomCola from "@/public/assets/rooms/cola.webp";
+import flowerRows from "@/public/assets/rooms/flower-rows.webp";
+import flowerAisle from "@/public/assets/rooms/flower-aisle.webp";
+import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 import rgsOverview from "@/public/assets/rgs/rgs-overview.webp";
 import { MirrorLockup } from "@/components/brand";
 import { SessionCard } from "@/components/cards";
@@ -32,8 +36,46 @@ export const metadata: Metadata = {
  * Nothing else. The reviews page and the close band that used to follow are
  * reachable from the nav and the footer; the home page stops where he said.
  */
+/**
+ * The three photographs under the intro, sent by Kevin on 2026-11-11 and taken from
+ * Jake's camera roll on 2026-11-04. They replaced the lights-off canopy shot, which was
+ * a 720px image stretched to 1120 and mostly black: the hero says "rooms that look like
+ * the ones below", and below was a dark smudge. Converted to WebP with every byte of
+ * metadata dropped (no GPS was present; a licensed facility's location is still not
+ * something to ship by accident). The alt text describes what is in the frame and
+ * claims nothing about which run, strain or week it is, because we do not know.
+ */
+const ROOMS = [
+  { src: flowerRows, alt: "A flower room in late flower: rows of frosted colas under LED light bars, trellis posts down each bed." },
+  { src: flowerAisle, alt: "The same kind of room seen down the aisle, the canopy level from bed to bed." },
+  { src: flowerDepth, alt: "A long bed of flowering plants in the trellis net, the far end of the room out of focus." },
+];
+
 export default function Home() {
+  /* THE LCP IS A CSS BACKGROUND, SO THE BROWSER FINDS IT LATE. On a throttled phone the
+     largest paint on this page is the sun's flame layer, and its texture is a
+     background-image in globals.css: nothing requests it until the stylesheet has
+     arrived and been parsed, about 540ms in on the perf-check profile. This hint puts it
+     in the head, so it starts with the fonts. Home only, because the sun is only here. */
+  preload("/noise/plasma-a.webp", { as: "image", fetchPriority: "high" });
   const igImages = [roomBench, roomCanopy, roomCola];
+  /* THE THREE WAYS IN, WITH THEIR PRICES. Jake's intro is "the sun, his canopy, three
+     ways in", and the three ways were three pill buttons that said what each path was
+     called and nothing about what it cost. His own writing is the brief here: one real
+     number outperforms a paragraph of positioning. Each row now carries its entry price,
+     read from the same constants the sections below use, so the ladder from $100 a month
+     to $2,000 a month is visible before the first scroll. The call is the one in ember,
+     because booking is what the site was built for. */
+  const ways = [
+    { href: "#learn", label: "Learn it", detail: `On Patreon, from $${PATREON.stats.priceFrom} a month`, primary: false },
+    {
+      href: "#call",
+      label: "Book a call",
+      detail: SESSIONS.map((s) => `${s.name.toLowerCase()} ${money(s.price)}`).join(", ").replace(/^./, (c) => c.toUpperCase()),
+      primary: true,
+    },
+    { href: "#co-management", label: "Run it with us", detail: `Co-management from ${money(COMANAGEMENT.tiers[0].monthly)} a month`, primary: false },
+  ];
   return (
     <>
       {/* ── 1. Intro ──────────────────────────────────────────────────────── */}
@@ -53,21 +95,29 @@ export default function Home() {
               with us
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-              Rooms that look like the one below are not luck. They are a program, run the same way every time, by
-              somebody who runs a licensed Michigan facility for a living. You can learn it, you can ask about your own
-              room, or you can run your rooms with us.
+              Rooms that look like the ones below are not luck. They are a program, run the same way every time, by
+              somebody who runs a licensed Michigan facility for a living.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
-              <Link href="#learn" className="btn-ghost">
-                Learn it
-              </Link>
-              <Link href="#call" className="btn-primary">
-                Book a call
-              </Link>
-              <Link href="#co-management" className="btn-ghost">
-                Run it with us
-              </Link>
-            </div>
+            <ul className="mt-9 grid max-w-xl gap-2.5">
+              {ways.map((w) => (
+                <li key={w.href}>
+                  <Link
+                    href={w.href}
+                    className={`group flex items-center gap-4 rounded-xl2 border px-5 py-4 transition-colors ${
+                      w.primary ? "border-ember/70 bg-ember/[0.09] hover:border-flare" : "border-line bg-ink-panel/70 hover:border-edge"
+                    }`}
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className={`block font-display text-lg font-semibold ${w.primary ? "text-flare" : "text-bone"}`}>{w.label}</span>
+                      <span className="mt-0.5 block text-sm text-muted">{w.detail}</span>
+                    </span>
+                    <span aria-hidden className="text-lg text-flare transition-transform duration-150 group-hover:translate-x-1">
+                      &rarr;
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           {/* ONE sun, two placements; the rules on contrast over the disc are in git
@@ -84,20 +134,32 @@ export default function Home() {
         <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 hidden h-[124px] bg-gradient-to-b from-ink via-ink/45 to-transparent lg:-z-10 lg:block" />
       </section>
 
-      {/* The canopy: the picture the statement is about. His own room, late in
-          flower. Text sits beside it, never over it. */}
-      <section className="wrap mt-6 sm:mt-10">
-        <div className="reveal overflow-hidden rounded-xl2 border border-line">
-          <Image src={roomCanopy} alt="The flower canopy at lights-off, colas standing through the trellis net." priority sizes="(min-width: 1152px) 1120px, 100vw" className="aspect-[16/7] h-auto w-full object-cover" />
-        </div>
-        <dl className="reveal mt-6 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
-          {CREDS.map((c) => (
-            <div key={c.label} className="bg-ink-panel px-6 py-6">
-              <dt className="font-display text-2xl font-extrabold text-flare">{c.stat}</dt>
-              <dd className="mt-2 text-sm leading-relaxed text-muted">{c.label}</dd>
+      {/* The rooms: the pictures the statement is about. Text sits beside them, never
+          over them. Three across from a tablet up. On a phone, ONE: the first draft was a
+          swipeable row of all three, and on the throttled phone profile those 316KB raced
+          the sun's textures for the same 1.6Mbps and pushed LCP from 3,120ms to 3,720ms.
+          Hidden lazy images are never fetched, so the other two cost a phone nothing, and
+          both appear elsewhere (consulting, co-management). The results strip that used to
+          sit here is in section 4, where Jake asked for "the KPIs and results"; it ran
+          twice on the page. */}
+      <section aria-label="Our flower rooms" className="wrap mt-6 sm:mt-10">
+        <div className="reveal grid gap-3 md:grid-cols-3">
+          {/* Not priority, and low fetch priority: the largest paint on this page is the
+              sun, and on a phone this photo sits below it, off the first screen. q60
+              because foliage is the worst case for WebP and 75 bought nothing visible. */}
+          {ROOMS.map((r, i) => (
+            <div key={r.alt} className={i === 0 ? "" : "hidden md:block"}>
+              <Image
+                src={r.src}
+                alt={r.alt}
+                quality={60}
+                fetchPriority="low"
+                sizes="(min-width: 1152px) 368px, (min-width: 768px) 32vw, calc(100vw - 2.5rem)"
+                className="aspect-[4/5] h-auto w-full rounded-xl2 border border-line object-cover"
+              />
             </div>
           ))}
-        </dl>
+        </div>
       </section>
 
       {/* ── 2. Patreon and Instagram ──────────────────────────────────────── */}
@@ -122,8 +184,19 @@ export default function Home() {
             <ul className="mt-5 grid grid-cols-2 gap-3">
               {INSTAGRAM_POSTS.map((p, i) =>
                 p.caption === "PLACEHOLDER" ? (
-                  <li key={i} className="flex aspect-square items-center justify-center rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-4 text-center text-xs text-muted">
-                    Fourth post: send the link and it goes here.
+                  /* Until he names a fourth post, the slot is a way through to the
+                     profile. It said "Fourth post: send the link and it goes here.",
+                     which is a note to him printed on his public home page. */
+                  <li key={i}>
+                    <a
+                      href={SITE.instagram}
+                      rel="noopener"
+                      className="flex aspect-square flex-col justify-end rounded-xl2 border border-line bg-ink-panel bg-[radial-gradient(120%_90%_at_100%_0%,rgba(217,94,39,0.32),transparent_62%)] p-5 transition-colors hover:border-flare"
+                    >
+                      <span className="eyebrow">More</span>
+                      <span className="mt-2 font-display text-lg font-bold leading-snug text-bone">See every run on the profile</span>
+                      <span className="mt-2 text-sm font-semibold text-flare">@mi_gas_2.0 &rarr;</span>
+                    </a>
                   </li>
                 ) : (
                   <li key={i}>
@@ -187,19 +260,16 @@ export default function Home() {
 
         <div className="reveal mt-10 grid gap-6 md:grid-cols-2">
           {SESSIONS.map((s, i) => (
-            <SessionCard key={s.slug} session={s} href="/consulting#book" featured={i === 1} />
+            <SessionCard key={s.slug} session={s} featured={i === 1} />
           ))}
         </div>
 
-        <div className="reveal mt-6 flex flex-col gap-6 rounded-xl2 border border-line bg-ink-panel p-7 sm:flex-row sm:items-center sm:justify-between sm:p-8">
-          <p className="max-w-2xl text-[15px] leading-relaxed text-muted">
-            Pick a time from the live calendar, pay, and the invite lands on both calendars with a reminder before the
-            call. Times come off the grid the moment they are taken.
-          </p>
-          <Link href="/consulting#book" className="btn-primary shrink-0">
-            Book a call
-          </Link>
-        </div>
+        {/* This was a third panel with a third "Book a call" button under two cards that
+            each already end in one. The sentence is what it was for. */}
+        <p className="reveal mt-6 max-w-3xl text-[15px] leading-relaxed text-muted">
+          Pick a time from the live calendar, pay, and the invite lands on both calendars with a reminder before the
+          call. Times come off the grid the moment they are taken.
+        </p>
       </section>
 
       {/* ── 4. Co-management ─────────────────────────────────────────────── */}

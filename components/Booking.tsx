@@ -35,6 +35,11 @@ import type { SlotDay } from "@/lib/slots";
  *
  * WHAT IT IS NOT, and no amount of care changes this.
  *
+ * (Dated. Both paragraphs below were true when written. Since 2026-08-27 lib/busy.ts
+ * reads his calendar back and closes taken times, and since 2026-11-04 a card step
+ * exists behind STRIPE_SECRET_KEY, off until the processor question in lib/pay.ts is
+ * settled. The `cardPayment` prop is how this component knows which world it is in.)
+ *
  * It is not a calendar. It does not know what is already booked, it does not sync, and
  * it does not stop two people taking the same 9am four seconds apart. Slots come from a
  * weekly pattern in lib/site.ts. Hand-writing real availability is how you get
@@ -52,18 +57,33 @@ import type { SlotDay } from "@/lib/slots";
  * check per step here, and the same rules again on the server, where they are load-bearing.
  */
 
-type Props = { days: SlotDay[] };
+type Props = {
+  days: SlotDay[];
+  /** A session slug already chosen on the way in, from `?session=` on the link. The
+   *  page checks it against SESSIONS before passing it, so it is a real slug or absent. */
+  initialSession?: string;
+  /** Whether the card step is switched on (STRIPE_SECRET_KEY set). Read on the server
+   *  and passed down, so the copy can say what will actually happen instead of
+   *  describing both outcomes with an "if" a visitor has no way to resolve. */
+  cardPayment?: boolean;
+};
 
 const STEPS = ["Session", "Your room", "Time", "Details"];
 
-export default function Booking({ days }: Props) {
+export default function Booking({ days, initialSession, cardPayment = false }: Props) {
   const [state, action, pending] = useActionState(requestBooking, EMPTY);
   const formRef = useRef<HTMLFormElement>(null);
   const headingRef = useRef<HTMLParagraphElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
 
-  const [step, setStep] = useState(0);
-  const [session, setSession] = useState(state.values?.session ?? "");
+  /* A SESSION PICKED ON THE WAY IN IS KEPT. Every "Book Half hour" and "Book Full hour"
+     button on the site linked to plain /consulting#book, so the choice the visitor had
+     just made was dropped on arrival and step 1 asked them to make it again, with
+     nothing selected. Now the link carries the slug, the radio renders checked (on the
+     server too, so this holds with no script), and the wizard opens on the room
+     questions with a summary line that says what was picked and offers Change. */
+  const [step, setStep] = useState(initialSession && !state.values ? 1 : 0);
+  const [session, setSession] = useState(state.values?.session ?? initialSession ?? "");
   const [slot, setSlot] = useState(state.values?.slot ?? "");
   const [activeDay, setActiveDay] = useState(0);
   const [photos, setPhotos] = useState<{ name: string; size: number; url: string }[]>([]);
@@ -239,11 +259,19 @@ export default function Booking({ days }: Props) {
   }
 
   function back() {
+    goTo(step - 1);
+  }
+
+  /* Back to any finished step, from the stepper or a Change link. Changing the session
+     from step 4 used to take three Backs and three Continues. Only backwards: a step
+     ahead has not been checked yet, and Continue is what checks it. */
+  function goTo(target: number) {
+    if (target < 0 || target >= step) return;
     setTouched(true);
     // Only the step being left, so stepping back does not also erase the server's word on
     // photos or a slot that is no longer bookable.
     setErrors(withStepErrors(step, {}));
-    setStep((s) => Math.max(s - 1, 0));
+    setStep(target);
   }
 
   /* THE HIDDEN SUBMIT BUTTON IS STILL THE FORM'S DEFAULT BUTTON. `.bk-hide` is display:
@@ -390,25 +418,72 @@ export default function Booking({ days }: Props) {
             </p>
             <p className="text-xs text-muted">{openCount} times open</p>
           </div>
-          <div className="mt-3 h-1 overflow-hidden rounded-full bg-line">
-            <div
-              className="h-full rounded-full bg-ember transition-[width] duration-300"
-              style={{ width: `${((step + 1) / STEPS.length) * 100}%` }}
-            />
-          </div>
+          {/* The four steps by name, so what is left is visible before it arrives, and the
+              finished ones are buttons. A bar with no labels said how far along the visitor
+              was and not what came next. */}
+          <ol className="mt-3 grid grid-cols-4 gap-1.5">
+            {STEPS.map((name, i) => {
+              const bar = (
+                <span
+                  aria-hidden
+                  className={`block h-1 rounded-full transition-colors duration-300 ${i <= step ? "bg-ember" : "bg-line"}`}
+                />
+              );
+              return (
+                <li key={name} aria-current={i === step ? "step" : undefined}>
+                  {i < step ? (
+                    <button type="button" onClick={() => goTo(i)} className="group block w-full pb-1 text-left">
+                      {bar}
+                      <span className="mt-2 block truncate text-xs text-muted group-hover:text-flare">
+                        <span className="sr-only">Back to </span>
+                        {name}
+                      </span>
+                    </button>
+                  ) : (
+                    <>
+                      {bar}
+                      <span className={`mt-2 block truncate text-xs ${i === step ? "font-semibold text-bone" : "text-muted"}`}>
+                        {name}
+                      </span>
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ol>
+          {/* What was picked, while the visitor is in the middle steps. Step 4 has the full
+              recap, so this stops there. It matters most when the session came in on the
+              link and step 1 was never seen. */}
+          {chosen && step > 0 && step < STEPS.length - 1 && (
+            <p className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-line bg-ink px-4 py-2.5 text-sm">
+              <span className="text-muted">Booking</span>
+              <span className="font-semibold text-bone">
+                {chosen.name}, {money(chosen.price)}
+              </span>
+              <button type="button" onClick={() => goTo(0)} className="ml-auto py-1 font-semibold text-flare hover:underline">
+                Change<span className="sr-only"> session</span>
+              </button>
+            </p>
+          )}
         </div>
 
         {/* ── 1. Session ─────────────────────────────────────────────────── */}
         <fieldset className={`bk-step mt-8 ${step === 0 ? "" : "bk-hide"}`}>
           <legend className="text-xl text-bone">How much time do you need?</legend>
           <p className="mt-2 text-sm text-muted">
-            A half hour or a full hour. You pay when you book, or by invoice if the card step is not showing.
+            A half hour or a full hour.{" "}
+            {cardPayment ? "You pay when you book." : "We send the invoice with the confirmation."}
           </p>
           <div className="mt-6 grid gap-3">
             {SESSIONS.map((s) => (
               // The selected ring comes from :has(:checked), not from React state. Both
               // agree while the script is running; only CSS is still right when it is not,
               // because a native radio click checks the input either way.
+              //
+              // The whole card is the label, so a tap anywhere selects it, but the radio's
+              // NAME is just the session and price (aria-labelledby) and the rest is its
+              // description. Everything inside a label otherwise becomes the name, and a
+              // screen reader would read three sentences and a list as a button label.
               <label
                 key={s.slug}
                 className="flex cursor-pointer gap-4 rounded-xl2 border border-edge p-5 transition-colors hover:border-bone/40 has-[:checked]:border-flare has-[:checked]:bg-ember/[0.07]"
@@ -417,6 +492,8 @@ export default function Booking({ days }: Props) {
                   type="radio"
                   name="session"
                   value={s.slug}
+                  aria-labelledby={`bk-${s.slug}-name`}
+                  aria-describedby={`bk-${s.slug}-desc`}
                   checked={session === s.slug}
                   onChange={() => {
                     setSession(s.slug);
@@ -428,16 +505,30 @@ export default function Booking({ days }: Props) {
                   }}
                   className="mt-1 h-5 w-5 shrink-0 accent-ember"
                 />
-                <span className="flex-1">
-                  <span className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
+                <span className="min-w-0 flex-1">
+                  <span id={`bk-${s.slug}-name`} className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                     <span className="font-display text-lg font-bold text-bone">{s.name}</span>
                     <span className="text-sm text-muted">
                       {s.minutes} min &middot;{" "}
                       <span className="font-semibold text-flare">{money(s.price)}</span>
                     </span>
                   </span>
-                  <span className="mt-2 block text-sm leading-relaxed text-bone/85">{s.summary}</span>
-                  <span className="mt-1.5 block text-sm leading-relaxed text-muted">{s.forWho}</span>
+                  <span id={`bk-${s.slug}-desc`} className="block">
+                    <span className="mt-2 block text-sm leading-relaxed text-bone/85">{s.summary}</span>
+                    <span className="mt-1.5 block text-sm leading-relaxed text-muted">{s.forWho}</span>
+                    {/* What a session includes. These lived on separate price cards above the
+                        form on /consulting, which asked the visitor to choose once on the
+                        cards and again here. Spans rather than a list: a label may only hold
+                        phrasing content. */}
+                    <span className="mt-3 block space-y-1 border-t border-line pt-3">
+                      {s.includes.map((x) => (
+                        <span key={x} className="flex gap-2 text-[13px] leading-relaxed text-muted">
+                          <span aria-hidden className="mt-[8px] h-1 w-1 shrink-0 rounded-full bg-ember" />
+                          {x}
+                        </span>
+                      ))}
+                    </span>
+                  </span>
                 </span>
               </label>
             ))}
@@ -456,12 +547,23 @@ export default function Booking({ days }: Props) {
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
             {INTAKE.map((q) => {
               const wide = q.type === "textarea";
+              /* A worked example longer than the field is a hint under the label, not a
+                 placeholder. Placeholders were cut off mid-word in a half-width field ("e.g.
+                 8 × 720W LED, or 12 × 1000W I") and vanish at the first keystroke, which is
+                 when somebody checking the format needs them. */
+              const hint = "hint" in q ? q.hint : undefined;
+              const described = hint ? `${q.id}-hint` : undefined;
               return (
                 <div key={q.id} className={wide ? "sm:col-span-2" : ""}>
                   <label htmlFor={q.id} className="block text-sm font-semibold text-bone">
                     {q.label}
                     {!q.required && <span className="ml-2 font-normal text-muted">optional</span>}
                   </label>
+                  {hint && (
+                    <p id={described} className="mt-1 text-[13px] leading-snug text-muted">
+                      {hint}
+                    </p>
+                  )}
                   {q.type === "select" ? (
                     <select
                       id={q.id}
@@ -469,6 +571,7 @@ export default function Booking({ days }: Props) {
                       defaultValue={state.values?.[q.id] ?? ""}
                       aria-required={q.required}
                       aria-invalid={!!errors[q.id]}
+                      aria-describedby={described}
                       className="field mt-2"
                     >
                       <option value="">Choose one</option>
@@ -487,6 +590,7 @@ export default function Booking({ days }: Props) {
                       defaultValue={state.values?.[q.id] ?? ""}
                       aria-required={q.required}
                       aria-invalid={!!errors[q.id]}
+                      aria-describedby={described}
                       className="field mt-2 resize-y"
                     />
                   ) : (
@@ -498,6 +602,7 @@ export default function Booking({ days }: Props) {
                       defaultValue={state.values?.[q.id] ?? ""}
                       aria-required={q.required}
                       aria-invalid={!!errors[q.id]}
+                      aria-describedby={described}
                       className="field mt-2"
                     />
                   )}
@@ -555,11 +660,12 @@ export default function Booking({ days }: Props) {
 
         {/* ── 3. Time ────────────────────────────────────────────────────── */}
         <fieldset className={`bk-step mt-8 ${step === 2 ? "" : "bk-hide"}`}>
-          <legend className="text-xl text-bone">Pick a time.</legend>
+          <legend className="text-xl text-bone">Pick a time</legend>
+          {/* One timezone, labeled, rather than converted to the visitor's: a call missed by
+              an hour costs more than reading a label does. That reasoning used to be printed
+              here for the visitor too. They need the timezone, not the argument for it. */}
           <p className="mt-2 text-sm leading-relaxed text-muted">
-            All times {AVAILABILITY.timeZoneLabel}. Shown in one timezone and labelled,
-            rather than converted to yours. A call missed by an hour costs more than
-            reading a label does.
+            All times are {AVAILABILITY.timeZoneLabel}.
             {chosen && (
               <>
                 {" "}
@@ -672,27 +778,36 @@ export default function Booking({ days }: Props) {
           </div>
         </fieldset>
 
-        {/* Step controls. Removed entirely when there is no script to run them. */}
-        <div className="bk-nav mt-8 flex flex-wrap items-center gap-3">
-          {step > 0 && (
-            <button type="button" onClick={back} className="btn-ghost">
-              Back
-            </button>
-          )}
-          {step < STEPS.length - 1 && (
+        {/* Step controls. Removed entirely when there is no script to run them. The last
+            step has its own row below, with Back beside the submit: on its own line here,
+            Back sat alone above a full-width button and read as the main action. */}
+        {step < STEPS.length - 1 && (
+          <div className="bk-nav mt-8 flex flex-wrap items-center gap-3">
+            {step > 0 && (
+              <button type="button" onClick={back} className="btn-ghost">
+                Back
+              </button>
+            )}
             <button type="button" onClick={next} className="btn-primary">
               Continue
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         <div className={`bk-send mt-8 ${step === STEPS.length - 1 ? "" : "bk-hide"}`}>
-          <button type="submit" disabled={pending || resizing} className="btn-primary w-full sm:w-auto disabled:opacity-60">
-            {pending ? "Sending…" : "Send booking request"}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            {/* bk-nav, so the no-script stylesheet removes it with the other step controls:
+                with every step on one page there is nothing to go back to. */}
+            <button type="button" onClick={back} className="bk-nav btn-ghost">
+              Back
+            </button>
+            <button type="submit" disabled={pending || resizing} className="btn-primary flex-1 disabled:opacity-60 sm:flex-none">
+              {pending ? "Sending…" : "Send booking request"}
+            </button>
+          </div>
           <p className="mt-4 max-w-xl text-xs leading-relaxed text-muted">
-            The invite lands on both calendars straight away, with a reminder the day before. Payment follows on the
-            next screen, or by invoice if the card step is not switched on.
+            The invite lands on both calendars straight away, with a reminder the day before.{" "}
+            {cardPayment ? "You pay on the next screen to hold the time." : "We send the invoice with the confirmation."}
           </p>
         </div>
 
