@@ -7,7 +7,7 @@ import { SITE } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Connect",
   description:
-    "Ask a question, join the Patreon, or book a consult. One form that reaches us, and it tells you what it is for.",
+    "Send MI Gas a question, or find us on Patreon and Instagram.",
 };
 
 /**
@@ -23,14 +23,14 @@ const CHANNELS = [
   {
     name: "Patreon",
     href: SITE.patreon,
-    label: "The community, the back catalog and the tier posts.",
+    label: "The guides and the back catalog of posts.",
   },
   {
     name: "Instagram",
     href: SITE.instagram,
     // Worth knowing and easy to lose: his own site links the lowercase handle, which
     // 403s. The capital M is the working one, and it lives in lib/site.ts.
-    label: "Day to day from the room. The handle here is the one that resolves.",
+    label: "Photos from our rooms, run after run.",
   },
 ];
 
@@ -43,15 +43,15 @@ export default function Connect() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Connect</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            A route that <span className="text-flare">actually reaches</span> us
+            Send us a <span className="text-flare">question</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
-            Booking a consult? Go through{" "}
+            To book a call, use the{" "}
             <Link href="/consulting#book" className="text-flare hover:underline">
-              consulting
+              consulting page
             </Link>
-            . The intake means we arrive at the call already knowing your room.
-            Everything else lands here.
+            , since the booking form has the room questions. For anything else, this form
+            comes straight to us.
           </p>
         </div>
       </section>
@@ -61,8 +61,8 @@ export default function Connect() {
           <div className="card p-7 sm:p-9">
             <h2 className="text-2xl text-bone">Ask a question</h2>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              A topic helps it get answered faster. &ldquo;Does the Veg Guide cover coco?&rdquo;
-              beats &ldquo;question&rdquo;.
+              Adding a topic helps us answer faster, for example &ldquo;Does the veg guide
+              cover coco?&rdquo;
             </p>
             <MiniForm
               className="mt-7"
@@ -76,13 +76,13 @@ export default function Connect() {
                   id: "message",
                   label: "What do you need?",
                   type: "textarea",
-                  placeholder: "The more specific, the better the answer.",
+                  placeholder: "Numbers and photos of the room help.",
                   required: true,
                   wide: true,
                 },
               ]}
               submit="Send"
-              note="Goes to the same inbox the bookings land in. No list, no newsletter."
+              note="It goes to the same inbox as bookings. We won't add you to a mailing list."
             />
           </div>
         </div>
@@ -119,9 +119,9 @@ export default function Connect() {
                  biggest fault on the live site and this page should say so out loud rather
                  than quietly omit the field. */
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                No published address yet. This is the one thing on the whole site that costs
-                real money to leave missing: an operator who will not DM a stranger has no way
-                to reach us at all. One address, and this becomes a link.
+                There&rsquo;s no email address on the site yet. Growers who won&rsquo;t DM a
+                stranger have no other way to reach you, so this is the first thing to fix. Send us
+                the address and this turns into a link.
               </p>
             )}
           </div>

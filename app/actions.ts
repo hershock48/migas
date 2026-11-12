@@ -262,9 +262,9 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       `Price:     ${money(session!.price)}`,
       `Reference: ${ref}`,
       "",
-      payUrl ? `Pay for the call here: ${payUrl}` : "He will confirm the time by reply along with an invoice to settle beforehand.",
+      payUrl ? `Pay for the call here: ${payUrl}` : "We'll confirm the time by reply and send an invoice to pay before the call.",
       "",
-      "He reads your facility profile and your photos before the call.",
+      "We read your facility profile and photos before the call.",
       stored ? "A reminder goes out the day before." : "",
       "",
       "A calendar invite is attached.",
@@ -350,7 +350,7 @@ export async function requestCoManagement(_prev: FormState, fd: FormData): Promi
     delivered: { toOwner, toVisitor: true },
     summary: [
       toOwner
-        ? "Application received. We read it against the program and come back with a call and a number, or an honest no."
+        ? "Got it. We'll read it and get back to you about a call and a price, or tell you why it isn't a fit yet."
         : "Sent. Outgoing mail is not switched on for this build yet.",
     ],
   };
@@ -436,7 +436,7 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
     delivered: { toOwner, toVisitor: true },
     summary: [
       toOwner
-        ? "Message sent. He answers from the same inbox the bookings land in."
+        ? "Sent. We answer from the same inbox as bookings."
         : "Sent. Outgoing mail is not switched on for this build yet.",
     ],
   };

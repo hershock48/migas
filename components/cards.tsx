@@ -14,23 +14,16 @@ import { money, type SessionType } from "@/lib/site";
 export function SessionCard({
   session,
   href,
-  featured = false,
 }: {
   session: SessionType;
   href?: string;
-  featured?: boolean;
 }) {
+  /* No "Most booked" badge. The full hour wore one from 2026-11-04, on a site that had
+     not taken a single booking: social proof we made up, on the site of an owner who
+     tells his audience to distrust exactly that. If a badge ever comes back it reads a
+     real count. */
   return (
-    <div
-      className={`card relative flex flex-col p-6 ${
-        featured ? "border-ember/60" : ""
-      }`}
-    >
-      {featured && (
-        <span className="absolute -top-3 left-6 rounded-full bg-ember px-3 py-1 text-[11px] font-bold uppercase tracking-[0.14em] text-ink">
-          Most booked
-        </span>
-      )}
+    <div className="card relative flex flex-col p-6">
       <p className="eyebrow">{session.minutes} minutes</p>
       <h3 className="mt-2 text-xl text-bone">{session.name}</h3>
       <p className="mt-3 font-display text-3xl font-extrabold text-bone">
@@ -84,11 +77,11 @@ export function ReviewCard({
       <figure className="flex flex-col rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-6">
         <p className="eyebrow">To supply</p>
         <blockquote className="mt-3 flex-1 text-sm leading-relaxed text-muted">
-          A real review goes here, as text. The six on the current site are screenshots,
-          which means search engines and screen readers cannot read a word of them.
+          A review goes here as text. The six on your current site are images, so search
+          engines and screen readers can&rsquo;t read them.
         </blockquote>
         <figcaption className="mt-4 text-xs text-muted/80">
-          Transcribe from the review images, with whatever attribution the reviewer agreed to.
+          Copy it from the review image, with whatever name the reviewer agreed to.
         </figcaption>
       </figure>
     );

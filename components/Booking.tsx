@@ -310,11 +310,11 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
     return (
       <div ref={doneRef} className="card p-8 sm:p-10" aria-live="polite">
         <p className="eyebrow">Request sent</p>
-        <h3 className="mt-4 text-3xl">We have your room before you dial in</h3>
+        <h3 className="mt-4 text-3xl">Thanks, we&rsquo;ve got it</h3>
         <p className="mt-4 max-w-xl leading-relaxed text-muted">
           {state.payUrl
-            ? "Your facility profile is with us now. Pay below to hold the time; we read everything before the call."
-            : "Your facility profile is with us now. We read it before the call, and confirm the time by email, along with the invoice to settle beforehand."}
+            ? "We'll read your profile and photos before the call. Pay below to hold the time."
+            : "We'll read your profile and photos before the call. We'll confirm the time by email and send the invoice with it."}
           {state.reminder ? " A reminder goes out the day before." : ""}
         </p>
         {state.payUrl && (
@@ -367,8 +367,8 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             directly under a line promising an email. Verified in all three states. */}
         {state.delivered && !state.delivered.toOwner && (
           <p className="mt-4 text-xs text-muted">
-            Outgoing mail to his inbox is not switched on for this build yet, so the
-            request has not reached him. The reference above is your record of it.
+            Email isn&rsquo;t switched on for this site yet, so this request hasn&rsquo;t
+            reached us. Keep the reference above.
           </p>
         )}
       </div>
@@ -540,8 +540,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
         <fieldset className={`bk-step mt-8 ${step === 1 ? "" : "bk-hide"}`}>
           <legend className="text-xl text-bone">Tell us about the room</legend>
           <p className="mt-2 max-w-xl text-sm leading-relaxed text-muted">
-            This is the part that makes the call worth what it costs. We read it
-            beforehand, so the hour goes on your room.
+            This is the part we read before we talk.
           </p>
 
           <div className="mt-6 grid gap-5 sm:grid-cols-2">
@@ -619,10 +618,9 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
               <span className="ml-2 font-normal text-muted">strongly recommended</span>
             </label>
             <p className="mt-2 text-sm leading-relaxed text-muted">
-              Up to {PHOTO_LIMITS.count}. Wide shot of the canopy, a close-up of whatever is
-              wrong, and your reservoir or controller if the problem is feed-related.
-              They are resized on your device before upload. Nothing here needs your
-              full-resolution camera roll.
+              Up to {PHOTO_LIMITS.count}: a wide shot of the canopy, close-ups of whatever is
+              wrong, and your reservoir or controller if it&rsquo;s a feed problem. Photos
+              are shrunk on your phone before they upload, so they won&rsquo;t take long.
             </p>
             <input
               id="photos"
@@ -813,7 +811,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
 
         {state.status === "error" && (
           <p role="alert" className="mt-6 text-sm text-alert">
-            Something above needs fixing before this can go.
+            Something above needs fixing before this can send.
           </p>
         )}
       </form>

@@ -12,7 +12,7 @@ import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 export const metadata: Metadata = {
   title: "Co-Management",
   description:
-    "Facility co-management: irrigation and environment steered remotely off your sensor data, scheduling planned with your labor, priced by the room count or the light count, whichever is higher. Your head grower runs the floor.",
+    "Co-management for commercial grows: we steer irrigation and climate remotely off your sensor data while your head grower runs the floor. Four tiers, set by flower rooms or lights.",
   /**
    * This page gets its own link card, because it is the page that gets forwarded:
    * into a facility's ownership group, and into the division conversations. Next
@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `Co-Management - ${SITE.name}`,
     description:
-      "Irrigation and environment steered remotely off your own sensor data. Your head grower runs the floor. Four tiers by rooms or lights.",
+      "We steer irrigation and climate remotely off your sensor data while your head grower runs the floor. Four tiers, set by flower rooms or lights.",
     url: `${SITE.url}/demo/co-management`,
     images: [
       {
@@ -57,13 +57,9 @@ export default function CoManagement() {
           <div className="reveal max-w-3xl">
             <p className="eyebrow">Co-management</p>
             <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-              Your room, run on <span className="text-flare">our program</span>
+              Co-management for commercial <span className="text-flare">flower rooms</span>
             </h1>
-            <p className="mt-6 text-lg leading-relaxed text-bone/85">
-              We steer the irrigation and the environment remotely, off your own sensor
-              data, run by run. Your head grower runs the floor. The room gets the
-              program a licensed facility runs without hiring its director.
-            </p>
+            <p className="mt-6 text-lg leading-relaxed text-bone/85">{COMANAGEMENT.intro}</p>
             <div className="mt-9 flex flex-wrap gap-3">
               {/* The full hour, already chosen: its own description names "a facility
                   weighing co-management". */}
@@ -86,7 +82,7 @@ export default function CoManagement() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">What we run</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Four things we take over</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">What we take over</h2>
         </div>
         <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
           <div className="reveal grid gap-6 sm:grid-cols-2">
@@ -121,9 +117,8 @@ export default function CoManagement() {
               <p className="eyebrow">The record</p>
               <h2 className="mt-4 text-3xl sm:text-4xl">The numbers behind the program</h2>
               <p className="mt-4 text-lg leading-relaxed text-muted">
-                All three are ours, from our own published posts, and the rooms they came
-                out of are photographed run after run so you can check the claim against
-                the pictures.
+                All three come from our own published posts, and the rooms are on
+                Instagram run after run, so you can check the numbers against the pictures.
               </p>
             </div>
             <dl className="reveal mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-3">
@@ -139,8 +134,8 @@ export default function CoManagement() {
             <div className="reveal mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
               <p className="eyebrow">Your figures, needing a re-check</p>
               <p className="mt-2 text-[15px] leading-relaxed text-muted">
-                Same three as the home page, same ask: the posts they came from are dated,
-                so confirm they still hold before launch.
+                These are the same three as on the home page. The posts they come from are
+                dated, so please confirm the numbers still hold before launch.
               </p>
             </div>
           </div>
@@ -157,7 +152,7 @@ export default function CoManagement() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Price breakdown</p>
-          <h2 className="mt-3 text-2xl text-bone sm:text-3xl">Four tiers, by rooms or lights, whichever is higher</h2>
+          <h2 className="mt-3 text-2xl text-bone sm:text-3xl">Priced by flower rooms or lights, whichever is higher</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-muted">{COMANAGEMENT.rule}</p>
         </div>
         <div className="reveal mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -201,8 +196,8 @@ export default function CoManagement() {
           <p className="eyebrow">The conditions</p>
           <h2 className="mt-4 text-3xl sm:text-4xl">What your room has to bring</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            Two, and both are firm. Remote steering without them is guessing with extra
-            steps, and we will not sell you that.
+            We don&rsquo;t take on a room without both, because we can&rsquo;t steer it
+            remotely without them.
           </p>
         </div>
         <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
@@ -227,21 +222,21 @@ export default function CoManagement() {
             <p className="eyebrow">Apply</p>
             <h2 className="mt-4 text-3xl sm:text-4xl">Tell us about the room</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
-              Light count and sensors are what price a room; the rest is what the
-              first call is built from. We read it against the program and come back
-              with a call, the tier your facility lands in, and a start date, or an honest no.
+              Your light count and sensors set the price, and the rest helps us plan the
+              first call. We&rsquo;ll read it and get back to you with a call, your tier and
+              a start date, or tell you why it isn&rsquo;t a fit yet.
             </p>
             <p className="mt-4 text-sm leading-relaxed text-muted">
-              Rather talk before you type?{" "}
+              If you&rsquo;d rather talk first,{" "}
               <Link href="/consulting#call" className="text-flare hover:underline">
-                Leave a number and we call you
+                leave a number and we&rsquo;ll call you
               </Link>
               .
             </p>
             <p className="mt-3 text-sm leading-relaxed text-muted">
-              Deciding with partners?{" "}
+              If you&rsquo;re deciding with partners,{" "}
               <Link href="/co-management/one-pager" className="text-flare hover:underline">
-                The whole model prints on one page
+                the whole model fits on one printable page
               </Link>
               .
             </p>
@@ -252,7 +247,7 @@ export default function CoManagement() {
             columns={2}
             fields={COMANAGE_APPLY as readonly MiniField[]}
             submit="Send the application"
-            note="Goes straight to us, nowhere else. Answers that miss a condition still send; we would rather tell you what the room needs than bounce you at a form."
+            note="This comes straight to us. You can send it even if you don't meet a condition yet, and we'll tell you what the room would need."
           />
         </div>
       </section>
@@ -289,11 +284,11 @@ export default function CoManagement() {
       <section className="wrap mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Start with a call</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">The first call prices the room</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">The first call sets your tier</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            Light count, sensors, media and where the room is losing money. Bring those
-            and the call ends with the tier your facility lands in and a start date, or with an honest
-            reason it is not a fit yet.
+            Bring your light count, your sensors, your media, and where you think the room
+            is losing money. By the end of the call you&rsquo;ll know your tier and a start
+            date, or why it isn&rsquo;t a fit yet.
           </p>
           <div className="mt-9 flex flex-wrap gap-3">
             <Link href="/consulting?session=hour#book" className="btn-primary">

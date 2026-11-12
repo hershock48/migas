@@ -6,7 +6,7 @@ import { REVIEWS } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Reviews",
   description:
-    "What growers say after working through the programs and after a consult. Published as text, so they can actually be read.",
+    "Reviews from growers who have worked with MI Gas.",
 };
 
 /**
@@ -30,11 +30,10 @@ export default function Reviews() {
         <div className="reveal max-w-3xl">
           <p className="eyebrow">Reviews</p>
           <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-            What growers say <span className="text-flare">after</span>
+            What growers <span className="text-flare">say</span>
           </h1>
           <p className="mt-6 text-lg leading-relaxed text-bone/85">
-            Published as text rather than screenshots, so a search engine can index
-            them, a screen reader can read them, and you can quote one back at us.
+            From growers who have taken a call with us or learned from the guides.
           </p>
         </div>
       </section>
@@ -50,9 +49,9 @@ export default function Reviews() {
           <div className="reveal mt-10 max-w-2xl rounded-xl2 border border-alert/40 bg-alert/[0.06] p-6">
             <p className="text-sm font-semibold text-alert">Note for MI Gas</p>
             <p className="mt-2 text-[15px] leading-relaxed text-bone/90">
-              Your six existing reviews live on the current site as images. Send the text and
-              they go here as text, with structured data so they can show up under your name
-              in search results. Until then this page stays honest and empty.
+              Your six reviews are images on the current site. Send us the text and we&rsquo;ll
+              put them here, marked up so they can show in search results under your name.
+              Until then this page stays empty.
             </p>
           </div>
         )}
@@ -63,7 +62,7 @@ export default function Reviews() {
           <div className="max-w-xl">
             <h2 className="text-2xl text-bone">Worked with us?</h2>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Say so, and say what changed. Specific beats glowing.
+              Tell us what changed in your room. Numbers help.
             </p>
           </div>
           <Link href="/connect" className="btn-primary shrink-0">

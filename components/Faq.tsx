@@ -34,7 +34,7 @@ export default function Faq({ items }: { items: readonly { q: string; a: string 
             </summary>
             {pending ? (
               <div className="mt-3 max-w-2xl rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-                <p className="eyebrow">Draft, awaiting his answer</p>
+                <p className="eyebrow">Draft: needs your answer</p>
                 <p className="mt-2 text-[15px] leading-relaxed text-muted">{answer}</p>
               </div>
             ) : (

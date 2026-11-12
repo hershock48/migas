@@ -13,7 +13,7 @@ import roomAisle from "@/public/assets/rooms/flower-aisle.webp";
 export const metadata: Metadata = {
   title: "Consulting",
   description:
-    "Book a cultivation consult: a half hour at $250 or a full hour at $400. Fill in your facility profile and photos first; they are read before you dial in.",
+    "Book a cultivation consult: a half hour at $250 or a full hour at $400. You fill in a short profile of your room first, and we read it ahead of time.",
 };
 
 /**
@@ -61,6 +61,7 @@ export default async function Consulting({
   // A session chosen on the link that brought them here (the home page's price cards).
   // Only a real slug gets through; anything else opens the wizard at step 1 as before.
   const initialSession = SESSIONS.some((s) => s.slug === sp.session) ? sp.session : undefined;
+  const cardPayment = payConfigured();
 
   return (
     <>
@@ -69,13 +70,12 @@ export default async function Consulting({
           <div className="reveal">
             <p className="eyebrow">Consulting</p>
             <h1 className="mt-5 text-[2.4rem] leading-[1.05] sm:text-6xl">
-              A call that starts at the <span className="text-flare">diagnosis</span>
+              Talk through your room <span className="text-flare">with us</span>
             </h1>
             <p className="mt-6 max-w-2xl text-lg leading-relaxed text-bone/85">
-              Most paid consults spend their first twenty minutes on questions a form could
-              have asked. This one asks them first: stage, canopy, media, feed, lights,
-              runoff. It takes your photos with them too, so the time you pay for is spent
-              on the answer.
+              When you book, you fill in a short profile of your room, with the stage,
+              canopy, media, feed, lights and runoff, and add a few photos. We read it ahead
+              of time, so you don&rsquo;t spend the call answering setup questions.
             </p>
             {/* What a call is for, in his words from the 2026-11-04 email. It had its own
                 section further down, under a pair of price cards that repeated step 1 of
@@ -145,10 +145,10 @@ export default async function Consulting({
       <section id="book" className="wrap mt-24 scroll-mt-20 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Book</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">Bring the room with you</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Book a call</h2>
           <p className="mt-4 text-lg leading-relaxed text-muted">
-            Four steps. The middle two are the ones that matter. They are what we
-            read before you speak.
+            Pick a session, describe the room, pick a time, and tell us where to send the
+            invite.
           </p>
         </div>
         <div className="mt-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-10">
@@ -171,10 +171,10 @@ export default async function Consulting({
               <ReadyList />
             </details>
             <div className="card hidden p-6 lg:block">
-              <p className="eyebrow">Have it ready</p>
-              <h3 className="mt-3 text-xl leading-snug text-bone">Five minutes now saves twenty on the call</h3>
+              <p className="eyebrow">Checklist</p>
+              <h3 className="mt-3 text-xl leading-snug text-bone">What to have ready</h3>
               <p className="mt-3 text-sm leading-relaxed text-muted">
-                The form asks for some of this. The rest is worth having open on the call.
+                The form asks for some of this. Have the rest handy for the call.
               </p>
               <ReadyList />
             </div>
@@ -196,15 +196,15 @@ export default async function Consulting({
             {/* Keyed on the session so a link that changes it while the visitor is already
                 on this page (the hero prices) remounts the wizard with the new choice.
                 Same route, new search params: without the key React keeps the old state. */}
-            <Booking key={initialSession ?? "open"} days={days} initialSession={initialSession} cardPayment={payConfigured()} />
+            <Booking key={initialSession ?? "open"} days={days} initialSession={initialSession} cardPayment={cardPayment} />
             {/* The two prices are his, from the 2026-11-04 email. What is still ours: the
                 lines under each session in step 1, which used to be bullets on price cards. */}
             <div className="mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
               <p className="eyebrow">One thing to confirm</p>
               <p className="mt-2 text-[15px] leading-relaxed text-muted">
-                The prices are yours. The lines under each session, written actions after the call and the follow-up
-                thread, are still our draft of what a session includes: confirm them or trim them, because each one is a
-                promise made in your name.
+                The prices are yours. The lines under each session (written actions after the call, the follow-up
+                thread) are still our draft of what a session includes. Please confirm them or cut them, since each one
+                is something you&rsquo;d be promising.
               </p>
             </div>
           </div>
@@ -220,13 +220,13 @@ export default async function Consulting({
       <section id="call" className="wrap mt-24 scroll-mt-24 sm:mt-32">
         <div className="reveal grid gap-10 rounded-xl2 border border-line bg-ink-panel p-7 sm:p-10 lg:grid-cols-[1fr_1fr] lg:gap-16">
           <div>
-            <p className="eyebrow">Not sure yet?</p>
-            <h2 className="mt-4 text-2xl sm:text-3xl">Rather just talk first</h2>
+            <p className="eyebrow">Call back</p>
+            <h2 className="mt-4 text-2xl sm:text-3xl">Talk to us before you book</h2>
             <p className="mt-4 text-[15px] leading-relaxed text-muted">
-              The booking above works best when you already know what the room needs
-              from you. If you are not there yet, or you would rather size us up by
-              voice, leave a way to reach you and we call you. No intake to fill in,
-              and if a full consult is the right next step we say so on the phone.
+              If you&rsquo;re not sure what you need yet, or you&rsquo;d rather talk to
+              someone first, leave a number or an email and we&rsquo;ll call you.
+              There&rsquo;s nothing to fill in, and if a paid call makes sense we&rsquo;ll
+              tell you on the phone.
             </p>
           </div>
           <MiniForm
@@ -244,7 +244,7 @@ export default async function Consulting({
               },
             ]}
             submit="Have us call you"
-            note="One of phone or email is enough. This goes to the same inbox the bookings land in."
+            note="Phone or email, either one works. It goes to the same inbox as bookings."
           />
         </div>
       </section>
@@ -257,12 +257,14 @@ export default async function Consulting({
         </div>
         {/* The draft-vs-answered rendering moved to components/Faq.tsx, reasoning
             included, the day /co-management grew its own question list. */}
-        <Faq items={FAQ} />
+        {/* "How do I pay?" has two true answers, and which one depends on whether the
+            card step is on. The visitor gets the one that is true today. */}
+        <Faq items={FAQ.map((f) => ({ q: f.q, a: (!cardPayment && "aInvoice" in f && f.aInvoice) || f.a }))} />
         <p className="reveal mt-8 text-sm text-muted">
-          Times shown across the site are {AVAILABILITY.timeZoneLabel}. Something not
-          covered?{" "}
+          All times on the site are {AVAILABILITY.timeZoneLabel}. If your question
+          isn&rsquo;t here,{" "}
           <Link href="/connect" className="text-flare hover:underline">
-            Ask us directly
+            send it to us
           </Link>
           .
         </p>

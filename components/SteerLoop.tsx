@@ -92,8 +92,8 @@ export default function SteerLoop({
       <figcaption
         className={`mt-3 max-w-[38ch] text-sm leading-relaxed ${paper ? "text-ink/70" : "text-muted"}`}
       >
-        Your sensors report, we set the day&rsquo;s numbers, your head grower runs them.
-        Then the room answers, and the loop goes again.
+        Your sensors report, we set the day&rsquo;s numbers, and your head grower runs
+        them. Then we see how the room responded and adjust.
       </figcaption>
     </figure>
   );

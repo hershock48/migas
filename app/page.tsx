@@ -17,7 +17,7 @@ import { COMANAGEMENT, CONSULT_TOPICS, CREDS, INSTAGRAM_POSTS, PATREON, PATREON_
 export const metadata: Metadata = {
   title: `${SITE.tagline}`,
   description:
-    "Learn it on Patreon and Instagram, book a half hour or an hour with a cultivator who runs a licensed Michigan facility, or put your rooms on co-management with weekly review.",
+    "Cultivation advice from a licensed Michigan facility: guides on Patreon from $100 a month, consulting calls at $250 and $400, and co-management from $2,000 a month.",
 };
 
 /**
@@ -95,8 +95,8 @@ export default function Home() {
               with us
             </h1>
             <p className="mt-6 max-w-xl text-lg leading-relaxed text-bone/85">
-              Rooms that look like the ones below are not luck. They are a program, run the same way every time, by
-              somebody who runs a licensed Michigan facility for a living.
+              Rooms like the ones below come from a program run the same way every time. We run one at a licensed
+              facility in Michigan, and we teach it.
             </p>
             <ul className="mt-9 grid max-w-xl gap-2.5">
               {ways.map((w) => (
@@ -166,7 +166,7 @@ export default function Home() {
       <section id="learn" className="wrap mt-24 scroll-mt-24 sm:mt-32">
         <div className="reveal max-w-2xl">
           <p className="eyebrow">Learn it</p>
-          <h2 className="mt-4 text-3xl sm:text-4xl">The work is public. The method is on Patreon.</h2>
+          <h2 className="mt-4 text-3xl sm:text-4xl">Instagram and Patreon</h2>
         </div>
         <div className="mt-12 grid gap-10 lg:grid-cols-2 lg:gap-14">
           {/* Instagram */}
@@ -178,8 +178,8 @@ export default function Home() {
               </a>
             </div>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              The foundation. Every run photographed in the same rooms, one after another, is the work that built the
-              name. Scroll it and check the results against the writing.
+              We post every run from the same rooms, one after another, so you can scroll back and check the results
+              against what we write.
             </p>
             <ul className="mt-5 grid grid-cols-2 gap-3">
               {INSTAGRAM_POSTS.map((p, i) =>
@@ -218,9 +218,9 @@ export default function Home() {
               </a>
             </div>
             <p className="mt-3 text-[15px] leading-relaxed text-muted">
-              Where you learn it, from {SITE.name} and other working pros: video SOPs and full clone-to-harvest guides.{" "}
-              {PATREON.stats.totalMembers} growers inside, {PATREON.stats.posts} posts, from ${PATREON.stats.priceFrom} a
-              month.
+              Video SOPs and full clone-to-harvest guides, from us and from other working growers.{" "}
+              {PATREON.stats.totalMembers} members and {PATREON.stats.posts} posts so far. Paid tiers start at{" "}
+              {money(PATREON.stats.priceFrom)} a month.
             </p>
             <ul className="mt-5 grid grid-cols-2 gap-3">
               {PATREON_POSTS.map((p) => (
@@ -244,8 +244,9 @@ export default function Home() {
             <p className="eyebrow">Schedule a consulting call</p>
             <h2 className="mt-4 text-3xl sm:text-4xl">Fill in your facility profile, then pick a time</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
-              The profile takes a few minutes and saves the first twenty of the call. Rooms, lights, media, feed,
-              sensors, what is happening, and your photos. We read all of it before we dial in.
+              The profile asks about your rooms, lights, media, feed, sensors and what&rsquo;s going wrong, and you
+              can add photos. It takes a few minutes. We read it before the call so we don&rsquo;t spend the first twenty
+              minutes asking.
             </p>
           </div>
           <ul className="grid gap-2 sm:grid-cols-2">
@@ -259,16 +260,16 @@ export default function Home() {
         </div>
 
         <div className="reveal mt-10 grid gap-6 md:grid-cols-2">
-          {SESSIONS.map((s, i) => (
-            <SessionCard key={s.slug} session={s} featured={i === 1} />
+          {SESSIONS.map((s) => (
+            <SessionCard key={s.slug} session={s} />
           ))}
         </div>
 
         {/* This was a third panel with a third "Book a call" button under two cards that
             each already end in one. The sentence is what it was for. */}
         <p className="reveal mt-6 max-w-3xl text-[15px] leading-relaxed text-muted">
-          Pick a time from the live calendar, pay, and the invite lands on both calendars with a reminder before the
-          call. Times come off the grid the moment they are taken.
+          You pick a time from the live calendar, and the invite goes on both calendars with a reminder the day
+          before. Booked times drop off the calendar right away.
         </p>
       </section>
 
@@ -279,8 +280,8 @@ export default function Home() {
             <p className="eyebrow">{SITE.name} co-management</p>
             <h2 className="mt-4 text-3xl sm:text-4xl">We run the room with you</h2>
             <p className="mt-4 text-lg leading-relaxed text-muted">
-              Irrigation and environment steered off your own sensor data, run by run, with your head grower on the
-              floor and a weekly call that ends in actions with names on them.
+              We steer irrigation and climate off your own sensor data, run by run. Your head grower runs the floor,
+              and every week there&rsquo;s a call that ends with a list of who does what.
             </p>
           </div>
           <Link href="/co-management" className="btn-ghost">

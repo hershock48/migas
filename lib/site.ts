@@ -197,18 +197,18 @@ export const SESSIONS: SessionType[] = [
     name: "Half hour",
     minutes: 30,
     price: 250,
-    summary: "One room, one problem, an answer this week.",
-    forWho: "A run in trouble, a number that will not settle, or a decision you want a second opinion on first.",
-    includes: ["Your facility profile and photos read before the call", "Written next actions after"],
+    summary: "For one room and one problem.",
+    forWho: "Usually a run that's in trouble or a number that won't settle. Also good for a second opinion before you change something.",
+    includes: ["We read your profile and photos beforehand", "Written next actions after"],
   },
   {
     slug: "hour",
     name: "Full hour",
     minutes: 60,
     price: 400,
-    summary: "Your program, your build-out, or your whole facility, end to end.",
+    summary: "For the whole program or the whole facility.",
     forWho: "A grow that works but underperforms, a design or build-out, or a facility weighing co-management.",
-    includes: ["Your facility profile and photos read before the call", "Written recommendations", "One follow-up question thread"],
+    includes: ["We read your profile and photos beforehand", "Written recommendations", "One follow-up question thread"],
   },
 ];
 
@@ -230,7 +230,7 @@ export const HAVE_READY = [
   "Runoff EC and pH if you take them, in and out, for the last week.",
   "Room temperature, humidity and CO₂ over a 24-hour cycle. Day and night numbers, not averages.",
   "A wide shot of the canopy plus close-ups of whatever is wrong.",
-  "Your feed chart, even if it is the one off the bottle.",
+  "Your feed chart, even if it's the one off the bottle.",
 ] as const;
 
 /**
@@ -249,9 +249,9 @@ export const INSTAGRAM_POSTS = [
 
 export const PATREON_POSTS = [
   { title: "Flower, start to finish", blurb: "The bloom program by phase, with the feed and runoff targets for each.", href: PATREON.url },
-  { title: "Veg, from clone to flip", blurb: "Rooting, transplant, and the vegetative run that sets up the flower.", href: PATREON.url },
-  { title: "Runoff, the SOP", blurb: "How to collect it, read it, and what to change when the numbers move.", href: PATREON.url },
-  { title: "Hand-water to automation", blurb: "Moving a room onto drip and sensors without losing a run to the change.", href: PATREON.url },
+  { title: "Veg, from clone to flip", blurb: "Rooting and transplant, through to the end of veg.", href: PATREON.url },
+  { title: "Runoff, the SOP", blurb: "Collecting and reading runoff, and what to change when the numbers move.", href: PATREON.url },
+  { title: "Hand-water to automation", blurb: "Moving a room from hand-watering to drip and sensors.", href: PATREON.url },
 ] as const;
 
 /**
@@ -273,17 +273,21 @@ export const PATREON_POSTS = [
  * lib/pricing.ts; change both together.
  */
 export const COMANAGEMENT = {
+  // The one paragraph that says what co-management is. It was typed out twice, on the
+  // page and on the one-pager, which is how two copies drift; both read this now.
+  intro:
+    "We steer irrigation and climate remotely, off your own sensor data, and your head grower handles the floor. It's the same program we run in our own licensed facility.",
   tiers: [
     { name: "Essential", rooms: "1 to 2 flower rooms", lights: "up to 100 lights", monthly: 2000, open: false },
     { name: "Professional", rooms: "3 to 5 flower rooms", lights: "101 to 400 lights", monthly: 4000, open: false },
     { name: "Advanced", rooms: "6 to 8 flower rooms", lights: "401 to 750 lights", monthly: 6000, open: false },
     { name: "Enterprise", rooms: "9 or more flower rooms", lights: "751 or more lights", monthly: 8000, open: true },
   ],
-  rule: "Either count can move a facility up a tier, and the higher one sets the price. The two are never added. Every tier gets the same service.",
+  rule: "If your room count and your light count land in different tiers, you pay the higher one. They're never added together, and every tier gets the same service.",
   cadence: [
     "Three check-ins a week per flower room, from a phone, three to five minutes each",
     "One 60-minute call a week, with action items that land on a shared calendar",
-    "A weekly written report: the week behind, the week ahead",
+    "A written report every week, covering the week behind and the week ahead",
     "Clone, mother and veg advisory included at no extra cost",
   ],
   /** The KPIs co-management is judged on, his list. */
@@ -293,41 +297,41 @@ export const COMANAGEMENT = {
     url: "https://remotegrowsolutions.vercel.app",
     demo: "https://remotegrowsolutions.vercel.app/login",
     blurb:
-      "Every room's readings against its own targets, the rooms that need a look first, the run as a bar from flip to harvest, a shared calendar, and the weekly report with the charts in it. Your team enters what the sensors cannot; we read it before the call.",
+      "It shows each room's readings against its targets, flags the rooms that need a look first, tracks each run from flip to harvest, and holds the shared calendar and the weekly report. Your team logs what the sensors can't measure, and we read it before each call.",
   },
   services: [
     {
       name: "Irrigation, run remotely",
-      body: "Shot sizes, timings and dryback targets set and adjusted off your sensor data, run by run. The program that gets watched daily, not the one that gets installed and left.",
+      body: "We set shot sizes, timings and dryback targets off your sensor data and adjust them run by run. We look at the numbers every day.",
     },
     {
       name: "Environmental parameters",
-      body: "Temperature, humidity and VPD targets per phase, day and night set separately, adjusted as the canopy changes rather than on a calendar.",
+      body: "Temperature, humidity and VPD targets for each phase, with day and night set separately, adjusted as the canopy develops.",
     },
     {
       name: "Scheduling, with your labor",
-      body: "Defol, transplant, flip and harvest planned against the crew you actually have, so the room never waits on a task and the crew never waits on the room.",
+      body: "Defol, transplant, flip and harvest planned around the crew you have and the days they work.",
     },
     {
       name: "Cost reduction",
-      body: "Feed, media and labor spending reviewed against what the room measurably needs. In our own rooms, dialing salts back cut nutrient cost while holding yield. What yours can cut depends on where it is spending.",
+      body: "We go through feed, media and labor costs against what the room needs. In our own rooms, cutting back on salts lowered nutrient cost and yield held. What you can cut depends on where your money is going.",
     },
   ],
   /** The conditions, stated up front because they filter better than a form does. */
   requirements: [
     {
       name: "Substrate sensors we can read",
-      body: "Aroya, Pinnacle, Growlink or equivalent. Remote steering is only as good as the data feed, and we do not work off TrolMaster sensors.",
+      body: "Aroya, Pinnacle, Growlink or similar. Remote steering is only as good as the data, and we don't work off TrolMaster sensors.",
     },
     {
       name: "A head grower who runs the program",
-      body: "Somebody on the ground has to own the day to day and follow the plan. Co-management steers the room; it cannot walk it.",
+      body: "Someone on site has to own the day to day and follow the plan. We can set the numbers from here, but we can't be in the room.",
     },
   ],
   extras: [
     {
       name: "Head growers, ready to relocate",
-      body: "A network of proven, experienced commercial head growers, available and ready to relocate if your room needs its person on the ground.",
+      body: "We know experienced commercial head growers who are open to relocating, if your room needs someone on site.",
     },
     {
       name: "On-site visits, if you want them",
@@ -335,11 +339,11 @@ export const COMANAGEMENT = {
     },
     {
       name: "Genetic sourcing included",
-      body: "Clean cuts sourced through Bractworx or another nursery we trust, so a new strain does not arrive carrying somebody else's problem.",
+      body: "Clean cuts through Bractworx or another nursery we trust, so a new strain doesn't bring pests or disease in with it.",
     },
     {
       name: "Design-build, by conversation",
-      body: "New rooms and retrofits are taken case by case. Ask on the call.",
+      body: "We take on new rooms and retrofits case by case. Ask about it on the call.",
     },
   ],
 } as const;
@@ -353,27 +357,27 @@ export const COMANAGEMENT = {
 export const COMANAGE_FAQ = [
   {
     q: "Is what we share with you confidential?",
-    a: "PLACEHOLDER: he needs to write this one himself. A facility will not hand over its sensor feed and its numbers without it, and for co-management this is the first question, not the fifth.",
+    a: "PLACEHOLDER: a facility won't share its sensor feed and its numbers without an answer, and for co-management it's usually the first thing they ask. It should be in your own words.",
   },
   {
-    q: "Who is actually reading our data?",
-    a: "We are. Your sensor feed is read by the same cultivator running the licensed facility's own rooms, against the same program.",
+    q: "Who reads our data?",
+    a: "We do. Your feed is read by the same grower who runs our own licensed rooms, against the same program.",
   },
   {
     q: "What happens in the first week?",
-    a: "PLACEHOLDER: his to write. The sequence from signed to steady state is his process, and inventing one here would be selling a program the service does not contain.",
+    a: "PLACEHOLDER: what happens between signing and a normal week is your process, and we don't want to guess at it.",
   },
   {
     q: "How long are we committing for?",
-    a: "PLACEHOLDER: term and notice are his call, and they belong in the same conversation as the project minimum and the billing cadence.",
+    a: "PLACEHOLDER: term and notice are your call. Decide them along with the onboarding fee and billing.",
   },
   {
     q: "Why tiers by rooms and lights?",
-    a: "Because they are numbers you can budget from before we ever talk. Room count says how much there is to manage and light count says how big the production is; the tier is set by whichever is higher, and it does not move with the price of your pound.",
+    a: "Because you can work out the price before we talk. Room count tells us how much there is to manage and light count tells us how big the production is. Whichever puts you higher sets the tier, and the tier doesn't change with the price per pound.",
   },
   {
     q: "Where do you co-manage?",
-    a: "Remote steering is remote; the program works anywhere the sensors reach. In-person visits and rooms outside Michigan are case by case.",
+    a: "Anywhere we can read your sensors remotely. In-person visits and rooms outside Michigan are case by case.",
   },
 ];
 
@@ -401,7 +405,7 @@ export const COMANAGE_APPLY = [
     type: "text",
     // That sentence was the placeholder, which a half-width field cut off at "other
     // states are c" and which disappeared as soon as the visitor started typing.
-    hint: "Calls are remote. Rooms outside Michigan are case by case.",
+    hint: "Calls are remote. Ask us about rooms outside Michigan.",
     placeholder: "e.g. Michigan",
     required: true,
   },
@@ -450,7 +454,7 @@ export const COMANAGE_APPLY = [
     label: "What are you looking for out of co-management?",
     type: "textarea",
     placeholder:
-      "Where the room is now, where it is losing money or consistency, and what you want it to become.",
+      "Where the room is now, and where it's losing money or consistency.",
     required: true,
     wide: true,
   },
@@ -564,7 +568,7 @@ export const INTAKE = [
     label: "What do you want to come out of the call?",
     type: "textarea" as const,
     placeholder:
-      "The more specific the better. What is happening, when it started, and what you have already tried.",
+      "What's happening, when it started, and what you've already tried.",
     required: true,
   },
 ] as const;
@@ -651,7 +655,7 @@ export const DIAGRAM = {
   outLabel: "Runoff out",
   outValues: ["4.8 EC", "6.4 pH"],
   caption:
-    "An illustration, not a target: runoff coming back higher than it went in is a room stacking salt. Reading it is how you catch that.",
+    "Example numbers, not targets. When runoff EC comes back higher than the feed, salt is building up in the media, and reading runoff is how you catch it.",
 };
 
 /**
@@ -712,9 +716,9 @@ export const AVAILABILITY = {
 export const PROCESS = [
   {
     step: "Before",
-    title: "The room comes before the calendar",
+    title: "You fill in the profile",
     body:
-      "Your facility profile: rooms, lights, sensors, stage, media, feed, runoff, and photos of the problem. A few minutes, and they are the questions we would otherwise spend the first twenty minutes of your call asking.",
+      "It covers rooms, lights, sensors, stage, media, feed and runoff, plus photos of the problem. It takes a few minutes.",
   },
   {
     step: "The call",
@@ -722,15 +726,15 @@ export const PROCESS = [
     // step sits on the consulting page directly under an h1 reading "A call that starts at the
     // diagnosis", and the two said the same thing twice within one screen. A step title should
     // add the next fact, not restate the heading above it.
-    title: "Straight into the problem",
+    title: "We start on the problem",
     body:
-      "We have read your intake and looked at your photos before you dial in. Thirty minutes that skip the setup are worth more than an hour that does not.",
+      "We go through what we saw in your profile and photos, and what to change first.",
   },
   {
     step: "After",
-    title: "Written actions you can hand to a grower",
+    title: "You get next steps in writing",
     body:
-      "A short written set of next actions, in order, that somebody on your team can execute on Monday without having been on the call.",
+      "A short list of next actions, in order, that someone on your team can start on Monday without having been on the call.",
   },
 ];
 
@@ -747,27 +751,32 @@ export const FAQ = [
     // marijuana", and Calendly, Acuity and Setmore all settle through Stripe, Square
     // or PayPal. This is the single biggest open question on the build and the reason
     // the booking flow deliberately stops before taking a card.
-    a: "By card when you book: a half hour is $250, a full hour is $400, and the payment page follows the booking. If the card step is not showing, we send an invoice to settle before the call.",
+    // Two answers, because which one is true depends on whether the card step is on
+    // (STRIPE_SECRET_KEY). The page picks; see app/consulting/page.tsx. The old single
+    // answer covered both with "if the card step is not showing", which asked the visitor
+    // to work out the site's configuration.
+    a: "By card when you book. A half hour is $250 and a full hour is $400.",
+    aInvoice: "We email an invoice with your booking confirmation, to pay before the call. A half hour is $250 and a full hour is $400.",
   },
   {
     q: "What if I need to move it?",
-    a: "PLACEHOLDER: reply to your confirmation and we will move it, up to 24 hours before. Inside 24 hours the slot is held.",
+    a: "PLACEHOLDER: reply to your confirmation and we'll move it, up to 24 hours ahead. Inside 24 hours the time is held.",
   },
   {
     q: "Is what I tell you confidential?",
-    a: "PLACEHOLDER: he needs to write this one himself. Licensed operators will ask, and for a facility consult it decides whether they book.",
+    a: "PLACEHOLDER: licensed operators will ask this before they book. It should be in your own words.",
   },
   {
     q: "Will you look at photos before the call?",
-    a: "Yes, and that is the point of the intake. Photos of the room, the canopy and whatever is going wrong go up with your booking, and we read them before you speak.",
+    a: "Yes. The booking form takes up to four photos, and we look at them first.",
   },
   {
     q: "Do you consult outside Michigan?",
-    a: "Yes. Calls are remote, and the methods are not state-specific. Co-management and facility work in other states is case by case.",
+    a: "Yes. Calls are remote and the methods aren't specific to one state. Co-management and facility work outside Michigan are case by case.",
   },
   {
     q: "What does co-management need from my room?",
-    a: "Substrate sensors we can read remotely, Aroya, Pinnacle, Growlink or equivalent, and a head grower on the ground who will run the program. Both are firm. The details are on the co-management page.",
+    a: "It needs substrate sensors we can read remotely (Aroya, Pinnacle, Growlink or similar) and a head grower on site who will run the program. We don't take on a room without both. There's more on the co-management page.",
   },
 ];
 

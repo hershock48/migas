@@ -8,7 +8,7 @@ import { COMANAGEMENT, CREDS, SITE, money } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Co-Management, on one page",
   description:
-    "The co-management model as a single printable page: the loop, the services, the conditions, and the four tiers. Made to be handed to a partner.",
+    "The co-management model on one printable page, to hand to a partner.",
 };
 
 /**
@@ -45,7 +45,7 @@ export default function OnePager() {
       <div className="mb-6 flex flex-wrap items-center gap-4 print:hidden">
         <PrintButton />
         <p className="text-sm text-muted">
-          Prints on one or two pages. Ctrl+P works too.{" "}
+          Prints on one or two pages. You can also press Ctrl+P, or Cmd+P on a Mac.{" "}
           <Link href="/co-management" className="text-flare hover:underline">
             Back to the full page
           </Link>
@@ -61,17 +61,13 @@ export default function OnePager() {
               Co-management
             </p>
             <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink sm:text-4xl">
-              Your room, run on our program
+              Co-management for commercial flower rooms
             </h1>
           </div>
           <Graffiti className="h-10 w-auto text-ink" />
         </header>
 
-        <p className="mt-6 max-w-[60ch] text-[15px] leading-relaxed text-ink/85">
-          We steer the irrigation and the environment remotely, off your own sensor
-          data, run by run. Your head grower runs the floor. The room gets the program
-          a licensed facility runs without hiring its director.
-        </p>
+        <p className="mt-6 max-w-[60ch] text-[15px] leading-relaxed text-ink/85">{COMANAGEMENT.intro}</p>
 
         {/* ── The loop + what we run ───────────────────────────────────────── */}
         <div className="mt-8 grid gap-8 sm:grid-cols-[minmax(0,1fr)_240px] sm:items-start">
