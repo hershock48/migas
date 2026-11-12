@@ -29,8 +29,7 @@ export function SessionCard({
       <p className="mt-3 font-display text-3xl font-extrabold text-bone">
         {money(session.price)}
       </p>
-      <p className="mt-4 text-sm leading-relaxed text-bone/90">{session.summary}</p>
-      <p className="mt-3 text-sm leading-relaxed text-muted">{session.forWho}</p>
+      <p className="mt-4 text-sm leading-relaxed text-bone/90">{session.forWho}</p>
       {/* flex-1 so the button lands on the card floor. Without it a card with two
           bullets puts its CTA higher than the card beside it with three, and a row of
           pricing cards with unaligned buttons reads as a rendering fault. */}

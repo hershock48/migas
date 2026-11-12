@@ -73,6 +73,9 @@ export default function Nav() {
     // document is clutter. Added for the co-management one-pager and correct for
     // every page (a printed booking confirmation reads better without a nav bar).
     <header className="sticky top-0 z-50 border-b border-line bg-ink/90 backdrop-blur print:hidden">
+      {/* How far down the page you are, as a line under the header (CSS only; see
+          .scroll-progress in globals.css). */}
+      <span aria-hidden className="scroll-progress" />
       <div className="wrap flex h-[68px] items-center justify-between">
         {/* The graffiti mark rather than the mirrored lockup, and the reason is size. A
             reflected lockup at nav scale puts each row under 14px and the reflection turns to

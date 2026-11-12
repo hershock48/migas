@@ -1,97 +1,96 @@
+import type { CSSProperties } from "react";
+import "./SteerLoop.css";
+
 /**
- * The co-management loop, drawn. This is the page's own concept — the room reports
- * through its sensors, we set the day's numbers remotely, the head grower runs them
- * on the floor, the room reports again — and a circuit is the honest shape for it:
- * no step is optional and none is first. The card grid under it lists what we run;
- * this shows why the head-grower condition and the sensor requirement are conditions
- * rather than preferences. Both appear IN the drawing for that reason: the sensor
- * node names the supported platforms, and one whole station belongs to their person,
- * not us.
+ * The co-management loop: the room reports through its sensors, we set the day's
+ * numbers remotely, the head grower runs them on the floor, and the room reports
+ * again. A circuit is the honest shape for it: no step is optional and none is
+ * first. Both conditions (the sensors, the head grower) are stations in the drawing,
+ * because they are conditions rather than preferences.
  *
- * It follows the four FeedRig rules (see components/FeedRig.tsx for the stories):
- * keyframes live in globals.css; position on a group, motion on the child; fill-box
- * on transformed children (none here — the only motion is a dash offset, which
- * transforms nothing); and the resting state is a finished picture — a static dashed
- * ring with arrowheads still reads as a circuit with a direction, so reduced motion
- * loses nothing but the travel.
+ * REDRAWN 2026-11-11 (Kevin: "this part, it's a graphic, needs to be better"). It was
+ * four boxes on a dashed rectangle with the labels set as SVG text at 8.5 units, which
+ * read as a wireframe. Now:
  *
- * No <defs>, no filter, no ids, on purpose: FeedRig renders on the same page and
- * owns "rigBloom". A second SVG with ids is how the duplicate-id square gets painted
- * (glaze.md failure log). Nothing here needs one.
+ * - The stations sit on a circular track with 24 ticks inside it, one per hour, so
+ *   the ring reads as a day ("Watched daily" in the middle).
+ * - A point of light runs the circuit once every 8 seconds, from station 1, and each
+ *   station lights as it arrives (2s apart, the CSS keyframes key off --i). The
+ *   motion is the meaning: data goes round, every day, through all four.
+ * - The labels are HTML in an ordered list, not SVG text: they wrap, they stay crisp
+ *   at any size, and a screen reader hears four steps in order instead of a picture.
+ * - Reduced motion and print get the still drawing (the light is hidden), and
+ *   tone="paper" is the one-pager's version: dark on the light sheet, no glow,
+ *   nothing that depends on a background printing.
+ *
+ * The SVG carries no ids or <defs>: FeedRig renders on the same page and owns its
+ * own ids, and a second SVG with ids is how the duplicate-id square gets painted
+ * (glaze.md failure log). The glow is CSS on HTML elements.
  */
 const NODES = [
-  { x: 8, y: 30, name: "The room", sub: "Canopy, media, climate" },
-  { x: 164, y: 30, name: "Your sensors", sub: "Aroya, Pinnacle, Growlink" },
-  { x: 164, y: 214, name: "We steer", sub: "Shots, timings, targets" },
-  { x: 8, y: 214, name: "Your head grower", sub: "Runs the day on the floor" },
+  { name: "The room", sub: "Canopy, media, climate" },
+  { name: "Your sensors", sub: "Aroya, Pinnacle, Growlink" },
+  { name: "We steer", sub: "Shots, timings, targets" },
+  { name: "Your head grower", sub: "Runs the day on the floor" },
 ] as const;
+
+/** 24 hour ticks inside the ring; every sixth is longer (midnight, 6, noon, 18). */
+const TICKS = Array.from({ length: 24 }, (_, i) => {
+  const a = (i / 24) * 2 * Math.PI;
+  const long = i % 6 === 0;
+  const r1 = long ? 25.2 : 26.4;
+  const r2 = 27.8;
+  const f = (n: number) => Math.round(n * 1000) / 1000;
+  return { x1: f(50 + r1 * Math.sin(a)), y1: f(50 - r1 * Math.cos(a)), x2: f(50 + r2 * Math.sin(a)), y2: f(50 - r2 * Math.cos(a)), long };
+});
 
 export default function SteerLoop({
   className = "",
   tone = "dark",
 }: {
   className?: string;
-  /** "paper" restyles the drawing for the printed one-pager: dark strokes and text
-   *  on a light sheet, node boxes outlined rather than filled, so the circuit
-   *  survives browsers stripping backgrounds at print time. Text fills switch via
-   *  the mg-loop-paper block in globals.css. */
+  /** "paper": the printed one-pager. Dark on the light sheet, no light running. */
   tone?: "dark" | "paper";
 }) {
   const paper = tone === "paper";
-  const ring = paper ? "fill-none stroke-ink/25" : "fill-none stroke-line";
-  const flow = paper ? "loop-flow fill-none stroke-ember/80" : "loop-flow fill-none stroke-flare/60";
-  const arrow = paper ? "fill-ember-deep" : "fill-flare";
-  // On paper the boxes are outlines: a filled box would vanish the moment a print
-  // dialog strips backgrounds, and the ring behind them is hidden by the sheet
-  // itself being the same ground.
-  const node = paper ? "fill-bone stroke-ink/40" : "fill-ink-panel stroke-edge/70";
   return (
-    <figure className={`mg-loop ${paper ? "mg-loop-paper" : ""} ${className}`}>
-      <svg
-        viewBox="0 0 300 300"
-        role="img"
-        aria-label="The co-management loop: the room reports through your sensors, we set shot sizes, timings and targets remotely, your head grower runs them on the floor, and the room reports again. The cycle repeats daily."
-      >
-        {/* The circuit, drawn through the node centres; the opaque node boxes sit on
-            top and hide the ring behind them, which is cheaper and cleaner than four
-            hand-trimmed legs. */}
-        <rect x="72" y="58" width="156" height="184" rx="30" className={ring} strokeWidth="1.25" />
-        <rect x="72" y="58" width="156" height="184" rx="30" className={flow} strokeWidth="2" strokeLinecap="round" />
+    <figure className={`loop ${paper ? "loop-paper" : ""} ${className}`}>
+      <div className="loop-stage">
+        <svg viewBox="0 0 100 100" aria-hidden="true" className="loop-svg">
+          <circle cx="50" cy="50" r="30" className="loop-track" />
+          {TICKS.map((t, i) => (
+            <line key={i} x1={t.x1} y1={t.y1} x2={t.x2} y2={t.y2} className={t.long ? "loop-tick loop-tick-long" : "loop-tick"} />
+          ))}
+        </svg>
 
-        {/* Direction, stated statically. Clockwise: report up and across, execute down
-            and back. */}
-        <polygon points="145,54 157,60 145,66" className={arrow} />
-        <polygon points="222,145 228,157 234,145" className={arrow} />
-        <polygon points="155,234 143,240 155,246" className={arrow} />
-        <polygon points="78,155 72,143 66,155" className={arrow} />
+        {/* The light: a trail and a head on one rotating ring. Decorative. */}
+        {!paper && (
+          <span aria-hidden="true" className="loop-orbit">
+            <span className="loop-trail" />
+            <span className="loop-head" />
+          </span>
+        )}
 
-        {/* The four stations. */}
-        {NODES.map((n) => (
-          <g key={n.name}>
-            <rect x={n.x} y={n.y} width="128" height="56" rx="10" className={node} strokeWidth="1.25" />
-            <text x={n.x + 64} y={n.y + 25} textAnchor="middle" className="loop-name">
-              {n.name}
-            </text>
-            <text x={n.x + 64} y={n.y + 42} textAnchor="middle" className="loop-sub">
-              {n.sub}
-            </text>
-          </g>
-        ))}
+        <ol className="loop-steps">
+          {NODES.map((n, i) => (
+            <li key={n.name} className={`loop-step loop-step-${i + 1}`} style={{ "--i": i } as CSSProperties}>
+              <span aria-hidden="true" className="loop-node">
+                {i + 1}
+              </span>
+              <span className="loop-label">
+                <span className="loop-name">{n.name}</span>
+                <span className="loop-sub">{n.sub}</span>
+              </span>
+            </li>
+          ))}
+        </ol>
 
-        {/* The cadence, in the middle of the circuit, because it is what the circuit
-            means: this runs every day, not at install. */}
-        <text x="150" y="143" textAnchor="middle" className="loop-eyebrow">
-          The loop
-        </text>
-        <text x="150" y="164" textAnchor="middle" className="loop-value">
-          Watched daily
-        </text>
-      </svg>
-      {/* muted is a dark-ground token and measures ~2:1 on the paper sheet, so the
-          caption switches with the tone. */}
-      <figcaption
-        className={`mt-3 max-w-[38ch] text-sm leading-relaxed ${paper ? "text-ink/70" : "text-muted"}`}
-      >
+        <p className="loop-center">
+          <span className="loop-eyebrow">The loop</span>
+          <span className="loop-value">Watched daily</span>
+        </p>
+      </div>
+      <figcaption className={`mt-4 max-w-[38ch] text-sm leading-relaxed ${paper ? "text-ink/70" : "text-muted"}`}>
         Your sensors report, we set the day&rsquo;s numbers, and your head grower runs
         them. Then we see how the room responded and adjust.
       </figcaption>

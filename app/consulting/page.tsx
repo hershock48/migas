@@ -108,12 +108,14 @@ export default async function Consulting({
               photograph between the visitor and the form, and the home page carries the
               pictures there. Lazy, so a phone that never shows it never downloads it. */}
           <div className="reveal hidden lg:block">
-            <Image
-              src={roomAisle}
-              alt="A flower room late in flower, seen down the aisle, the canopy level under rows of LED light bars."
-              sizes="(min-width: 1280px) 440px, 34vw"
-              className="aspect-[4/5] h-auto w-full rounded-xl2 border border-line object-cover"
-            />
+            <div className="overflow-hidden rounded-xl2 border border-line">
+              <Image
+                src={roomAisle}
+                alt="A flower room late in flower, seen down the aisle, the canopy level under rows of LED light bars."
+                sizes="(min-width: 1280px) 440px, 34vw"
+                className="drift aspect-[4/5] h-auto w-full object-cover"
+              />
+            </div>
           </div>
         </div>
       </section>

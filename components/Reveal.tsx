@@ -46,7 +46,8 @@ export default function Reveal() {
     if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
     const root = document.documentElement;
     root.classList.add("r-armed");
-    const items = Array.from(document.querySelectorAll<HTMLElement>(".reveal"));
+    // .stagger grids too: the container is watched, its children carry the motion.
+    const items = Array.from(document.querySelectorAll<HTMLElement>(".reveal, .stagger"));
     // Anything already in view on load is shown immediately, so the first screen is
     // never animating while the visitor is reading it.
     const io = new IntersectionObserver(

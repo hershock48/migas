@@ -87,7 +87,7 @@ export default function CoManagement() {
           <h2 className="mt-4 text-3xl sm:text-4xl">What we take over</h2>
         </div>
         <div className="mt-12 grid gap-12 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start">
-          <div className="reveal grid gap-6 sm:grid-cols-2">
+          <div className="stagger grid gap-6 sm:grid-cols-2">
             {COMANAGEMENT.services.map((s) => (
               <div key={s.name} className="card flex flex-col p-7">
                 <h3 className="text-xl leading-snug text-bone">{s.name}</h3>
@@ -141,12 +141,14 @@ export default function CoManagement() {
               </p>
             </div>
           </div>
-          <Image
-            src={flowerDepth}
-            alt="A long bed of flowering plants in the trellis net under LED light bars, the far end of the room out of focus."
-            sizes="(min-width: 1024px) 420px, 100vw"
-            className="reveal aspect-[4/5] h-auto w-full rounded-xl2 border border-line object-cover sm:aspect-[16/10] lg:aspect-[4/5]"
-          />
+          <div className="reveal overflow-hidden rounded-xl2 border border-line">
+            <Image
+              src={flowerDepth}
+              alt="A long bed of flowering plants in the trellis net under LED light bars, the far end of the room out of focus."
+              sizes="(min-width: 1024px) 420px, 100vw"
+              className="drift aspect-[4/5] h-auto w-full object-cover sm:aspect-[16/10] lg:aspect-[4/5]"
+            />
+          </div>
         </div>
       </section>
 
@@ -157,7 +159,7 @@ export default function CoManagement() {
           <h2 className="mt-3 text-2xl text-bone sm:text-3xl">Priced by flower rooms or lights, whichever is higher</h2>
           <p className="mt-3 text-[15px] leading-relaxed text-muted">{COMANAGEMENT.rule}</p>
         </div>
-        <div className="reveal mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+        <div className="stagger mt-8 grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
           {COMANAGEMENT.tiers.map((t) => (
             <div key={t.name} className="card p-4 sm:p-6">
               <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-muted">{t.name}</p>
@@ -186,9 +188,11 @@ export default function CoManagement() {
           <Link href="#apply" className="btn-primary">
             Apply for co-management
           </Link>
-          <a href={COMANAGEMENT.software.demo} rel="noopener" className="text-sm font-semibold text-flare hover:underline">
+          {/* To the home page's software section, which has the screenshot, the demo and
+              its sign-in. It went straight to the demo's sign-in form, which looked locked. */}
+          <Link href="/#software" className="text-sm font-semibold text-flare hover:underline">
             See the software it runs on
-          </a>
+          </Link>
         </div>
       </section>
 
@@ -202,7 +206,7 @@ export default function CoManagement() {
             remotely without them.
           </p>
         </div>
-        <div className="reveal mt-12 grid gap-6 md:grid-cols-2">
+        <div className="stagger mt-12 grid gap-6 md:grid-cols-2">
           {COMANAGEMENT.requirements.map((r) => (
             <div key={r.name} className="card flex flex-col border-ember/40 p-7">
               <h3 className="text-xl leading-snug text-bone">{r.name}</h3>

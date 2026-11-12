@@ -26,7 +26,7 @@ export default function NotFound() {
           <li key={i.href}>
             <Link
               href={i.href}
-              className="card flex items-center justify-between p-5 text-bone transition-colors hover:border-edge hover:text-flare"
+              className="card lift flex items-center justify-between p-5 text-bone hover:border-edge hover:text-flare"
             >
               {i.label}
               <span aria-hidden>&rarr;</span>
@@ -37,7 +37,7 @@ export default function NotFound() {
           <a
             href={PATREON.url}
             rel="noopener"
-            className="card flex items-center justify-between p-5 text-bone transition-colors hover:border-edge hover:text-flare"
+            className="card lift flex items-center justify-between p-5 text-bone hover:border-edge hover:text-flare"
           >
             The guides, on Patreon
             <span aria-hidden>&rarr;</span>

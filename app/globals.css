@@ -72,14 +72,40 @@ textarea:focus-visible,
 }
 
 .btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold
-         transition-colors duration-150;
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold;
+  transition: color 150ms, background-color 150ms, border-color 150ms, box-shadow 200ms ease,
+    transform 150ms ease;
 }
 .btn-primary {
   @apply btn bg-ember text-ink hover:bg-ember-hot;
 }
 .btn-ghost {
   @apply btn border border-edge text-bone hover:border-flare hover:text-flare;
+}
+/* Motion, 2026-11-11 (Kevin: "get some motion or movement in there"). A primary
+   button warms on hover, and every button presses in under a finger. */
+.btn-primary:hover {
+  box-shadow: 0 10px 28px -12px rgba(240, 114, 44, 0.75);
+}
+.btn:active,
+.btn-primary:active,
+.btn-ghost:active {
+  transform: translateY(1px) scale(0.98);
+}
+/* A card that is a link rises toward the pointer. Hover only: a phone gets the
+   press instead, and nothing moves on its own. */
+.lift {
+  transition: transform 250ms cubic-bezier(0.22, 0.7, 0.3, 1), border-color 200ms ease,
+    box-shadow 250ms ease, color 200ms ease;
+}
+@media (hover: hover) {
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 16px 36px -18px rgba(217, 94, 39, 0.55);
+  }
+}
+.lift:active {
+  transform: translateY(-1px);
 }
 
 .card {
@@ -142,6 +168,26 @@ fieldset {
   opacity: 1;
   transform: none;
 }
+/* A grid of cards arrives one card at a time: the container is observed like a
+   .reveal, and its children carry the motion, 70ms apart. Same rule as above: the
+   hidden state only exists under .r-armed, so no script means a finished page. Not
+   on the gap-px grids, whose background is the divider color: hiding their children
+   would flash a solid block. */
+.r-armed .stagger > * {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 0.55s ease, transform 0.6s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+.r-armed .stagger.is-in > * {
+  opacity: 1;
+  transform: none;
+}
+.r-armed .stagger.is-in > :nth-child(2) { transition-delay: 70ms; }
+.r-armed .stagger.is-in > :nth-child(3) { transition-delay: 140ms; }
+.r-armed .stagger.is-in > :nth-child(4) { transition-delay: 210ms; }
+.r-armed .stagger.is-in > :nth-child(5) { transition-delay: 280ms; }
+.r-armed .stagger.is-in > :nth-child(6) { transition-delay: 350ms; }
+.r-armed .stagger.is-in > :nth-child(n + 7) { transition-delay: 420ms; }
 
 /* ───────────────────────────────────────────────────────────────────────────
    "Grow" grows. The hero's first word, one letter at a time.
@@ -1246,76 +1292,100 @@ fieldset {
   }
 }
 
+/* The co-management loop's styles live in components/SteerLoop.css. */
+
 /* ───────────────────────────────────────────────────────────────────────────
-   The co-management steering loop — components/SteerLoop.tsx.
-   Same contract as .mg-rig above: keyframes here, next to their rules, or Tailwind
-   purges them (see the long note above the sun block). The only motion is the ring's
-   dash offset; the resting state is a static dashed circuit with arrowheads, which
-   still reads as a loop with a direction, so the global reduced-motion freeze below
-   costs travel and nothing else.
+   Motion around the site (2026-11-11). Every piece animates transform or opacity
+   (the paint-cost rule from the sun's header), none of it runs on the first screen
+   of a page (the largest paint must not wait on an entrance), and all of it stops
+   under prefers-reduced-motion: the freeze below covers the keyframes and
+   transitions, and the scroll-linked ones are only declared for no-preference.
    ─────────────────────────────────────────────────────────────────────────── */
-.mg-loop svg {
-  display: block;
-  width: 100%;
-  height: auto;
+
+/* The phone menu drops in instead of appearing. */
+#mobile-nav:not([hidden]) {
+  animation: menu-in 0.22s cubic-bezier(0.22, 0.7, 0.3, 1);
 }
-.mg-loop .loop-name {
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  fill: theme("colors.bone");
-}
-/* 10 units with no tracking, up from 8.5 with 0.06em: 8.5 rendered at 9px on a phone
-   and 6.8px (about 5pt) on the printed one-pager. Measured 2026-11-11, the longest
-   line ("Aroya, Pinnacle, Growlink") is 121.9 of the node's 128 units at this size. */
-.mg-loop .loop-sub {
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 10px;
-  font-weight: 500;
-  letter-spacing: 0;
-  fill: theme("colors.muted");
-}
-.mg-loop .loop-eyebrow {
-  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
-  font-size: 9px;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  fill: theme("colors.muted");
-}
-.mg-loop .loop-value {
-  font-family: var(--font-display), ui-sans-serif, system-ui, sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  fill: theme("colors.bone");
-}
-/* Paper tone, for the printed one-pager. Declared after the dark fills above so the
-   same-specificity override lands the right way. Sub and eyebrow use dark tokens
-   rather than `muted`, which is a dark-ground colour and measures ~2:1 on bone. */
-.mg-loop-paper .loop-name,
-.mg-loop-paper .loop-value {
-  fill: theme("colors.ink.DEFAULT");
-}
-.mg-loop-paper .loop-sub {
-  fill: theme("colors.line");
-}
-.mg-loop-paper .loop-eyebrow {
-  fill: theme("colors.ember.deep");
+@keyframes menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
 }
 
-/* The dash cycle is 14 units and the offset travels exactly two cycles, so the loop
-   has no seam. Slower than the rig's feed line on purpose: this circuit is a day,
-   not a pump. */
-.mg-loop .loop-flow {
-  stroke-dasharray: 5 9;
-  animation: loopFlow 2.6s linear infinite;
+/* An FAQ answer eases open under its question. */
+details[open] > :not(summary) {
+  animation: faq-in 0.3s cubic-bezier(0.22, 0.7, 0.3, 1);
 }
-@keyframes loopFlow {
-  to {
-    stroke-dashoffset: -28;
+@keyframes faq-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
   }
+}
+
+/* The booking wizard: the next step slides up into place once the visitor has
+   moved (bk-anim is set on the form after the first Continue, so landing on the
+   page does not animate the form). */
+.bk-anim .bk-step:not(.bk-hide) {
+  animation: bk-in 0.38s cubic-bezier(0.22, 0.7, 0.3, 1);
+}
+@keyframes bk-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+
+/* Scroll-linked, where the browser can do it without script: a progress line under
+   the header, and the room photos drifting slowly inside their frames. Elsewhere
+   (Firefox today) both are simply absent. */
+.scroll-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .scroll-progress {
+      display: block;
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 2px;
+      transform-origin: 0 50%;
+      background: linear-gradient(90deg, theme("colors.ember.DEFAULT"), theme("colors.flare"));
+      animation: scroll-progress linear both;
+      animation-timeline: scroll(root block);
+    }
+    @keyframes scroll-progress {
+      from {
+        transform: scaleX(0);
+      }
+      to {
+        transform: scaleX(1);
+      }
+    }
+  }
+}
+@supports (animation-timeline: view()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .drift {
+      animation: drift linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+    @keyframes drift {
+      from {
+        transform: scale(1.12) translateY(-4.5%);
+      }
+      to {
+        transform: scale(1.12) translateY(4.5%);
+      }
+    }
+  }
+}
+@media print {
+  .scroll-progress { display: none !important; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -1342,7 +1412,8 @@ fieldset {
    browser without :has (Firefox before 121) drops a whole rule over one selector it
    cannot parse. */
 @media print {
-  .r-armed .reveal { opacity: 1 !important; transform: none !important; }
+  .r-armed .reveal,
+  .r-armed .stagger > * { opacity: 1 !important; transform: none !important; }
   body,
   body *:not(img, svg, svg *, .op-sheet, .op-sheet *) {
     background: transparent !important;
