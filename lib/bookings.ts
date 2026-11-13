@@ -1,4 +1,5 @@
 import "server-only";
+import { createHmac } from "node:crypto";
 
 /**
  * The bookings on record, so a reminder can go out before the call and a
@@ -40,12 +41,28 @@ export type Booking = {
 const PREFIX = "bookings/";
 const configured = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
+/**
+ * Where a booking lives: bookings/<reference>-<32 hex>.json, the hex an HMAC of the
+ * reference keyed with the store's own token.
+ *
+ * It was bookings/<reference>.json. The store is public-read (his open hours live
+ * in it, and those are public), a reference is MG- plus six hex characters, and the
+ * visitor is shown theirs. So the address of every record, each holding a name, an
+ * email and a phone number, was one of 16.7 million guessable URLs. Caught
+ * 2026-11-12, the day the store was first connected, before any booking was
+ * written. The suffix cannot be worked out without the token, and it is the same
+ * every time for the same reference, so marking a booking paid or reminded still
+ * overwrites the one file.
+ */
+const pathFor = (ref: string) =>
+  `${PREFIX}${ref}-${createHmac("sha256", process.env.BLOB_READ_WRITE_TOKEN ?? "").update(ref).digest("hex").slice(0, 32)}.json`;
+
 export const bookingsConfigured = configured;
 
 export async function saveBooking(b: Booking): Promise<boolean> {
   if (!configured()) return false;
   const { put } = await import("@vercel/blob");
-  await put(`${PREFIX}${b.ref}.json`, JSON.stringify(b), {
+  await put(pathFor(b.ref), JSON.stringify(b), {
     access: "public",
     contentType: "application/json",
     addRandomSuffix: false,
@@ -57,7 +74,7 @@ export async function saveBooking(b: Booking): Promise<boolean> {
 export async function getBooking(ref: string): Promise<Booking | null> {
   if (!configured()) return null;
   const { list } = await import("@vercel/blob");
-  const found = (await list({ prefix: `${PREFIX}${ref}.json`, limit: 1 })).blobs[0];
+  const found = (await list({ prefix: pathFor(ref), limit: 1 })).blobs[0];
   if (!found) return null;
   const res = await fetch(found.url, { cache: "no-store" });
   if (!res.ok) return null;
