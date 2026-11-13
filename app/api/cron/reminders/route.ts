@@ -38,20 +38,30 @@ export async function GET(req: Request) {
         "",
         `Length:    ${b.minutes} minutes`,
         `Reference: ${b.ref}`,
-        b.paidAt ? "Paid." : b.payUrl ? `Pay before the call: ${b.payUrl}` : "The invoice came with your confirmation.",
+        b.paidAt ? "Paid." : b.payUrl ? `Pay before the call: ${b.payUrl}` : "The invoice is sent separately, before the call.",
         "",
         "Reply to this email if you need to move it.",
       ].join("\n"),
     });
-    await sendMail({
-      to: notifyTo(SITE.email),
-      subject: `[${b.ref}] Tomorrow: ${b.sessionName} - ${b.name} - ${when}`,
-      text: `${b.name} <${b.email}> ${b.phone}\n${b.sessionName}, ${b.minutes} minutes, ${when}\n${b.paidAt ? "Paid." : "Not paid yet."}`,
-    });
-    if (toGrower) {
-      await saveBooking({ ...b, reminderSentAt: Date.now() });
-      sent.push(b.ref);
+    /* His note goes once, tracked on its own. It used to go on every run until the
+       grower's copy succeeded, so one bouncing address meant an email to him every
+       hour for a day. */
+    const toOwner =
+      !b.ownerRemindedAt &&
+      (await sendMail({
+        to: notifyTo(SITE.email),
+        subject: `[${b.ref}] Tomorrow: ${b.sessionName} - ${b.name} - ${when}`,
+        replyTo: b.email,
+        text: `${b.name} <${b.email}> ${b.phone}\n${b.sessionName}, ${b.minutes} minutes, ${when}\n${b.paidAt ? "Paid." : "Not paid yet."}`,
+      }));
+    if (toGrower || toOwner) {
+      await saveBooking({
+        ...b,
+        ...(toGrower ? { reminderSentAt: Date.now() } : {}),
+        ...(toOwner ? { ownerRemindedAt: Date.now() } : {}),
+      });
     }
+    if (toGrower) sent.push(b.ref);
   }
   return NextResponse.json({ checked: due.length, sent });
 }

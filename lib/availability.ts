@@ -1,4 +1,5 @@
 import { AVAILABILITY } from "./site";
+import { upcomingBookings } from "./bookings";
 import { getBusyIntervals } from "./busy";
 import { slotGrid, type RuntimeAvailability, type SlotDay } from "./slots";
 
@@ -143,12 +144,18 @@ export async function saveAvailability(doc: StoredAvailability): Promise<{ error
 
 /**
  * The slot grid the booking page renders: stored windows minus blocked dates minus
- * whatever his calendar says he is doing. The two async sources load in parallel and
- * each fails open on its own.
+ * whatever his calendar says he is doing minus the calls already booked here (see
+ * upcomingBookings for why the last one is not left to the calendar). The three
+ * async sources load in parallel and each fails open on its own.
  */
-export async function openSlots(now: Date = new Date()): Promise<SlotDay[]> {
-  const [availability, busy] = await Promise.all([getAvailability(), getBusyIntervals(now)]);
-  return slotGrid(now, runtime(availability, busy));
+export async function openSlots(now: Date = new Date(), fresh = false): Promise<SlotDay[]> {
+  const [availability, busy, booked] = await Promise.all([
+    getAvailability(),
+    getBusyIntervals(now),
+    upcomingBookings(now.getTime(), fresh),
+  ]);
+  const taken = booked.map((b) => ({ start: b.startMs, end: b.startMs + b.minutes * 60_000 }));
+  return slotGrid(now, runtime(availability, [...busy, ...taken]));
 }
 
 /**
@@ -162,7 +169,9 @@ export async function bookableSlot(
   sessionMinutes: number,
   now: Date = new Date()
 ): Promise<boolean> {
-  const days = await openSlots(now);
+  // Fresh booking records: this is the check that refuses a time somebody else
+  // took a moment ago.
+  const days = await openSlots(now, true);
   for (const day of days) {
     const hit = day.slots.find((s) => s.value === value);
     if (hit) return hit.maxMinutes >= sessionMinutes;

@@ -26,10 +26,36 @@ function transport() {
     // backwards is the single most common SMTP misconfiguration and it fails by hanging.
     secure: port === 465,
     auth: process.env.SMTP_USER ? { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS } : undefined,
+    // nodemailer waits two minutes for a host that never answers, far past the
+    // point where the visitor's booking request has timed out. A wrong host or a
+    // blocked port now fails in seconds, and the booking still completes.
+    connectionTimeout: 8_000,
+    greetingTimeout: 8_000,
+    socketTimeout: 20_000,
   });
 }
 
-export async function sendMail(opts: { to: string; subject: string; text: string; attachments?: Attachment[] }): Promise<boolean> {
+type Mail = {
+  to: string;
+  subject: string;
+  text: string;
+  attachments?: Attachment[];
+  /** Who a reply should reach. On his copy of a booking this is the grower, so
+   *  "confirm by reply" is one tap; without it a reply went back to his own mailbox,
+   *  because his notifications are sent from it. */
+  replyTo?: string;
+};
+
+export const mailConfigured = () =>
+  Boolean(process.env.SMTP_HOST && (process.env.SMTP_FROM ?? process.env.SMTP_USER));
+
+export async function sendMail(opts: Mail): Promise<boolean> {
+  return (await sendMailChecked(opts)).ok;
+}
+
+/** sendMail, with the reason when it fails. /admin's test button shows the reason
+ *  to the signed-in owner; nothing else should. */
+export async function sendMailChecked(opts: Mail): Promise<{ ok: boolean; error?: string }> {
   const t = transport();
   const from = process.env.SMTP_FROM ?? process.env.SMTP_USER;
   if (!t || !from || opts.to.startsWith("PLACEHOLDER")) {
@@ -38,15 +64,15 @@ export async function sendMail(opts: { to: string; subject: string; text: string
         `to: ${opts.to}\nsubject: ${opts.subject}\n${opts.text}\n` +
         `attachments: ${(opts.attachments ?? []).map((a) => a.filename).join(", ") || "none"}`
     );
-    return false;
+    return { ok: false, error: !t || !from ? "Outgoing mail is not set up yet." : "There is no real address to send to yet." };
   }
   try {
     await t.sendMail({ from, ...opts });
-    return true;
+    return { ok: true };
   } catch (err) {
     // Logged, not surfaced. The visitor has already done their part correctly.
     console.error("[migas] SMTP send failed", err);
-    return false;
+    return { ok: false, error: err instanceof Error ? err.message : String(err) };
   }
 }
 

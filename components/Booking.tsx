@@ -372,8 +372,9 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             directly under a line promising an email. Verified in all three states. */}
         {state.delivered && !state.delivered.toOwner && (
           <p className="mt-4 text-xs text-muted">
-            Email isn&rsquo;t switched on for this site yet, so this request hasn&rsquo;t
-            reached us. Keep the reference above.
+            {state.recorded
+              ? "Your booking is saved, but email isn't switched on for this site yet, so no confirmation was sent. Keep the reference above."
+              : "Email isn't switched on for this site yet, so this request hasn't reached us. Keep the reference above."}
           </p>
         )}
       </div>
