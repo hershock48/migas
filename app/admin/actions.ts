@@ -9,6 +9,9 @@ import {
   pinMatches,
 } from "@/lib/admin-auth";
 import { DRAFT_FIELD, DRAFT_MAX, saveAvailability, type StoredAvailability } from "@/lib/availability";
+import { deleteBooking } from "@/lib/bookings";
+import { notifyTo, sendMailChecked } from "@/lib/mail";
+import { SITE } from "@/lib/site";
 
 /**
  * The three admin actions: in, out, and save. All three finish with a redirect
@@ -99,4 +102,41 @@ export async function saveAvailabilityAction(fd: FormData) {
   const result = await saveAvailability(doc);
   if (result.error) back({ error: "invalid", detail: result.error, ...draft });
   back({ saved: "1" });
+}
+
+/**
+ * "Send a test email": one message to the address bookings land in, through the
+ * same mailer a booking uses. The status tile can only say that mail is configured;
+ * this says whether it works, and when it does not, why, in the mail server's own
+ * words. The reason goes back in the query string to the signed-in owner only.
+ */
+export async function sendTestMail() {
+  const jar = await cookies();
+  if (!cookieIsValid(jar.get(ADMIN_COOKIE)?.value)) back({ error: "signed-out" });
+  const to = notifyTo(SITE.email);
+  const result = await sendMailChecked({
+    to,
+    subject: `${SITE.name} - test from your admin page`,
+    text: [
+      "This is a test from the admin page of your site.",
+      "",
+      "If you are reading it, outgoing mail works: bookings, applications and questions will arrive at this address.",
+    ].join("\n"),
+  });
+  if (result.ok) back({ mail: "sent" });
+  back({ mail: "failed", detail: (result.error ?? "No reason given.").slice(0, 300) });
+}
+
+/** Remove a booked call, which puts its time back on the booking page. It does
+ *  not tell the grower; the page says so beside the button. */
+export async function cancelBooking(fd: FormData) {
+  const jar = await cookies();
+  if (!cookieIsValid(jar.get(ADMIN_COOKIE)?.value)) back({ error: "signed-out" });
+  const ref = String(fd.get("ref") ?? "");
+  if (!/^MG-[A-F0-9]{6}$/.test(ref)) back({ call: "missing" });
+  const removed = await deleteBooking(ref).catch((err) => {
+    console.error("[migas] could not remove booking", ref, err);
+    return false;
+  });
+  back(removed ? { call: "removed", ref } : { call: "missing" });
 }

@@ -35,8 +35,13 @@ export type FormState = {
   delivered?: { toOwner: boolean; toVisitor: boolean };
   /** The hosted payment page for this booking, when the processor is switched on. */
   payUrl?: string;
-  /** Whether the booking is on record for the day-before reminder. */
+  /** Whether a day-before reminder will really go out: the booking is on record,
+   *  mail is connected, and the hourly job has its secret. It was "on record"
+   *  alone, which promised a reminder the day storage was connected, before there
+   *  was any mail to send one with. */
   reminder?: boolean;
+  /** Whether the booking is on record (it shows on /admin and holds its time). */
+  recorded?: boolean;
 };
 
 export const EMPTY: FormState = { status: "idle" };

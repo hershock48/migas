@@ -1,7 +1,7 @@
 "use server";
 
 import { COMANAGE_APPLY, INTAKE, SESSIONS, SITE } from "@/lib/site";
-import { notifyTo as notifyAddress, sendMail, type Attachment } from "@/lib/mail";
+import { mailConfigured, notifyTo as notifyAddress, sendMail, type Attachment } from "@/lib/mail";
 import { bookingsConfigured, saveBooking } from "@/lib/bookings";
 import { checkoutFor } from "@/lib/pay";
 import { toInstant } from "@/lib/ics";
@@ -205,7 +205,10 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
   const invite: Attachment = {
     filename: `${ref}.ics`,
     content: Buffer.from(ics, "utf8"),
-    contentType: "text/calendar; charset=utf-8; method=REQUEST",
+    // The method in the header has to be the method in the file. It said REQUEST
+    // while buildIcs writes PUBLISH until there is an organiser address, and a
+    // mail client that trusts the header then finds a REQUEST with no organiser.
+    contentType: `text/calendar; charset=utf-8; method=${/^METHOD:(\w+)/m.exec(ics)?.[1] ?? "PUBLISH"}`,
   };
 
   // Pay at booking, when the processor is switched on (lib/pay.ts says what
@@ -240,10 +243,15 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     return false;
   });
 
+  // A reminder is only promised when one can be sent: the record, mail, and the
+  // hourly job's secret.
+  const reminder = Boolean(stored) && mailConfigured() && Boolean(process.env.CRON_SECRET);
+
   const toOwner = await sendMail({
     to: notifyTo(),
     subject: `[${ref}] ${session!.name} - ${name} - ${when}`,
-    text: `${brief}\n\nPayment: ${payUrl ? "card link sent with the confirmation" : "invoice"}\nReminder: ${stored ? "automatic, 24 hours before" : "not on (no booking store)"}`,
+    replyTo: email,
+    text: `${brief}\n\nPayment: ${payUrl ? "card link sent with the confirmation" : "invoice"}\nReminder: ${reminder ? "automatic, the day before" : "not on"}`,
     attachments: [...photos.attachments, invite],
   });
 
@@ -265,7 +273,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       payUrl ? `Pay for the call here: ${payUrl}` : "We'll confirm the time by reply and send an invoice to pay before the call.",
       "",
       "We read your facility profile and photos before the call.",
-      stored ? "A reminder goes out the day before." : "",
+      reminder ? "A reminder goes out the day before." : "",
       "",
       "A calendar invite is attached.",
     ].join("\n"),
@@ -277,7 +285,8 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     reference: ref,
     ics: icsDataUrl(ics),
     payUrl: payUrl ?? undefined,
-    reminder: Boolean(stored),
+    reminder,
+    recorded: Boolean(stored),
     delivered: { toOwner, toVisitor },
     summary: [
       `${session!.name}, ${session!.minutes} minutes`,
@@ -341,6 +350,7 @@ export async function requestCoManagement(_prev: FormState, fd: FormData): Promi
   const toOwner = await sendMail({
     to: notifyTo(),
     subject: `[${ref}] Co-management - ${values.name}${values.facility ? ` (${values.facility})` : ""} - ${values.lights} lights, ${values.state}`,
+    replyTo: values.email,
     text: ticket,
   });
 
@@ -388,6 +398,7 @@ export async function requestCall(_prev: FormState, fd: FormData): Promise<FormS
   const toOwner = await sendMail({
     to: notifyTo(),
     subject: `Call request - ${values.name}`,
+    replyTo: values.email || undefined,
     text: [
       `${values.name}`,
       values.phone ? `Phone: ${values.phone}` : null,
@@ -429,6 +440,7 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
   const toOwner = await sendMail({
     to: notifyTo(),
     subject: `Question - ${values.name}${values.topic ? ` - ${values.topic}` : ""}`,
+    replyTo: values.email,
     text: `${values.name} <${values.email}>\nTopic: ${values.topic || "not given"}\n\n${values.message}`,
   });
   return {

@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, cookieIsValid, pinConfigured } from "@/lib/admin-auth";
 import { DRAFT_FIELD, DRAFT_MAX, availabilityStatus, getAvailability } from "@/lib/availability";
-import { getBusyIntervals } from "@/lib/busy";
-import { AVAILABILITY, SITE } from "@/lib/site";
-import { adminLogin, adminLogout, saveAvailabilityAction } from "./actions";
+import { upcomingBookings } from "@/lib/bookings";
+import { busyFeedStatus } from "@/lib/busy";
+import { mailConfigured } from "@/lib/mail";
+import { AVAILABILITY, SITE, money } from "@/lib/site";
+import { describeSlot } from "@/lib/slots";
+import { adminLogin, adminLogout, cancelBooking, saveAvailabilityAction, sendTestMail } from "./actions";
 
 export const metadata: Metadata = {
   title: "Availability",
@@ -115,11 +118,16 @@ export default async function Admin({
     );
   }
 
-  const [availability, status, busy] = await Promise.all([
+  const [availability, status, feed, calls] = await Promise.all([
     getAvailability(),
     availabilityStatus(),
-    getBusyIntervals(),
+    busyFeedStatus(),
+    // Fresh, not the 30-second cache: this is the list he acts on.
+    upcomingBookings(Date.now(), true),
   ]);
+  const mail = typeof params.mail === "string" ? params.mail : undefined;
+  const call = typeof params.call === "string" ? params.call : undefined;
+  const callRef = typeof params.ref === "string" && /^MG-[A-F0-9]{6}$/.test(params.ref) ? params.ref : "";
 
   const win = (day: number, half: number) =>
     availability.windows.filter((w) => w.day === day)[half];
@@ -127,12 +135,15 @@ export default async function Admin({
      absent key means he had cleared that field), else what is stored. */
   const start = (name: string, stored: string | number) => (draft ? draft[name] ?? "" : stored);
 
-  const smtpOn = Boolean(process.env.SMTP_HOST);
+  const smtpOn = mailConfigured();
   const notifyReal = Boolean(
     (process.env.MIGAS_NOTIFY_TO ?? SITE.email) &&
       !(process.env.MIGAS_NOTIFY_TO ?? SITE.email).startsWith("PLACEHOLDER")
   );
-  const feedUrl = Boolean(process.env.MIGAS_BUSY_ICS_URL);
+  // The day-before reminder needs all three: the hourly job's secret, the stored
+  // bookings it reads, and mail to send with.
+  const remindersOn = Boolean(process.env.CRON_SECRET) && status.configured && smtpOn;
+  const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
   return (
     <section className="wrap py-16 sm:py-20">
@@ -171,7 +182,7 @@ export default async function Admin({
           whoever runs the hosting: a Blob store on the Vercel project
           (BLOB_READ_WRITE_TOKEN), MIGAS_BUSY_ICS_URL, SMTP_HOST and friends,
           MIGAS_NOTIFY_TO. They used to be named in the red text itself. */}
-      <dl className="mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-2 lg:grid-cols-4">
+      <dl className="mt-10 grid gap-px overflow-hidden rounded-xl2 border border-line bg-line sm:grid-cols-2 lg:grid-cols-5">
         {[
           {
             k: "Saving changes",
@@ -180,10 +191,20 @@ export default async function Admin({
             no: "Off. Storage isn't connected yet, so changes here can't be saved. Ask Glazed Web to connect it",
           },
           {
+            /* Three states, not two. It used to read "Connected, 0 busy blocks" when
+               the link was dead, which is the one moment he needs to be told. */
             k: "Your calendar",
-            ok: feedUrl,
-            yes: `Connected, ${busy.length} busy ${busy.length === 1 ? "block" : "blocks"} in the next two weeks`,
-            no: "Not connected. Send Glazed Web your calendar's private iCal link, and the times you're busy will drop off the booking page",
+            ok: feed.connected && feed.ok,
+            yes:
+              `Connected. ${plural(feed.blocks, "busy time", "busy times")} in the next three months are off the booking page` +
+              (feed.repeating ? `, counting ${plural(feed.repeating, "repeating event", "repeating events")}` : "") +
+              (feed.unsupported
+                ? `. ${plural(feed.unsupported, "monthly or yearly repeating event", "monthly or yearly repeating events")} can't be read, so add those dates under Days off`
+                : "") +
+              (feed.unreadable ? `. ${plural(feed.unreadable, "event", "events")} could not be read` : ""),
+            no: feed.connected
+              ? `Your calendar link isn't answering (${feed.error ?? "no reason given"}), so your busy times are not being taken off the booking page. Send Glazed Web a fresh link`
+              : "Not connected. Send Glazed Web your calendar's private iCal link, and the times you're busy will drop off the booking page",
           },
           {
             k: "Outgoing mail",
@@ -197,6 +218,12 @@ export default async function Admin({
             yes: process.env.MIGAS_NOTIFY_TO ?? SITE.email,
             no: "No address yet. Tell Glazed Web which email should get your bookings",
           },
+          {
+            k: "Day-before reminder",
+            ok: remindersOn,
+            yes: "On. You and the grower each get an email the day before a call",
+            no: "Off. It starts once outgoing mail is connected",
+          },
         ].map((s) => (
           <div key={s.k} className="bg-ink-panel px-5 py-5">
             <dt className="text-xs font-semibold uppercase tracking-[0.14em] text-muted">{s.k}</dt>
@@ -206,6 +233,75 @@ export default async function Admin({
           </div>
         ))}
       </dl>
+
+      {/* ── Mail, checked: the tile above only knows mail is set up ── */}
+      {smtpOn && notifyReal && (
+        <form action={sendTestMail} className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+          <button type="submit" className="btn-ghost">
+            Send a test email
+          </button>
+          <p className="text-sm text-muted">It goes to {process.env.MIGAS_NOTIFY_TO ?? SITE.email}, the way a booking would.</p>
+        </form>
+      )}
+      {mail === "sent" && (
+        <p role="status" className="mt-4 max-w-xl rounded-xl2 border border-ember/50 bg-ink-panel p-4 text-[15px] text-bone">
+          Test email sent. Check the inbox, and the spam folder if it isn&rsquo;t there in a minute.
+        </p>
+      )}
+      {mail === "failed" && (
+        <p role="alert" className="mt-4 max-w-xl rounded-xl2 border border-alert/50 bg-ink-panel p-4 text-[15px] text-alert">
+          The test email did not send. The mail server said: {detail ?? "nothing"}. Send that line to Glazed Web.
+        </p>
+      )}
+
+      {/* ── The calls on the books ── */}
+      <h2 className="mt-12 text-2xl">Upcoming calls</h2>
+      {!status.configured ? (
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">Calls will be listed here once storage is connected.</p>
+      ) : calls.length === 0 ? (
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          None booked. When someone books, the call shows here and its time comes off the booking page.
+        </p>
+      ) : (
+        <>
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+            Each of these times is off the booking page. Removing one puts its time back. It does not tell the
+            grower, so email them yourself.
+          </p>
+          <ul className="mt-5 divide-y divide-line border-y border-line">
+            {calls.map((b) => (
+              <li key={b.ref} className="flex flex-wrap items-center gap-x-6 gap-y-2 py-4">
+                <div className="min-w-0 flex-1 basis-64">
+                  <p className="font-medium text-bone">{describeSlot(b.slot)}</p>
+                  <p className="mt-1 break-words text-sm text-muted">
+                    {b.sessionName}, {money(b.price)} · {b.name} ·{" "}
+                    <a href={`mailto:${b.email}`} className="text-flare hover:underline">
+                      {b.email}
+                    </a>
+                    {b.phone ? ` · ${b.phone}` : ""} · {b.ref} · {b.paidAt ? "Paid" : "Not paid"}
+                  </p>
+                </div>
+                <form action={cancelBooking}>
+                  <input type="hidden" name="ref" value={b.ref} />
+                  <button type="submit" className="btn-ghost !px-4 !py-2" aria-label={`Remove the call ${b.ref}, ${describeSlot(b.slot)}`}>
+                    Remove
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
+      {call === "removed" && (
+        <p role="status" className="mt-4 max-w-xl rounded-xl2 border border-ember/50 bg-ink-panel p-4 text-[15px] text-bone">
+          Removed{callRef ? ` ${callRef}` : ""}. Its time is back on the booking page.
+        </p>
+      )}
+      {call === "missing" && (
+        <p role="alert" className="mt-4 max-w-xl rounded-xl2 border border-alert/50 bg-ink-panel p-4 text-[15px] text-alert">
+          That call was not found. It may already have been removed.
+        </p>
+      )}
 
       <form action={saveAvailabilityAction} className="mt-12">
         <h2 className="text-2xl">Weekly hours</h2>
