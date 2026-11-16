@@ -1,7 +1,7 @@
 import { AVAILABILITY } from "./site";
 import { upcomingBookings } from "./bookings";
 import { getBusyIntervals } from "./busy";
-import { slotGrid, type RuntimeAvailability, type SlotDay } from "./slots";
+import { slotGrid, type Block, type RuntimeAvailability, type SlotDay } from "./slots";
 
 /**
  * Availability he can change himself, which is the half of "Calendly but better" the
@@ -28,9 +28,24 @@ export type StoredAvailability = {
   windows: { day: number; from: string; to: string }[];
   /** "YYYY-MM-DD" days removed from the grid: harvest days, holidays, travel. */
   blockedDates: string[];
+  /** Stretches of a day blocked off, one-off or weekly. Absent in documents
+   *  saved before 2026-11-16, which read as none. */
+  blocks?: Block[];
   leadDays: number;
   horizonDays: number;
 };
+
+/**
+ * HOW HE WANTS TO RUN IT (2026-11-16): "instead of setting availability, I'm
+ * just blocking off windows I'm not available and outside of that I'm open
+ * from 7 am to 10 pm." So the weekly hours can be set to this in one press on
+ * /admin, and what he then manages is the list of blocks. The shipped default
+ * is NOT changed to it: he wrote "I might", and opening fifteen hours a day,
+ * seven days a week, before he has blocked anything would put strangers on
+ * his Sunday night.
+ */
+export const OPEN_EVERY_DAY = { from: "07:00", to: "22:00" } as const;
+export const MAX_BLOCKS = 80;
 
 /** The admin form's field names. A rejected save hands these back in the query
  *  string so the form can be refilled; anything else in a draft is ignored. Open
@@ -44,6 +59,7 @@ const CACHE_TTL_MS = 60_000;
 export const DEFAULTS: StoredAvailability = {
   windows: [...AVAILABILITY.windows],
   blockedDates: [],
+  blocks: [],
   leadDays: AVAILABILITY.leadDays,
   horizonDays: AVAILABILITY.horizonDays,
 };
@@ -84,9 +100,20 @@ export function validate(doc: StoredAvailability): { ok?: StoredAvailability; er
   for (const d of doc.blockedDates) {
     if (!DATE.test(d)) return { error: `Blocked dates must be YYYY-MM-DD; "${d}" is not.` };
   }
+  const blocks: Block[] = [];
+  for (const b of doc.blocks ?? []) {
+    if (!DATE.test(b.date)) return { error: `A blocked time needs a date like 2026-09-03; "${b.date}" is not one.` };
+    if (!HHMM.test(b.from) || !HHMM.test(b.to)) return { error: "A blocked time needs a start and an end, HH:MM, 24-hour." };
+    if (b.from >= b.to) return { error: `A blocked time starts at ${b.from} and ends at ${b.to}, which ends it before it starts.` };
+    // The same block typed twice is one block.
+    if (blocks.some((x) => x.date === b.date && x.from === b.from && x.to === b.to && !!x.weekly === !!b.weekly)) continue;
+    blocks.push(b.weekly ? { date: b.date, from: b.from, to: b.to, weekly: true } : { date: b.date, from: b.from, to: b.to });
+  }
+  if (blocks.length > MAX_BLOCKS) return { error: `That is more than ${MAX_BLOCKS} blocked times. Remove some that have passed.` };
+  blocks.sort((a, b) => (a.date + a.from < b.date + b.from ? -1 : 1));
   const leadDays = Math.min(Math.max(Math.trunc(doc.leadDays), 0), 30);
   const horizonDays = Math.min(Math.max(Math.trunc(doc.horizonDays), 1), 60);
-  return { ok: { windows, blockedDates: [...new Set(doc.blockedDates)].sort(), leadDays, horizonDays } };
+  return { ok: { windows, blockedDates: [...new Set(doc.blockedDates)].sort(), blocks, leadDays, horizonDays } };
 }
 
 /** The stored document, or null when the store is unset, empty, or unreadable. */
@@ -116,6 +143,16 @@ async function readStored(): Promise<StoredAvailability | null> {
 
 export async function getAvailability(): Promise<StoredAvailability> {
   return (await readStored()) ?? DEFAULTS;
+}
+
+/** One-off blocks and days off that ended before `today` ("YYYY-MM-DD"). They
+ *  do nothing any more, so each save sweeps them out and the list stays short. */
+export function withoutPast(doc: StoredAvailability, today: string): StoredAvailability {
+  return {
+    ...doc,
+    blockedDates: doc.blockedDates.filter((d) => d >= today),
+    blocks: (doc.blocks ?? []).filter((b) => b.weekly || b.date >= today),
+  };
 }
 
 /** For the admin status panel: is the store connected, and has he ever saved? */

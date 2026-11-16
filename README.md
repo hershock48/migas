@@ -96,6 +96,20 @@ is filled:
   horizon — behind a PIN (`MIGAS_ADMIN_PIN`), saved as one JSON document in the
   project's Blob store, no commit needed. The page is plain forms posting server
   actions, so it works from a phone in a grow room with no JavaScript downloaded.
+- **Time off, by blocking it (2026-11-16).** His note: "instead of setting
+  availability, I'm just blocking off windows I'm not available and outside of
+  that I'm open from 7 am to 10 pm". `/admin` has a Time off section: a date, a
+  from and a to block a stretch of a day, both times empty block the whole day,
+  and "Every week on this day" repeats it. Each block lists with a Remove
+  button. One press, "Open 7 AM to 10 PM, every day", sets the weekly hours to
+  match. The shipped default hours are NOT changed to 7 to 10: he wrote "I
+  might", and fifteen open hours a day before he has blocked anything would put
+  strangers on his Sunday night. A block is compared to slots as minutes of the
+  same local day (`blocksOn` in `lib/slots.ts`), so no timezone arithmetic is
+  involved. Checked on a production build against a local stand-in for the Blob
+  API: a 1 to 3 PM block removed 1:00 through 2:30 and cut 12:30 down to a half
+  hour; a weekly Friday block applied to both Fridays in reach; a whole day
+  dropped out; a booked call closed its time; Remove reopened each one.
 - **His calendar removes taken times.** `MIGAS_BUSY_ICS_URL` points at the private
   iCal address of his own calendar. Every event on it removes or shortens the slots it
   covers, and the loop closes through the invite: a confirmed booking lands on his

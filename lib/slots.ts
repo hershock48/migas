@@ -71,7 +71,32 @@ export type RuntimeAvailability = {
   horizonDays: number;
   /** Busy intervals from his calendar, as epoch ms. */
   busy: readonly { start: number; end: number }[];
+  /** Time he has blocked off by hand on /admin. Wall-clock, in timeZone. */
+  blocks?: readonly Block[];
 };
+
+/**
+ * One stretch he is not available, typed on /admin (2026-11-16: "instead of
+ * setting availability, I'm just blocking off windows I'm not available").
+ * A date, a from and a to, all wall-clock in AVAILABILITY.timeZone. With
+ * `weekly` it repeats on that weekday from the date onward. It is compared to
+ * slots as minutes of the same local day, so no timezone arithmetic is needed
+ * and a clock change cannot move it.
+ */
+export type Block = { date: string; from: string; to: string; weekly?: boolean };
+
+const weekdayOf = (date: string) => {
+  const [y, m, d] = date.split("-").map(Number);
+  return new Date(Date.UTC(y, m - 1, d)).getUTCDay();
+};
+
+/** The blocks that apply on one local date, as minute ranges of that day. */
+export function blocksOn(date: string, blocks: readonly Block[] = []): { from: number; to: number }[] {
+  const dow = weekdayOf(date);
+  return blocks
+    .filter((b) => (b.weekly ? date >= b.date && weekdayOf(b.date) === dow : b.date === date))
+    .map((b) => ({ from: minutes(b.from), to: minutes(b.to) }));
+}
 
 const STATIC_RUNTIME: RuntimeAvailability = {
   windows: AVAILABILITY.windows,
@@ -156,6 +181,9 @@ export function slotGrid(
 
     const date = `${p.year}-${MONTHS[p.month]}-${pad(Number(p.day))}`;
     if (runtime.blockedDates.includes(date)) continue;
+    // A call may start the minute a block ends, same rule as a calendar event.
+    const off = blocksOn(date, runtime.blocks);
+    const blocked = (from: number, to: number) => off.some((b) => from < b.to && to > b.from);
 
     const slots: Slot[] = [];
     for (const w of windows) {
@@ -168,6 +196,7 @@ export function slotGrid(
         const maxMinutes = LENGTHS.find(
           (m) =>
             t + m <= close &&
+            !blocked(t, t + m) &&
             (!runtime.busy.length || !collides(startMs, startMs + m * 60_000))
         );
         if (!maxMinutes) continue;

@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_COOKIE, cookieIsValid, pinConfigured } from "@/lib/admin-auth";
-import { DRAFT_FIELD, DRAFT_MAX, availabilityStatus, getAvailability } from "@/lib/availability";
+import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, availabilityStatus, getAvailability } from "@/lib/availability";
 import { upcomingBookings } from "@/lib/bookings";
 import { busyFeedStatus } from "@/lib/busy";
 import { mailConfigured } from "@/lib/mail";
 import { AVAILABILITY, SITE, money } from "@/lib/site";
 import { describeSlot } from "@/lib/slots";
-import { adminLogin, adminLogout, cancelBooking, saveAvailabilityAction, sendTestMail } from "./actions";
+import { addBlock, adminLogin, adminLogout, cancelBooking, openEveryDay, removeBlock, saveAvailabilityAction, sendTestMail } from "./actions";
 
 export const metadata: Metadata = {
   title: "Availability",
@@ -31,6 +31,25 @@ const MESSAGES: Record<string, string> = {
   "bad-days": "Lead days and days offered both need to be numbers.",
   invalid: "That could not be saved:",
 };
+
+/** What the three "time off" buttons redirect back with. */
+const BLOCK_MESSAGES: Record<string, { text: string; bad?: boolean }> = {
+  added: { text: "Blocked. That time is off the booking page from its next load." },
+  removed: { text: "Removed. That time can be booked again." },
+  open: { text: "Your weekly hours are now 7:00 AM to 10:00 PM, every day. Block off what you can't do below." },
+  "no-date": { text: "Pick the date first.", bad: true },
+  past: { text: "That date has already passed.", bad: true },
+  half: { text: "A blocked time needs both a start and an end. For a whole day, leave both empty.", bad: true },
+  "weekly-day": { text: "To take the same weekday off every week, clear that day under Weekly hours.", bad: true },
+  invalid: { text: "That could not be saved:", bad: true },
+};
+
+/** "13:30" as "1:30 PM". */
+const clock12 = (hhmm: string) => {
+  const [h, m] = hhmm.split(":").map(Number);
+  return `${h % 12 === 0 ? 12 : h % 12}:${String(m).padStart(2, "0")} ${h < 12 ? "AM" : "PM"}`;
+};
+const dayLabel = (date: string, opts: Intl.DateTimeFormatOptions) => new Date(`${date}T12:00:00Z`).toLocaleDateString("en-US", { ...opts, timeZone: "UTC" });
 
 /** The form as it was typed, handed back by a rejected save (see actions.ts). Only
  *  the form's own field names are read, and only strings. */
@@ -134,6 +153,23 @@ export default async function Admin({
   /* A field's starting value: what was typed, when a save was just rejected (an
      absent key means he had cleared that field), else what is stored. */
   const start = (name: string, stored: string | number) => (draft ? draft[name] ?? "" : stored);
+
+  // Time off: what he blocked by hand, in date order, each with the key its
+  // Remove button posts back.
+  const block = typeof params.block === "string" ? BLOCK_MESSAGES[params.block] : undefined;
+  const typed = (k: string) => (typeof params[k] === "string" ? (params[k] as string) : "");
+  const timeOff = [
+    ...availability.blockedDates.map((d) => ({ key: `day|${d}`, sort: `${d}T00:00`, when: dayLabel(d, { weekday: "short", month: "short", day: "numeric" }), what: "All day" })),
+    ...(availability.blocks ?? []).map((b) => ({
+      key: `${b.weekly ? "weekly" : "once"}|${b.date}|${b.from}|${b.to}`,
+      sort: `${b.date}T${b.from}`,
+      when: b.weekly ? `Every ${dayLabel(b.date, { weekday: "long" })}` : dayLabel(b.date, { weekday: "short", month: "short", day: "numeric" }),
+      what: `${clock12(b.from)} to ${clock12(b.to)}${b.weekly ? `, from ${dayLabel(b.date, { month: "short", day: "numeric" })}` : ""}`,
+    })),
+  ].sort((a, b) => (a.sort < b.sort ? -1 : 1));
+  const openAllWeek =
+    availability.windows.length === 7 &&
+    [0, 1, 2, 3, 4, 5, 6].every((d) => availability.windows.some((w) => w.day === d && w.from === OPEN_EVERY_DAY.from && w.to === OPEN_EVERY_DAY.to));
 
   const smtpOn = mailConfigured();
   const notifyReal = Boolean(
@@ -303,7 +339,88 @@ export default async function Admin({
         </p>
       )}
 
-      <form action={saveAvailabilityAction} className="mt-12">
+      {/* ── Time off: the part he manages day to day ──
+          His note of 2026-11-16: open 7 AM to 10 PM, and block off the windows he
+          is not available, instead of setting availability. One press sets the
+          hours; after that this list is the whole job. */}
+      <section id="blocks" className="mt-12 scroll-mt-24">
+        <h2 className="text-2xl">Time off</h2>
+        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
+          {openAllWeek
+            ? "You're open 7:00 AM to 10:00 PM every day. Block the times you can't take a call and they come off the booking page."
+            : "Block a time you can't take a call and it comes off the booking page, inside whatever weekly hours are set below."}{" "}
+          Times are {AVAILABILITY.timeZoneLabel}.
+        </p>
+        {block && (
+          <p
+            role={block.bad ? "alert" : "status"}
+            className={`mt-4 max-w-xl rounded-xl2 border bg-ink-panel p-4 text-[15px] ${block.bad ? "border-alert/50 text-alert" : "border-ember/50 text-bone"}`}
+          >
+            {block.text}
+            {params.block === "invalid" && detail ? ` ${detail}` : ""}
+          </p>
+        )}
+
+        {timeOff.length > 0 && (
+          <ul className="mt-5 max-w-2xl divide-y divide-line border-y border-line">
+            {timeOff.map((t) => (
+              <li key={t.key} className="flex flex-wrap items-center gap-x-6 gap-y-1 py-3">
+                <p className="min-w-0 flex-1 basis-56 text-[15px]">
+                  <span className="font-medium text-bone">{t.when}</span>
+                  <span className="text-muted"> · {t.what}</span>
+                </p>
+                <form action={removeBlock}>
+                  <input type="hidden" name="key" value={t.key} />
+                  <button type="submit" className="btn-ghost !px-4 !py-2" aria-label={`Remove the time off: ${t.when}, ${t.what}`}>
+                    Remove
+                  </button>
+                </form>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        <form key={timeOff.map((t) => t.key).join(",")} action={addBlock} className="mt-6 grid max-w-2xl gap-x-4 gap-y-3 sm:grid-cols-[1.3fr_1fr_1fr] sm:items-end">
+          <label>
+            <span className="block text-sm text-muted">Date</span>
+            <input type="date" name="date" required defaultValue={typed("bdate")} className="mt-2 w-full min-w-0 rounded-lg border border-edge bg-ink px-3 py-2.5 text-bone" />
+          </label>
+          <label>
+            <span className="block text-sm text-muted">From</span>
+            <input type="time" name="from" defaultValue={typed("bfrom")} className="mt-2 w-full min-w-0 rounded-lg border border-edge bg-ink px-3 py-2.5 text-bone" />
+          </label>
+          <label>
+            <span className="block text-sm text-muted">To</span>
+            <input type="time" name="to" defaultValue={typed("bto")} className="mt-2 w-full min-w-0 rounded-lg border border-edge bg-ink px-3 py-2.5 text-bone" />
+          </label>
+          <label className="flex items-center gap-3 text-sm text-bone sm:col-span-2">
+            <input type="checkbox" name="weekly" value="yes" defaultChecked={typed("bweekly") === "1"} className="h-5 w-5 accent-ember" />
+            Every week on this day
+          </label>
+          <button type="submit" className="btn-primary sm:justify-self-end">
+            Block this time
+          </button>
+          <p className="text-sm text-muted sm:col-span-3">Leave From and To empty to take the whole day off.</p>
+        </form>
+
+        {!openAllWeek && (
+          <form action={openEveryDay} className="mt-8 flex max-w-2xl flex-wrap items-center gap-x-4 gap-y-2 border-t border-line pt-6">
+            <button type="submit" className="btn-ghost">
+              Open 7 AM to 10 PM, every day
+            </button>
+            <p className="min-w-0 flex-1 basis-64 text-sm text-muted">
+              Sets the weekly hours below to 7:00 AM to 10:00 PM, all seven days, in one press. Your time off stays as it is.
+            </p>
+          </form>
+        )}
+      </section>
+
+      {/* Keyed on what is stored. A press on "Open 7 AM to 10 PM" or a block lands
+          back on this page without a full load, and React keeps an input it has
+          already shown: the new hours were in the HTML and the old ones stayed on
+          screen (seen 2026-11-16, Monday still reading 9 to 12 after the press).
+          A new key rebuilds the form from what is stored. */}
+      <form key={JSON.stringify([availability.windows, availability.blockedDates, availability.leadDays, availability.horizonDays, rawDraft])} action={saveAvailabilityAction} className="mt-12">
         <h2 className="text-2xl">Weekly hours</h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted">
           Times are {AVAILABILITY.timeZoneLabel}, up to two windows a day, each an open

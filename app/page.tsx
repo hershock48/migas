@@ -346,7 +346,7 @@ export default function Home() {
         {/* The software. A real screenshot of the platform, with the live demo a click away. */}
         <div id="software" className="reveal mt-12 grid scroll-mt-24 gap-8 lg:grid-cols-[1.3fr_1fr] lg:items-center">
           <a href={COMANAGEMENT.software.demo} rel="noopener" className="group block overflow-hidden rounded-xl2 border border-line" aria-label={`Open the ${COMANAGEMENT.software.name} demo`}>
-            <Image src={rgsOverview} alt={`The ${COMANAGEMENT.software.name} overview: rooms needing a look, each run as a bar from flip to harvest, check-ins due this week.`} sizes="(min-width: 1024px) 640px, 100vw" className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]" />
+            <Image src={rgsOverview} alt={`A flower room in ${COMANAGEMENT.software.name}: the latest readings as rings against their setpoints, the room drawn from its profile, and the room profile beside it.`} sizes="(min-width: 1024px) 640px, 100vw" className="h-auto w-full transition-transform duration-300 group-hover:scale-[1.01]" />
           </a>
           <div>
             <p className="eyebrow">The software</p>

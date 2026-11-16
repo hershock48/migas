@@ -270,7 +270,8 @@ export const PATREON_POSTS = [
  *
  * PRICING CHANGED 2026-11-04. The per-light range from the August call ($50 to
  * $150 a light, project minimum unnamed) is retired. Co-management now runs on
- * the Remote Grow Solutions platform and is priced by its tiers, which are his
+ * the platform (MI-Gas x Plantsman Management; Remote Grow Solutions until he
+ * renamed it on 2026-11-16) and is priced by its tiers, which are his
  * numbers from his November planning notes: four tiers set by flowering lights
  * or flower rooms, the higher one wins. The same four live in the platform's
  * lib/pricing.ts; change both together.
@@ -296,7 +297,9 @@ export const COMANAGEMENT = {
   /** The KPIs co-management is judged on, his list. */
   kpis: ["Runs per year", "Yield per square foot", "Consistency, run to run", "Quality: potency, terpenes, appearance", "Revenue per pound"],
   software: {
-    name: "Remote Grow Solutions",
+    // His name for it since 2026-11-16, spelled as he wrote it. The address below
+    // keeps the old name until Kevin renames the host.
+    name: "MI-Gas x Plantsman Management",
     url: "https://remotegrowsolutions.vercel.app",
     demo: "https://remotegrowsolutions.vercel.app/login",
     // The demo is a sign-in form, so a button that only links to it reads as locked
@@ -304,7 +307,7 @@ export const COMANAGEMENT = {
     // facility's data is sample data that resets on its own.
     demoLogin: { facility: "demo", passcode: "grow-demo" },
     blurb:
-      "It shows each room's readings against its targets, flags the rooms that need a look first, tracks each run from flip to harvest, and holds the shared calendar and the weekly report. Your team logs what the sensors can't measure, and we read it before each call.",
+      "Each flower room shows its readings against its own setpoints, its irrigation schedule shot by shot, and the day's task list for your team. Your team logs what the sensors can't measure, runoff by feed zone included, and we read it before each call. The weekly report lives there too.",
   },
   services: [
     {

@@ -8,10 +8,10 @@ import {
   cookieValueFor,
   pinMatches,
 } from "@/lib/admin-auth";
-import { DRAFT_FIELD, DRAFT_MAX, saveAvailability, type StoredAvailability } from "@/lib/availability";
+import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, getAvailability, saveAvailability, withoutPast, type StoredAvailability } from "@/lib/availability";
 import { deleteBooking } from "@/lib/bookings";
 import { notifyTo, sendMailChecked } from "@/lib/mail";
-import { SITE } from "@/lib/site";
+import { AVAILABILITY, SITE } from "@/lib/site";
 
 /**
  * The three admin actions: in, out, and save. All three finish with a redirect
@@ -89,9 +89,13 @@ export async function saveAvailabilityAction(fd: FormData) {
     .map((l) => l.trim())
     .filter(Boolean);
 
+  // The blocked times are edited by their own two buttons, not by this form,
+  // so a save here carries them through untouched.
+  const current = await getAvailability();
   const doc: StoredAvailability = {
     windows,
     blockedDates,
+    blocks: current.blocks ?? [],
     leadDays: Number(fd.get("leadDays") ?? NaN),
     horizonDays: Number(fd.get("horizonDays") ?? NaN),
   };
@@ -102,6 +106,72 @@ export async function saveAvailabilityAction(fd: FormData) {
   const result = await saveAvailability(doc);
   if (result.error) back({ error: "invalid", detail: result.error, ...draft });
   back({ saved: "1" });
+}
+
+/* ------------------------------ time blocked off ------------------------------ */
+
+/** Today in the site's own timezone, "YYYY-MM-DD". */
+const todayLocal = () =>
+  new Intl.DateTimeFormat("en-CA", { timeZone: AVAILABILITY.timeZone, year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
+
+const signedIn = async () => cookieIsValid((await cookies()).get(ADMIN_COOKIE)?.value);
+const toBlocks = (params: Record<string, string>) => {
+  const q = new URLSearchParams(params).toString();
+  redirect(`/admin?${q}#blocks`);
+};
+
+/**
+ * Block a stretch of a day, or a whole day when both times are left empty.
+ * "Every week" repeats it on that weekday from the date onward.
+ */
+export async function addBlock(fd: FormData) {
+  if (!(await signedIn())) back({ error: "signed-out" });
+  const date = String(fd.get("date") ?? "").trim();
+  const from = String(fd.get("from") ?? "").trim();
+  const to = String(fd.get("to") ?? "").trim();
+  const weekly = fd.get("weekly") === "yes";
+  const typed = { bdate: date, bfrom: from, bto: to, ...(weekly ? { bweekly: "1" } : {}) };
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) toBlocks({ block: "no-date", ...typed });
+  if (date < todayLocal()) toBlocks({ block: "past", ...typed });
+  if ((from && !to) || (!from && to)) toBlocks({ block: "half", ...typed });
+  if (!from && !to && weekly) toBlocks({ block: "weekly-day", ...typed });
+
+  const current = withoutPast(await getAvailability(), todayLocal());
+  const next: StoredAvailability =
+    !from && !to
+      ? { ...current, blockedDates: [...current.blockedDates, date] }
+      : { ...current, blocks: [...(current.blocks ?? []), { date, from, to, ...(weekly ? { weekly: true } : {}) }] };
+  const result = await saveAvailability(next);
+  if (result.error) toBlocks({ block: "invalid", detail: result.error, ...typed });
+  toBlocks({ block: "added" });
+}
+
+/** Remove one blocked time or one day off. The key is what the list printed. */
+export async function removeBlock(fd: FormData) {
+  if (!(await signedIn())) back({ error: "signed-out" });
+  const key = String(fd.get("key") ?? "");
+  const current = await getAvailability();
+  const next: StoredAvailability = {
+    ...current,
+    blockedDates: current.blockedDates.filter((d) => `day|${d}` !== key),
+    blocks: (current.blocks ?? []).filter((b) => `${b.weekly ? "weekly" : "once"}|${b.date}|${b.from}|${b.to}` !== key),
+  };
+  const result = await saveAvailability(withoutPast(next, todayLocal()));
+  if (result.error) toBlocks({ block: "invalid", detail: result.error });
+  toBlocks({ block: "removed" });
+}
+
+/** Open 7 AM to 10 PM, every day: the weekly hours in one press. Blocks, days
+ *  off, lead time and reach are kept. */
+export async function openEveryDay() {
+  if (!(await signedIn())) back({ error: "signed-out" });
+  const current = await getAvailability();
+  const result = await saveAvailability({
+    ...current,
+    windows: Array.from({ length: 7 }, (_, day) => ({ day, from: OPEN_EVERY_DAY.from, to: OPEN_EVERY_DAY.to })),
+  });
+  if (result.error) toBlocks({ block: "invalid", detail: result.error });
+  toBlocks({ block: "open" });
 }
 
 /**
