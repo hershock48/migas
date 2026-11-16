@@ -110,6 +110,22 @@ is filled:
   API: a 1 to 3 PM block removed 1:00 through 2:30 and cut 12:30 down to a half
   hour; a weekly Friday block applied to both Fridays in reach; a whole day
   dropped out; a booked call closed its time; Remove reopened each one.
+- **How the hours are stored changed the same day, after a review.** Adding a
+  block reads the stored document, adds a line and writes it back. Three ways
+  that could lose his hours were found and closed. Each server instance kept
+  its own 60-second copy, so a change could be built on a stale one: every
+  change now reads the store first. A read that FAILED was taken for "nothing
+  saved" and the defaults were written back over his real hours: a change is
+  now refused with a sentence when the read fails. And an overwritten public
+  file can be served stale by the CDN: a save now writes a new file,
+  `config/availability.<time>.json`, the newest is found through the store's
+  listing, and the three newest are kept. The SDK's cache bypass is for
+  private stores only, which is why it is not used. Separately, the storage
+  SDK retries a failing request for about seventeen minutes; `lib/blob.ts`
+  caps that at a few seconds so the booking and admin pages fail open in time.
+  Rehearsed against a stand-in answering 500. Not rehearsed against the real
+  store: that it lists a new file the moment it is written is assumed here,
+  not tested.
 - **His calendar removes taken times.** `MIGAS_BUSY_ICS_URL` points at the private
   iCal address of his own calendar. Every event on it removes or shortens the slots it
   covers, and the loop closes through the invite: a confirmed booking lands on his

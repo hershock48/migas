@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac } from "node:crypto";
+import { blobTimeout } from "./blob";
 
 /**
  * The bookings on record, so a reminder can go out before the call and a
@@ -113,7 +114,7 @@ export async function upcomingBookings(nowMs: number = Date.now(), fresh = false
 export async function deleteBooking(ref: string): Promise<boolean> {
   if (!configured()) return false;
   const { list, del } = await import("@vercel/blob");
-  const found = (await list({ prefix: pathFor(ref), limit: 1 })).blobs[0];
+  const found = (await list({ prefix: pathFor(ref), limit: 1, ...blobTimeout() })).blobs[0];
   if (!found) return false;
   await del(found.url);
   if (upcoming) upcoming.list = upcoming.list.filter((x) => x.ref !== ref);
@@ -123,7 +124,7 @@ export async function deleteBooking(ref: string): Promise<boolean> {
 export async function getBooking(ref: string): Promise<Booking | null> {
   if (!configured()) return null;
   const { list } = await import("@vercel/blob");
-  const found = (await list({ prefix: pathFor(ref), limit: 1 })).blobs[0];
+  const found = (await list({ prefix: pathFor(ref), limit: 1, ...blobTimeout() })).blobs[0];
   if (!found) return null;
   const res = await fetch(found.url, { cache: "no-store" });
   if (!res.ok) return null;
@@ -137,7 +138,7 @@ export async function bookingsStarting(fromMs: number, toMs: number): Promise<Bo
   const out: Booking[] = [];
   let cursor: string | undefined;
   do {
-    const page = await list({ prefix: PREFIX, limit: 200, cursor });
+    const page = await list({ prefix: PREFIX, limit: 200, cursor, ...blobTimeout() });
     for (const blob of page.blobs) {
       // A record this old cannot be for a call still ahead; skip the fetch. 120
       // days, because /admin allows booking up to 90 days out (30 of lead time

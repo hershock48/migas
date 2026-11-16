@@ -8,7 +8,7 @@ import {
   cookieValueFor,
   pinMatches,
 } from "@/lib/admin-auth";
-import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, getAvailability, saveAvailability, withoutPast, type StoredAvailability } from "@/lib/availability";
+import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, getAvailabilityForWrite, saveAvailability, withoutPast, type StoredAvailability } from "@/lib/availability";
 import { deleteBooking } from "@/lib/bookings";
 import { notifyTo, sendMailChecked } from "@/lib/mail";
 import { AVAILABILITY, SITE } from "@/lib/site";
@@ -91,7 +91,9 @@ export async function saveAvailabilityAction(fd: FormData) {
 
   // The blocked times are edited by their own two buttons, not by this form,
   // so a save here carries them through untouched.
-  const current = await getAvailability();
+  const read = await getAvailabilityForWrite();
+  if (read.error !== undefined) back({ error: "invalid", detail: read.error, ...draft });
+  const current = read.doc!;
   const doc: StoredAvailability = {
     windows,
     blockedDates,
@@ -125,18 +127,22 @@ const toBlocks = (params: Record<string, string>) => {
  * "Every week" repeats it on that weekday from the date onward.
  */
 export async function addBlock(fd: FormData) {
-  if (!(await signedIn())) back({ error: "signed-out" });
+  if (!(await signedIn())) back({ error: "signed-out-again" });
   const date = String(fd.get("date") ?? "").trim();
   const from = String(fd.get("from") ?? "").trim();
   const to = String(fd.get("to") ?? "").trim();
   const weekly = fd.get("weekly") === "yes";
   const typed = { bdate: date, bfrom: from, bto: to, ...(weekly ? { bweekly: "1" } : {}) };
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) toBlocks({ block: "no-date", ...typed });
+  // On the calendar, not merely date-shaped: 2026-02-31 has the shape.
+  const onCalendar = /^\d{4}-\d{2}-\d{2}$/.test(date) && !Number.isNaN(Date.parse(`${date}T00:00:00Z`)) && new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) === date;
+  if (!onCalendar) toBlocks({ block: "no-date", ...typed });
   if (date < todayLocal()) toBlocks({ block: "past", ...typed });
   if ((from && !to) || (!from && to)) toBlocks({ block: "half", ...typed });
   if (!from && !to && weekly) toBlocks({ block: "weekly-day", ...typed });
 
-  const current = withoutPast(await getAvailability(), todayLocal());
+  const read = await getAvailabilityForWrite();
+  if (read.error !== undefined) toBlocks({ block: "invalid", detail: read.error, ...typed });
+  const current = withoutPast(read.doc!, todayLocal());
   const next: StoredAvailability =
     !from && !to
       ? { ...current, blockedDates: [...current.blockedDates, date] }
@@ -148,9 +154,11 @@ export async function addBlock(fd: FormData) {
 
 /** Remove one blocked time or one day off. The key is what the list printed. */
 export async function removeBlock(fd: FormData) {
-  if (!(await signedIn())) back({ error: "signed-out" });
+  if (!(await signedIn())) back({ error: "signed-out-again" });
   const key = String(fd.get("key") ?? "");
-  const current = await getAvailability();
+  const read = await getAvailabilityForWrite();
+  if (read.error !== undefined) toBlocks({ block: "invalid", detail: read.error });
+  const current = read.doc!;
   const next: StoredAvailability = {
     ...current,
     blockedDates: current.blockedDates.filter((d) => `day|${d}` !== key),
@@ -164,8 +172,10 @@ export async function removeBlock(fd: FormData) {
 /** Open 7 AM to 10 PM, every day: the weekly hours in one press. Blocks, days
  *  off, lead time and reach are kept. */
 export async function openEveryDay() {
-  if (!(await signedIn())) back({ error: "signed-out" });
-  const current = await getAvailability();
+  if (!(await signedIn())) back({ error: "signed-out-again" });
+  const read = await getAvailabilityForWrite();
+  if (read.error !== undefined) toBlocks({ block: "invalid", detail: read.error });
+  const current = read.doc!;
   const result = await saveAvailability({
     ...current,
     windows: Array.from({ length: 7 }, (_, day) => ({ day, from: OPEN_EVERY_DAY.from, to: OPEN_EVERY_DAY.to })),

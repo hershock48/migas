@@ -27,6 +27,7 @@ const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
 const MESSAGES: Record<string, string> = {
   "wrong-pin": "That PIN is not it. Try again.",
   "signed-out": "You were signed out. Sign in and save again; what you typed is kept.",
+  "signed-out-again": "You were signed out, so that was not saved. Sign in and do it again.",
   "half-window": "A window needs both an open and a close time. One of them has only one.",
   "bad-days": "Lead days and days offered both need to be numbers.",
   invalid: "That could not be saved:",
@@ -34,8 +35,8 @@ const MESSAGES: Record<string, string> = {
 
 /** What the three "time off" buttons redirect back with. */
 const BLOCK_MESSAGES: Record<string, { text: string; bad?: boolean }> = {
-  added: { text: "Blocked. That time is off the booking page from its next load." },
-  removed: { text: "Removed. That time can be booked again." },
+  added: { text: "Blocked. That time comes off the booking page within a minute, and a booking for it is refused from now." },
+  removed: { text: "Removed. That time is back on the booking page within a minute." },
   open: { text: "Your weekly hours are now 7:00 AM to 10:00 PM, every day. Block off what you can't do below." },
   "no-date": { text: "Pick the date first.", bad: true },
   past: { text: "That date has already passed.", bad: true },
@@ -138,7 +139,9 @@ export default async function Admin({
   }
 
   const [availability, status, feed, calls] = await Promise.all([
-    getAvailability(),
+    // Fresh, like the calls below: this is the page he edits from, and another
+    // server instance may have saved since this one last looked.
+    getAvailability(true),
     availabilityStatus(),
     busyFeedStatus(),
     // Fresh, not the 30-second cache: this is the list he acts on.

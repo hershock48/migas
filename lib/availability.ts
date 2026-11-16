@@ -1,4 +1,5 @@
 import { AVAILABILITY } from "./site";
+import { BLOB_TIMEOUT_MS, blobTimeout } from "./blob";
 import { upcomingBookings } from "./bookings";
 import { getBusyIntervals } from "./busy";
 import { slotGrid, type Block, type RuntimeAvailability, type SlotDay } from "./slots";
@@ -53,7 +54,27 @@ export const MAX_BLOCKS = 80;
 export const DRAFT_FIELD = /^(w[0-6][ab]_(from|to)|blocked|leadDays|horizonDays)$/;
 export const DRAFT_MAX = 2000;
 
-const PATHNAME = "config/availability.json";
+/**
+ * WHERE THE DOCUMENT LIVES, AND WHY EVERY SAVE IS A NEW FILE.
+ *
+ * It was one file, config/availability.json, overwritten on each save. A
+ * public blob is served through a CDN, and an overwritten one can be answered
+ * from the CDN's previous copy for a while. That did not matter while a save
+ * replaced the whole document from the form. It matters now: "block this
+ * time" reads the document, adds one line, and writes it back, and doing that
+ * on top of a stale copy silently drops whatever was saved a moment before
+ * (found in review, 2026-11-16). The SDK's cache bypass is for private stores
+ * only, so it is no help here.
+ *
+ * So a save never overwrites. It writes config/availability.<time>.json, a
+ * name nothing has ever been cached under, and a read asks the store's own
+ * listing (the API, never the CDN) which file is newest and fetches that one.
+ * The original config/availability.json shares the prefix, so a document
+ * saved before this change is still found. The three newest are kept and the
+ * rest swept on each save.
+ */
+const PREFIX = "config/availability";
+const KEEP_VERSIONS = 3;
 const CACHE_TTL_MS = 60_000;
 
 export const DEFAULTS: StoredAvailability = {
@@ -69,7 +90,17 @@ let cache: { at: number; value: StoredAvailability | null } | null = null;
 export const storeConfigured = () => Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 const HHMM = /^([01]\d|2[0-3]):[0-5]\d$/;
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const DATE_SHAPE = /^\d{4}-\d{2}-\d{2}$/;
+/** A date that is on the calendar. The shape alone lets 2026-02-31 through, which
+ *  JavaScript quietly reads as March 3: it would block nothing and list as a day
+ *  he never typed. */
+const DATE = {
+  test: (s: string) => {
+    if (!DATE_SHAPE.test(s)) return false;
+    const d = new Date(`${s}T00:00:00Z`);
+    return !Number.isNaN(d.getTime()) && d.toISOString().slice(0, 10) === s;
+  },
+};
 
 const DAY_WORDS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
@@ -98,7 +129,7 @@ export function validate(doc: StoredAvailability): { ok?: StoredAvailability; er
     }
   }
   for (const d of doc.blockedDates) {
-    if (!DATE.test(d)) return { error: `Blocked dates must be YYYY-MM-DD; "${d}" is not.` };
+    if (!DATE.test(d)) return { error: `"${d}" is not a date on the calendar. Days off are written like 2026-09-03.` };
   }
   const blocks: Block[] = [];
   for (const b of doc.blocks ?? []) {
@@ -116,24 +147,44 @@ export function validate(doc: StoredAvailability): { ok?: StoredAvailability; er
   return { ok: { windows, blockedDates: [...new Set(doc.blockedDates)].sort(), blocks, leadDays, horizonDays } };
 }
 
-/** The stored document, or null when the store is unset, empty, or unreadable. */
-async function readStored(): Promise<StoredAvailability | null> {
+type Listed = { url: string; pathname: string; uploadedAt: Date | string };
+
+/** Every stored version, newest first, from the store's listing. */
+async function versions(): Promise<Listed[]> {
+  const { list } = await import("@vercel/blob");
+  const blobs = (await list({ prefix: PREFIX, limit: 100, ...blobTimeout() })).blobs as Listed[];
+  const at = (x: Listed) => new Date(x.uploadedAt).getTime();
+  return blobs.sort((x, y) => at(y) - at(x) || (x.pathname < y.pathname ? 1 : -1));
+}
+
+/**
+ * The stored document, or null when nothing has been saved yet.
+ *
+ * `fresh` skips this instance's 60-second copy. `strict` is for a caller that
+ * is about to write: a read that FAILS then throws, where the ordinary read
+ * falls back to the last copy or to null. The difference is the whole point.
+ * The booking page must keep working when storage hiccups, so it fails open
+ * onto the defaults. An action that adds a block must never do that: it would
+ * take "could not read" for "nothing is saved" and write the defaults back
+ * over his real hours, days off and blocks.
+ */
+async function readStored(fresh = false, strict = false): Promise<StoredAvailability | null> {
   if (!storeConfigured()) return null;
-  if (cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.value;
+  if (!fresh && cache && Date.now() - cache.at < CACHE_TTL_MS) return cache.value;
   try {
-    const { list } = await import("@vercel/blob");
-    const found = (await list({ prefix: PATHNAME, limit: 1 })).blobs[0];
+    const found = (await versions())[0];
     if (!found) {
       cache = { at: Date.now(), value: null };
       return null;
     }
-    const res = await fetch(found.url, { cache: "no-store" });
+    const res = await fetch(found.url, { cache: "no-store", signal: AbortSignal.timeout(BLOB_TIMEOUT_MS) });
     if (!res.ok) throw new Error(`blob answered ${res.status}`);
     const parsed = validate((await res.json()) as StoredAvailability);
     if (parsed.error) throw new Error(parsed.error);
     cache = { at: Date.now(), value: parsed.ok! };
     return parsed.ok!;
   } catch (err) {
+    if (strict) throw err;
     // Open failure: the defaults render and the admin page says the store is
     // unreadable. The booking form does not go down because a JSON document did.
     console.error("[migas] Availability store unreadable, serving defaults", err);
@@ -141,8 +192,23 @@ async function readStored(): Promise<StoredAvailability | null> {
   }
 }
 
-export async function getAvailability(): Promise<StoredAvailability> {
-  return (await readStored()) ?? DEFAULTS;
+export async function getAvailability(fresh = false): Promise<StoredAvailability> {
+  return (await readStored(fresh)) ?? DEFAULTS;
+}
+
+/**
+ * The document as it stands in the store right now, for an action about to
+ * change it, or a sentence saying it could not be read. Never a guess: see
+ * readStored on why a failed read must stop the write.
+ */
+export async function getAvailabilityForWrite(): Promise<{ doc: StoredAvailability; error?: undefined } | { error: string; doc?: undefined }> {
+  if (!storeConfigured()) return { error: "The storage token is not set, so nothing can be saved yet. See the status panel." };
+  try {
+    return { doc: (await readStored(true, true)) ?? DEFAULTS };
+  } catch (err) {
+    console.error("[migas] Availability could not be read before a change; nothing written", err);
+    return { error: "Your saved hours could not be read just now, so nothing was changed. Try again in a moment." };
+  }
 }
 
 /** One-off blocks and days off that ended before `today` ("YYYY-MM-DD"). They
@@ -168,14 +234,22 @@ export async function saveAvailability(doc: StoredAvailability): Promise<{ error
   if (!storeConfigured()) {
     return { error: "The storage token is not set, so nothing can be saved yet. See the status panel." };
   }
-  const { put } = await import("@vercel/blob");
-  await put(PATHNAME, JSON.stringify(parsed.ok), {
+  const { put, del } = await import("@vercel/blob");
+  // A new file every time; see PREFIX for why.
+  await put(`${PREFIX}.${Date.now()}.json`, JSON.stringify(parsed.ok), {
     access: "public",
     addRandomSuffix: false,
-    allowOverwrite: true,
     contentType: "application/json",
   });
   cache = { at: Date.now(), value: parsed.ok! };
+  // Sweep the old versions. A failure here leaves a few small files behind and
+  // is not worth failing a save that has already landed.
+  try {
+    const old = (await versions()).slice(KEEP_VERSIONS);
+    if (old.length) await del(old.map((v) => v.url));
+  } catch (err) {
+    console.error("[migas] Old availability versions were not swept", err);
+  }
   return {};
 }
 
@@ -187,7 +261,9 @@ export async function saveAvailability(doc: StoredAvailability): Promise<{ error
  */
 export async function openSlots(now: Date = new Date(), fresh = false): Promise<SlotDay[]> {
   const [availability, busy, booked] = await Promise.all([
-    getAvailability(),
+    // Fresh on a booking submit: a block he added a moment ago on another
+    // server instance must refuse the time, as a fresh booking does.
+    getAvailability(fresh),
     getBusyIntervals(now),
     upcomingBookings(now.getTime(), fresh),
   ]);
