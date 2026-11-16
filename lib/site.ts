@@ -264,7 +264,8 @@ export const PATREON_POSTS = [
  * hiring its director.
  *
  * Facts that are his, from the call: the service list, the sensor requirement
- * including the TrolMaster exclusion, the head-grower condition, the relocation
+ * including the TrolMaster rule (narrowed on 2026-11-16 to substrate sensors
+ * used alone; their environmental sensors are approved), the head-grower condition, the relocation
  * network, optional site visits, genetic sourcing through Bractworx or another
  * nursery, and design-build as an ask.
  *
@@ -287,10 +288,18 @@ export const COMANAGEMENT = {
     { name: "Advanced", rooms: "6 to 8 flower rooms", lights: "401 to 750 lights", monthly: 6000, open: false },
     { name: "Enterprise", rooms: "9 or more flower rooms", lights: "751 or more lights", monthly: 8000, open: true },
   ],
-  rule: "If your room count and your light count land in different tiers, you pay the higher one. They're never added together, and every tier gets the same service.",
+  rule: "If your room count and your light count land in different tiers, you pay the higher one. They're never added together.",
+  // HIS ANSWERS OF 2026-11-16. "The client must provide data daily." And three
+  // levels of service: "Remote - once per week call and review. Middle - 3 times
+  // per week review. 1 day call. Top tier - daily review and multiple calls per
+  // week." Until then this list promised three check-ins a week and one call,
+  // the same for everybody. PLACEHOLDER: "Middle" and "Top" are his working
+  // words, and what a level does to the price above is not stated, so no line
+  // here ties a level to a price. The same three live in the platform's
+  // lib/site.ts (SERVICE_LEVELS); change both together.
   cadence: [
-    "Three check-ins a week per flower room, from a phone, three to five minutes each",
-    "One 60-minute call a week, with action items that land on a shared calendar",
+    "Your team enters every flower room's data daily, from a phone, a few minutes a room",
+    "Three levels of service. Remote: reviewed once a week, one call a week. Middle: reviewed three times a week, one call a week. Top: reviewed every day, several calls a week",
     "A written report every week, covering the week behind and the week ahead",
     "Clone, mother and veg advisory included at no extra cost",
   ],
@@ -312,7 +321,7 @@ export const COMANAGEMENT = {
   services: [
     {
       name: "Irrigation",
-      body: "We set shot sizes, timings and dryback targets off your sensor data and adjust them run by run. We look at the numbers every day.",
+      body: "We set shot sizes, timings and dryback targets off your sensor data and adjust them run by run. How often we read the numbers is the level you're on, from once a week to every day.",
     },
     {
       name: "Environmental parameters",
@@ -331,7 +340,7 @@ export const COMANAGEMENT = {
   requirements: [
     {
       name: "Substrate sensors we can read",
-      body: "Aroya, Pinnacle, Growlink or similar. Remote steering is only as good as the data, and we don't work off TrolMaster sensors.",
+      body: "Aroya, Pinnacle, Growlink or similar. Remote steering is only as good as the data. TrolMaster substrate sensors can't be a room's only substrate sensors. TrolMaster environmental sensors are approved.",
     },
     {
       name: "A head grower who runs the program",
@@ -435,7 +444,7 @@ export const COMANAGE_APPLY = [
       "Pinnacle",
       "Growlink",
       "Other substrate sensors",
-      "TrolMaster",
+      "TrolMaster only",
       "No sensors yet",
     ],
     required: true,

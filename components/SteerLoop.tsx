@@ -13,7 +13,8 @@ import "./SteerLoop.css";
  * read as a wireframe. Now:
  *
  * - The stations sit on a circular track with 24 ticks inside it, one per hour, so
- *   the ring reads as a day ("Watched daily" in the middle).
+ *   the ring reads as a day ("Daily data" in the middle; it said "Watched daily"
+ *   until 2026-11-16, when he named three levels and only the top one is read daily).
  * - A point of light runs the circuit once every 8 seconds, from station 1, and each
  *   station lights as it arrives (2s apart, the CSS keyframes key off --i). The
  *   motion is the meaning: data goes round, every day, through all four.
@@ -87,7 +88,7 @@ export default function SteerLoop({
 
         <p className="loop-center">
           <span className="loop-eyebrow">The loop</span>
-          <span className="loop-value">Watched daily</span>
+          <span className="loop-value">Daily data</span>
         </p>
       </div>
       <figcaption className={`mt-4 max-w-[38ch] text-sm leading-relaxed ${paper ? "text-ink/70" : "text-muted"}`}>
