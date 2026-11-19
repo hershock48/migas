@@ -15,12 +15,18 @@
  * wiring to be announced correctly.
  */
 export default function Faq({ items }: { items: readonly { q: string; a: string }[] }) {
+  /* A question whose answer is still a PLACEHOLDER is not shown at all. It used
+     to render as a dashed box headed "Draft: needs your answer", with our note
+     to him as the text: "licensed operators will ask this before they book. It
+     should be in your own words." That is a message to the owner printed where
+     his customers read. The questions are still in lib/site.ts, marked, and
+     each one appears by itself the day its answer is written. */
+  const answered = items.filter((f) => !f.a.startsWith("PLACEHOLDER"));
+  if (answered.length === 0) return null;
   return (
     <div className="reveal mt-10 divide-y divide-line border-y border-line">
-      {items.map((f) => {
-        const pending = f.a.startsWith("PLACEHOLDER");
-        const stripped = f.a.replace(/^PLACEHOLDER:?\s*/, "");
-        const answer = pending ? stripped.charAt(0).toUpperCase() + stripped.slice(1) : f.a;
+      {answered.map((f) => {
+        const answer = f.a;
         return (
           <details key={f.q} className="group py-5">
             <summary className="flex cursor-pointer list-none items-start justify-between gap-6 text-[17px] font-semibold text-bone">
@@ -32,14 +38,7 @@ export default function Faq({ items }: { items: readonly { q: string; a: string 
                 +
               </span>
             </summary>
-            {pending ? (
-              <div className="mt-3 max-w-2xl rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-                <p className="eyebrow">Draft: needs your answer</p>
-                <p className="mt-2 text-[15px] leading-relaxed text-muted">{answer}</p>
-              </div>
-            ) : (
-              <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">{answer}</p>
-            )}
+            <p className="mt-3 max-w-2xl text-[15px] leading-relaxed text-muted">{answer}</p>
           </details>
         );
       })}

@@ -333,9 +333,15 @@ These were wrong, and are fixed.
 - An unpaid booking holds its time until he removes it.
 - Past bookings are never deleted from storage, so callers' names, emails and
   phones stay there with no end date. Whether to prune them is his call.
-- The owner-facing drafts still render on `/consulting` (two FAQ answers, the
-  "one thing to confirm" box), `/connect` (no email address) and `/reviews`
-  (placeholder cards; the footer links it). They wait on Jake.
+- **The notes to Jake are off the public pages** (Kevin, later the same day).
+  They were: the "One thing to confirm" box and two "Draft: needs your answer"
+  FAQ entries on `/consulting`, the card on `/connect` saying there is no email
+  address, and all of `/reviews` (three "To supply" cards and a "Note for MI
+  Gas"). Now an unanswered FAQ question is not shown, the Email card appears
+  only once `SITE.email` is real, and `/reviews` is a 404 with no footer link
+  until `REVIEWS` holds a real quote. Nothing was answered for him: the
+  questions are still marked PLACEHOLDER in `lib/site.ts` and are on his list.
+  The hidden `/co-management` page loses its three draft answers the same way.
 - Every page shares the home page's link card (`og:title`, `og:url`).
 - An upload over the 4.5 MB request limit with scripts off gets an empty
   response. With scripts on the browser shrinks photos first.

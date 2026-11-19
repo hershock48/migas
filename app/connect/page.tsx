@@ -109,23 +109,17 @@ export default function Connect() {
             ))}
           </ul>
 
-          <div className="card mt-4 p-6">
-            <p className="eyebrow">Email</p>
-            {emailReady ? (
+          {/* Only once there is an address. Without one this card used to say so,
+              to him: "Send us the address and this turns into a link." The form on
+              this page is how a visitor writes in until then. */}
+          {emailReady && (
+            <div className="card mt-4 p-6">
+              <p className="eyebrow">Email</p>
               <a href={`mailto:${SITE.email}`} className="mt-3 block text-lg text-bone hover:text-flare">
                 {SITE.email}
               </a>
-            ) : (
-              /* Rendered rather than hidden, because an absent email address is the single
-                 biggest fault on the live site and this page should say so out loud rather
-                 than quietly omit the field. */
-              <p className="mt-3 text-sm leading-relaxed text-muted">
-                There&rsquo;s no email address on the site yet. Growers who won&rsquo;t DM a
-                stranger have no other way to reach you, so this is the first thing to fix. Send us
-                the address and this turns into a link.
-              </p>
-            )}
-          </div>
+            </div>
+          )}
 
           {SITE.phone && (
             <div className="card mt-4 p-6">

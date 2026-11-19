@@ -208,16 +208,11 @@ export default async function Consulting({
                 tapping it half way through threw every answer away. The wizard now
                 follows a changed session itself and keeps the rest. */}
             <Booking days={days} initialSession={initialSession} cardPayment={cardPayment} mailOn={mailOn} reminderOn={reminderOn} />
-            {/* The two prices are his, from the 2026-11-04 email. What is still ours: the
-                lines under each session in step 1, which used to be bullets on price cards. */}
-            <div className="mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">
-              <p className="eyebrow">One thing to confirm</p>
-              <p className="mt-2 text-[15px] leading-relaxed text-muted">
-                The prices are yours. The lines under each session (written actions after the call, the follow-up
-                thread) are still our draft of what a session includes. Please confirm them or cut them, since each one
-                is something you&rsquo;d be promising.
-              </p>
-            </div>
+            {/* A dashed box sat here asking Jake to confirm the lines under each session.
+                It was a note to him on a page his customers read; Kevin had it and the
+                other notes like it taken off on 2026-11-19. What it asked is still open
+                and is on the list for him: the "includes" lines in SESSIONS (lib/site.ts)
+                are our draft of what a session comes with. */}
           </div>
         </div>
       </section>

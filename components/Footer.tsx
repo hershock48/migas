@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { NAV, SITE } from "@/lib/site";
+import { HAS_REVIEWS, NAV, SITE } from "@/lib/site";
 import { Graffiti } from "./brand";
 import GlazedPlate from "./GlazedPlate";
 
@@ -16,7 +16,8 @@ export default function Footer() {
         <div>
           <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-bone">Explore</h2>
           <ul className="mt-4 space-y-2.5 text-sm">
-            {NAV.map((i) => (
+            {/* Reviews only once there is one, as in the header and on the 404 page. */}
+            {NAV.filter((i) => i.href !== "/reviews" || HAS_REVIEWS).map((i) => (
               <li key={i.href}>
                 <Link href={i.href} className="inline-block py-1 text-muted hover:text-flare">
                   {i.label}

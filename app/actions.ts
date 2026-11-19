@@ -427,7 +427,7 @@ export async function requestCoManagement(_prev: FormState, fd: FormData): Promi
     summary: [
       toOwner
         ? "Got it. We'll read it and get back to you about a call and a price, or tell you why it isn't a fit yet."
-        : "Sent. Outgoing mail is not switched on for this build yet.",
+        : "This could not be sent: email is not connected on this site yet. Message us on Instagram for now.",
     ],
   };
 }
@@ -486,7 +486,7 @@ export async function requestCall(_prev: FormState, fd: FormData): Promise<FormS
     summary: [
       toOwner
         ? "Got it. We'll call you back."
-        : "Sent. Outgoing mail is not switched on for this build yet.",
+        : "This could not be sent: email is not connected on this site yet. Message us on Instagram for now.",
     ],
   };
 }
@@ -525,7 +525,7 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
     summary: [
       toOwner
         ? "Sent. We answer from the same inbox as bookings."
-        : "Sent. Outgoing mail is not switched on for this build yet.",
+        : "This could not be sent: email is not connected on this site yet. Message us on Instagram for now.",
     ],
   };
 }

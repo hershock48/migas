@@ -112,7 +112,8 @@ export default function MiniForm({
         className={`rounded-xl2 border border-ember/60 bg-ember/[0.07] p-6 ${className.replace(/\breveal\b/g, "")}`}
         aria-live="polite"
       >
-        <p className="eyebrow">Done</p>
+        {/* "Done" over a sentence saying it was not sent was the one place this panel contradicted itself. */}
+        <p className="eyebrow">{state.delivered && !state.delivered.toOwner ? "Not sent" : "Done"}</p>
         {(state.summary?.length ? state.summary : ["Sent. We will be in touch."]).map((line) => (
           <p key={line} className="mt-3 text-[15px] leading-relaxed text-bone">
             {line}

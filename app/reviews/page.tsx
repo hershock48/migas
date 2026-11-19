@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 import { ReviewCard } from "@/components/cards";
 import { REVIEWS } from "@/lib/site";
 
@@ -23,6 +24,11 @@ export const metadata: Metadata = {
  */
 export default function Reviews() {
   const real = REVIEWS.filter((r) => !r.quote.startsWith("PLACEHOLDER"));
+  /* With no review yet there is no page. It used to show three "To supply"
+     cards and a box headed "Note for MI Gas", linked from every page's footer.
+     The first real quote in REVIEWS brings the page, its header link and its
+     footer link back together (HAS_REVIEWS in lib/site.ts). */
+  if (real.length === 0) notFound();
 
   return (
     <>
@@ -40,21 +46,11 @@ export default function Reviews() {
 
       <section className="wrap mt-14">
         <div className="stagger grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {REVIEWS.map((r, i) => (
+          {real.map((r, i) => (
             <ReviewCard key={i} quote={r.quote} who={r.who} context={r.context} />
           ))}
         </div>
 
-        {real.length === 0 && (
-          <div className="reveal mt-10 max-w-2xl rounded-xl2 border border-alert/40 bg-alert/[0.06] p-6">
-            <p className="text-sm font-semibold text-alert">Note for MI Gas</p>
-            <p className="mt-2 text-[15px] leading-relaxed text-bone/90">
-              Your six reviews are images on the current site. Send us the text and we&rsquo;ll
-              put them here, marked up so they can show in search results under your name.
-              Until then this page stays empty.
-            </p>
-          </div>
-        )}
       </section>
 
       <section className="wrap mt-24 sm:mt-32">
