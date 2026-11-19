@@ -12,7 +12,7 @@ import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 import rgsOverview from "@/public/assets/rgs/rgs-overview.webp";
 import { MirrorLockup } from "@/components/brand";
 import { SessionCard } from "@/components/cards";
-import { COMANAGEMENT, CONSULT_TOPICS, CREDS, INSTAGRAM_POSTS, PATREON, PATREON_POSTS, SESSIONS, SITE, money } from "@/lib/site";
+import { COMANAGEMENT, COMANAGEMENT_LIVE, CONSULT_TOPICS, CREDS, INSTAGRAM_POSTS, PATREON, PATREON_POSTS, SESSIONS, SITE, money } from "@/lib/site";
 
 export const metadata: Metadata = {
   // absolute, because the layout's "%s - MI Gas" template only reaches child segments,
@@ -20,7 +20,9 @@ export const metadata: Metadata = {
   // site without the name in it, in the tab and in search results.
   title: { absolute: `${SITE.name} - ${SITE.tagline}` },
   description:
-    "Cultivation advice from a licensed Michigan facility: guides on Patreon from $100 a month, consulting calls at $250 and $400, and co-management from $2,000 a month.",
+    COMANAGEMENT_LIVE
+      ? "Cultivation advice from a licensed Michigan facility: guides on Patreon from $100 a month, consulting calls at $250 and $400, and co-management from $2,000 a month."
+      : "Cultivation advice from a licensed Michigan facility: guides on Patreon from $100 a month, and consulting calls at $250 and $400.",
 };
 
 /**
@@ -77,7 +79,8 @@ export default function Home() {
       detail: SESSIONS.map((s) => `${s.name.toLowerCase()} ${money(s.price)}`).join(", ").replace(/^./, (c) => c.toUpperCase()),
       primary: true,
     },
-    { href: "#co-management", label: "Run it with us", detail: `Co-management from ${money(COMANAGEMENT.tiers[0].monthly)} a month`, primary: false },
+    // The third way in is hidden with its section. See COMANAGEMENT_LIVE in lib/site.ts.
+    ...(COMANAGEMENT_LIVE ? [{ href: "#co-management", label: "Run it with us", detail: `Co-management from ${money(COMANAGEMENT.tiers[0].monthly)} a month`, primary: false }] : []),
   ];
   return (
     <>
@@ -294,7 +297,9 @@ export default function Home() {
         </p>
       </section>
 
-      {/* ── 4. Co-management ─────────────────────────────────────────────── */}
+      {/* ── 4. Co-management ───────────────────────────────────────────────
+          Hidden for the launch on his say-so; COMANAGEMENT_LIVE in lib/site.ts. */}
+      {COMANAGEMENT_LIVE && (
       <section id="co-management" className="wrap mt-24 scroll-mt-24 sm:mt-32">
         <div className="reveal flex flex-wrap items-end justify-between gap-6">
           <div className="max-w-2xl">
@@ -408,6 +413,7 @@ export default function Home() {
           </div>
         </div>
       </section>
+      )}
     </>
   );
 }

@@ -210,6 +210,34 @@ Jake's email of 2026-11-04 set the shape of the site in four sections, and
 The reviews page and the closing band that used to end the home page are
 reachable from the nav and the footer. They are not on the home page.
 
+## Co-management is hidden for the launch (2026-11-19)
+
+Jake, by text: "lmk what i need to do on my end w the calendar
+scheduling/payments to finalize the website and launch. Then we can just hide
+the 3rd section (co-management and software) until its ready." The site
+launches on the Patreon and the consulting calls.
+
+One switch does it: `COMANAGEMENT_LIVE` in `lib/site.ts`, now `false`.
+
+- The home page has two ways in and ends after the call. Section 4 and the
+  software block are not rendered.
+- The header, the footer and the 404 page drop the Co-Management link.
+- The sentences that mentioned it are reworded (the site blurb, the full
+  hour's "for who", one consulting FAQ answer, the Connect form's hint), the
+  consulting FAQ loses "What does co-management need from my room?", and the
+  page descriptions and structured data no longer name it.
+- `/co-management` and its one-pager still open by their address, unlinked and
+  `noindex` (`app/co-management/layout.tsx`), so he can read them while they
+  are finished. That page still shows its PLACEHOLDER answers. If it should
+  not be reachable at all, call `notFound()` in that layout.
+
+Nothing was deleted. Set the switch to `true` and all of it returns.
+
+Checked on a production build with a scripted browser at 390 and 1440: no
+visible text, link, title, description or structured data on `/`,
+`/consulting`, `/connect`, `/reviews` or the 404 page mentions it (51 checks),
+plus the audit and 320 and 768 for sideways scroll.
+
 ## Schedule and pay, and the reminder
 
 Three things the email asked for around the calendar, and what each one is:

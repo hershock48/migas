@@ -4,7 +4,7 @@ import "./globals.css";
 import Nav from "@/components/Nav";
 import Footer from "@/components/Footer";
 import Reveal from "@/components/Reveal";
-import { OG_IMAGE, SITE } from "@/lib/site";
+import { COMANAGEMENT_LIVE, OG_IMAGE, SITE } from "@/lib/site";
 
 /**
  * Two faces, and only two.
@@ -37,7 +37,9 @@ export const metadata: Metadata = {
     template: `%s - ${SITE.name}`,
   },
   description:
-    "Commercial cannabis cultivation consulting and facility co-management from the director of a licensed Michigan facility. Book a call, or put your room on the program.",
+    COMANAGEMENT_LIVE
+      ? "Commercial cannabis cultivation consulting and facility co-management from the director of a licensed Michigan facility. Book a call, or put your room on the program."
+      : "Commercial cannabis cultivation consulting from the director of a licensed Michigan facility. Learn the program on Patreon, or book a call about your own rooms.",
   /**
    * THE LINK PREVIEW CARD. There was no og:image at all, which is why pasting the URL into
    * a text produced a bare row of words: with nothing to show, iMessage falls back to a
@@ -63,7 +65,9 @@ export const metadata: Metadata = {
     siteName: SITE.name,
     title: `${SITE.name} - ${SITE.tagline}`,
     description:
-      "Consulting calls and facility co-management for indoor cultivators, from a working commercial facility.",
+      COMANAGEMENT_LIVE
+        ? "Consulting calls and facility co-management for indoor cultivators, from a working commercial facility."
+        : "Consulting calls for indoor cultivators, from a working commercial facility.",
     /**
      * NOT SITE.url, and the /demo is load-bearing until they sign.
      *
@@ -124,14 +128,18 @@ function StructuredData() {
       provider: { "@id": `${SITE.url}/#business` },
       areaServed: { "@type": "Country", name: "US" },
     },
-    {
-      "@type": "Service",
-      "@id": `${SITE.url}/co-management#service`,
-      name: "Cannabis facility co-management",
-      serviceType: "Facility co-management",
-      provider: { "@id": `${SITE.url}/#business` },
-      areaServed: { "@type": "Country", name: "US" },
-    },
+    ...(COMANAGEMENT_LIVE
+      ? [
+          {
+            "@type": "Service",
+            "@id": `${SITE.url}/co-management#service`,
+            name: "Cannabis facility co-management",
+            serviceType: "Facility co-management",
+            provider: { "@id": `${SITE.url}/#business` },
+            areaServed: { "@type": "Country", name: "US" },
+          },
+        ]
+      : []),
   ];
   return (
     <script

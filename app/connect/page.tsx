@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import MiniForm from "@/components/MiniForm";
 import { sendMessage } from "@/app/actions";
-import { SITE } from "@/lib/site";
+import { COMANAGEMENT_LIVE, SITE } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Connect",
@@ -72,7 +72,7 @@ export default function Connect() {
                 { id: "name", label: "Name", required: true },
                 { id: "email", label: "Email", type: "email", required: true },
                 /* A hint, not a placeholder: at 390px the field cut it off at "the P". */
-                { id: "topic", label: "Topic", hint: "Consulting, co-management or the Patreon, for example.", wide: true },
+                { id: "topic", label: "Topic", hint: COMANAGEMENT_LIVE ? "Consulting, co-management or the Patreon, for example." : "Consulting or the Patreon, for example.", wide: true },
                 {
                   id: "message",
                   label: "What do you need?",

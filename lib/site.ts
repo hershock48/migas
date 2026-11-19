@@ -61,6 +61,26 @@
  * ─────────────────────────────────────────────────────────────────────────────────────
  */
 
+/**
+ * CO-MANAGEMENT IS HIDDEN FOR THE LAUNCH. Jake, by text on 2026-11-19: "we can
+ * just hide the 3rd section (co-management and software) until its ready."
+ * The site launches on the Patreon and the consulting calls.
+ *
+ * While this is false:
+ *   - the home page has two ways in, not three, and stops after the call;
+ *   - the header, the footer and the 404 page do not link to /co-management;
+ *   - no sentence, FAQ answer, page description or structured data mentions it;
+ *   - /co-management and its one-pager still open by their address, unlinked and
+ *     marked noindex (app/co-management/layout.tsx), so he can keep reading them
+ *     while they are finished. To turn them into a 404 instead, call notFound()
+ *     in that layout.
+ *
+ * Nothing was deleted. Set this to true and every piece comes back as it was.
+ * The platform itself (MI-Gas x Plantsman Management) is a separate site and is
+ * not touched by this.
+ */
+export const COMANAGEMENT_LIVE = false;
+
 export const SITE = {
   name: "MI Gas",
   // His Patreon describes the work more sharply than his own website does:
@@ -71,8 +91,9 @@ export const SITE = {
   // 2026-11-11: was "Teaching, training and advising for indoor cultivators worldwide,
   // from inside a working commercial facility" (the original build's line, not his),
   // a three-verb list and a claim. These are the two facts behind "worldwide".
-  blurb:
-    "We run a licensed cultivation facility in Michigan. Calls and co-management are remote, so your rooms can be anywhere.",
+  blurb: COMANAGEMENT_LIVE
+    ? "We run a licensed cultivation facility in Michigan. Calls and co-management are remote, so your rooms can be anywhere."
+    : "We run a licensed cultivation facility in Michigan. Calls are remote, so your rooms can be anywhere.",
   // PLACEHOLDER. There is no email address anywhere on the current site; the only
   // route to him is an Instagram DM. This is the single biggest fix on the whole
   // build, and the address has to come from him. Everything that says "email" reads
@@ -207,7 +228,9 @@ export const SESSIONS: SessionType[] = [
     name: "Full hour",
     minutes: 60,
     price: 400,
-    forWho: "A grow that works but underperforms, a design or build-out, or a facility weighing co-management.",
+    forWho: COMANAGEMENT_LIVE
+      ? "A grow that works but underperforms, a design or build-out, or a facility weighing co-management."
+      : "A grow that works but underperforms, or a design or build-out.",
     includes: ["We read your profile and photos beforehand", "Written recommendations", "One follow-up question thread"],
   },
 ];
@@ -791,20 +814,22 @@ export const FAQ = [
   },
   {
     q: "Do you consult outside Michigan?",
-    a: "Yes. Calls are remote and the methods aren't specific to one state. Co-management and facility work outside Michigan are case by case.",
+    a: COMANAGEMENT_LIVE
+      ? "Yes. Calls are remote and the methods aren't specific to one state. Co-management and facility work outside Michigan are case by case."
+      : "Yes. Calls are remote and the methods aren't specific to one state. Facility work outside Michigan is case by case.",
   },
   {
     q: "What does co-management need from my room?",
     a: "It needs substrate sensors we can read remotely (Aroya, Pinnacle, Growlink or similar) and a head grower on site who will run the program. We don't take on a room without both. There's more on the co-management page.",
   },
-];
+].filter((f) => COMANAGEMENT_LIVE || !/co-management/i.test(f.q));
 
 export const NAV = [
   { href: "/consulting", label: "Consulting" },
   { href: "/co-management", label: "Co-Management" },
   { href: "/reviews", label: "Reviews" },
   { href: "/connect", label: "Connect" },
-];
+].filter((i) => COMANAGEMENT_LIVE || i.href !== "/co-management");
 
 /** True once REVIEWS holds a real quote. Until then the Reviews page is a page of
  *  placeholders, so the header and the 404 leave it out (the footer keeps it). */
