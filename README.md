@@ -238,6 +238,111 @@ visible text, link, title, description or structured data on `/`,
 `/consulting`, `/connect`, `/reviews` or the 404 page mentions it (51 checks),
 plus the audit and 320 and 768 for sideways scroll.
 
+## Review of 2026-11-19, and what it changed
+
+Kevin asked for the site, the admin and everything else in this repo to be
+double checked before launch. Two read-only review sessions read the whole
+repo with no conclusions handed to them, one on the server and booking logic
+and one on everything a visitor touches. A scripted browser drove a local
+production build with every dormant part switched on against local stand-ins:
+storage, an SMTP server that keeps what it is sent, a calendar feed, the
+reminder job and signed payment notices. The core flow was sound: a booking,
+both emails, the photo, a correct invite, two visitors racing for one time,
+a full booking with scripts off, and every forged or malformed submit refused.
+
+These were wrong, and are fixed.
+
+**Security**
+
+- **The admin PIN could be guessed by machine.** The cookie was a fixed,
+  public recipe (a hash of the PIN), so the cookie for every possible PIN
+  could be worked out at home and tried against `/admin`, which had no delay
+  and no counter. Fifty guesses answered in 0.15 seconds on the build. The
+  page behind it lists callers' names, emails and phone numbers. The cookie
+  is now keyed with a secret only the server holds (`lib/admin-auth.ts`), and
+  wrong PINs are counted and locked (`lib/throttle.ts`): five from one place
+  in fifteen minutes, thirty from anywhere in an hour. Everyone is signed out
+  once by this change. **A four-digit PIN is still only about a week of
+  guessing at thirty an hour; the admin page says so when the PIN is short.**
+- **Nothing limited the forms.** A script could book every open time and have
+  his mailbox send a confirmation to any address. Bookings are now limited to
+  two per address, four per place per day and eight an hour overall, counted
+  from the stored bookings. The three message forms allow five an hour from
+  one place.
+- **The grower's confirmation carried whatever the sender typed.** Its invite
+  held the typed name and the whole intake. A booking made with somebody
+  else's address sent that person the sender's text from his mailbox. The
+  grower's invite and email now carry nothing typed into the form.
+- **A photo was whatever it claimed to be.** A program renamed `canopy.jpg`
+  was accepted and emailed on, and the attachment kept the sender's file
+  ending. The type and name now come from the file's own first bytes.
+- **Calendar invites:** a lone carriage return in a typed name passed into
+  the invite raw. All control characters are handled now.
+- **Headers:** the site sent none. It now sends `nosniff`, a referrer policy
+  and `X-Frame-Options: SAMEORIGIN`.
+- **Email addresses** are held to letters, digits and `. _ % + -`, and
+  nodemailer moved from 9.0.5 to 10.6.0, clearing its open advisories.
+
+**Bookings that could go wrong**
+
+- **A refused booking lost the dropdown answers and the photos.** React 19
+  resets a form after every action run through `<form action>`, including a
+  refused one. The recap still said "2 photos attached". Seen in a browser.
+  Both forms are now submitted by hand, which leaves them alone; with no
+  script they post natively as before.
+- **A refused time stayed on the calendar, still selected.** It is unpicked
+  and the calendar is fetched again.
+- **A booking that could not be saved was confirmed anyway**, with both
+  emails, and held no time. It is refused now, as is a booking when the
+  stored bookings cannot be read to check the time.
+- **If his email failed to send, the intake was gone.** It is kept on the
+  stored booking and shown on `/admin` under the call. The visitor used to be
+  told the site had no email at all; they are told what happened.
+- **A lead time of zero offered this morning's times in the afternoon**, and
+  a cleared lead-time box saved as zero without a word. Neither now.
+- **The calendar feed reader** dropped events whose timezone name is quoted
+  and contains a colon (how Exchange writes it) without counting them,
+  ignored `DURATION` and `RDATE`, and took 4.5 seconds on a long-running
+  calendar. All fixed; a daily event running since 2000 now reads in a tenth
+  of a second, and what cannot be read is counted on `/admin`.
+- **Stored bookings were read one at a time with no time limit.** Twenty at a
+  time now, each with a limit, and one bad record costs only itself.
+- **Payment notices:** a checkout whose money has not arrived is no longer
+  marked paid, and a payment for a booking the site has no record of now
+  emails him instead of being dropped.
+- **The reminder** never reached him if only his copy failed. It does now.
+
+**What a visitor saw**
+
+- On `/consulting` the short form's Name, Phone and Email shared their ids
+  with the booking form, so its labels pointed at the wrong boxes.
+- The header's "Book a call" threw away a half-filled booking, and after a
+  booking erased the confirmation.
+- Continue on a long step gave no sign of which field stopped it.
+- The page promised an invite on both calendars and a reminder whether or not
+  either was switched on. It now says only what that deployment will do.
+- `?paid=` with any well-formed reference thanked the visitor for paying.
+- There was no error page; a thrown error showed the framework's own.
+
+**Left as they are, knowingly**
+
+- **Card payment is not ready to switch on.** Stripe ends a checkout link
+  after 24 hours and nothing makes a new one, so the link in the confirmation
+  and in the reminder is dead for any call booked more than a day ahead.
+  Removing a call does not cancel its link. Fix both before a live key is set.
+- An unpaid booking holds its time until he removes it.
+- Past bookings are never deleted from storage, so callers' names, emails and
+  phones stay there with no end date. Whether to prune them is his call.
+- The owner-facing drafts still render on `/consulting` (two FAQ answers, the
+  "one thing to confirm" box), `/connect` (no email address) and `/reviews`
+  (placeholder cards; the footer links it). They wait on Jake.
+- Every page shares the home page's link card (`og:title`, `og:url`).
+- An upload over the 4.5 MB request limit with scripts off gets an empty
+  response. With scripts on the browser shrinks photos first.
+- `npm audit` still lists postcss inside Next, which only runs at build time
+  on this repo's own CSS, and wants Next 16 to clear.
+- `npm run lint` has never been configured and only prints a setup prompt.
+
 ## Schedule and pay, and the reminder
 
 Three things the email asked for around the calendar, and what each one is:
@@ -280,6 +385,7 @@ a chat window.
 | `BLOB_READ_WRITE_TOKEN` | Availability edits cannot be saved; the grid serves the `lib/site.ts` defaults and `/admin` says so. Written by Vercel when a Blob store is attached to the project. |
 | `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address; treat that URL as a secret. |
 | `STRIPE_SECRET_KEY` | No card step: book, then an invoice by email. With a key, the confirmation and the email carry a Stripe Checkout link. **Read `lib/pay.ts` before setting a live key; the processor is not settled.** |
+| `MIGAS_ADMIN_SECRET` | Optional. The key the admin cookie is signed with. Unset, the storage token is used, which is fine. Setting or changing it signs every device out. |
 | `STRIPE_WEBHOOK_SECRET` | Payments complete on Stripe but the site is not told, so he gets no "paid" email and the booking record stays unpaid. |
 | `CRON_SECRET` | The hourly reminder run at `/api/cron/reminders` refuses every call, so no day-before reminders go out. Any long random string; Vercel sends it back as a bearer token. |
 
@@ -552,8 +658,23 @@ outside.
 `/admin` carries its own page-level noindex and keeps it; it is not a page a visitor
 should ever find from a search result. `/agreement` is a 308 to the studio page and stays.
 
-And a fourth that is easy to miss because it is not about robots at all: **`SITE.url` in
-`lib/site.ts` points at `https://mi-gas.net`.** Every canonical, every Open Graph URL and
+**This list was incomplete; corrected 2026-11-19.** Besides the three above, on cutover day:
+
+- `SITE.url` in `lib/site.ts` is `https://migas.glazedweb.com` today, not mi-gas.net as this
+  section used to say. It feeds `metadataBase`, the JSON-LD ids, `og:image` and the Stripe
+  return addresses. Set it to the real host.
+- `openGraph.url` is `${SITE.url}/demo` in `app/layout.tsx` (and in
+  `app/co-management/page.tsx`, and the address printed on the one-pager). Drop the `/demo`.
+- `rewrites()` in `next.config.ts` and `public/pitch/migas` are the proposal at the host
+  root. Remove both, or the studio host keeps serving it.
+- In `headers()` delete only the `X-Robots-Tag` line. The three security headers stay.
+- There is no `alternates.canonical` and no `app/sitemap.ts`. Add both, and either detach
+  the old host or redirect it, or it serves an indexable duplicate.
+- `mi-gas.net/reviews` is a real address on his current site. Here it is a page of
+  placeholders until he supplies the reviews.
+
+The original note follows. **`SITE.url` in
+`lib/site.ts` once pointed at `https://mi-gas.net`.** Every canonical, every Open Graph URL and
 the structured-data `@id`s read from it. While this is a noindexed pitch that is arguably
 the right answer — it disclaims the duplicate rather than competing with it — but the day
 this deploy *becomes* the site, or the day it moves to a demo host that should own its own

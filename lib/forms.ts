@@ -42,6 +42,8 @@ export type FormState = {
   reminder?: boolean;
   /** Whether the booking is on record (it shows on /admin and holds its time). */
   recorded?: boolean;
+  /** Whether outgoing mail is connected at all, so the page can tell "not set up" from "did not send". */
+  mailOn?: boolean;
 };
 
 export const EMPTY: FormState = { status: "idle" };

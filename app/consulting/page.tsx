@@ -7,6 +7,8 @@ import MiniForm from "@/components/MiniForm";
 import { requestCall } from "@/app/actions";
 import { AVAILABILITY, CONSULT_TOPICS, FAQ, HAVE_READY, PROCESS, SESSIONS, money } from "@/lib/site";
 import { openSlots } from "@/lib/availability";
+import { getBooking } from "@/lib/bookings";
+import { mailConfigured } from "@/lib/mail";
 import { payConfigured } from "@/lib/pay";
 import roomAisle from "@/public/assets/rooms/flower-aisle.webp";
 
@@ -58,6 +60,12 @@ export default async function Consulting({
   const refOf = (v?: string) => (v && /^MG-[A-Z0-9]{6}$/.test(v) ? v : null);
   const paid = refOf(sp.paid);
   const unpaid = refOf(sp.unpaid);
+  // The banner is only shown for a booking that exists, and only says "paid"
+  // when the payment notice has arrived. It used to thank anyone who typed
+  // ?paid= and a well-formed reference into the address.
+  const paidFor = paid ? await getBooking(paid).catch(() => null) : null;
+  const mailOn = mailConfigured();
+  const reminderOn = mailOn && Boolean(process.env.CRON_SECRET) && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
   // A session chosen on the link that brought them here (the home page's price cards).
   // Only a real slug gets through; anything else opens the wizard at step 1 as before.
   const initialSession = SESSIONS.some((s) => s.slug === sp.session) ? sp.session : undefined;
@@ -183,10 +191,10 @@ export default async function Consulting({
           </aside>
 
           <div className="reveal min-w-0">
-            {paid && (
+            {paid && paidFor && (
               <p className="mb-8 rounded-xl2 border border-ember/60 bg-ink-panel px-6 py-5 text-[15px] text-bone" role="status">
-                Paid, thank you. Booking <span className="font-display font-bold">{paid}</span> is held, the invite is on your
-                calendar, and a reminder goes out the day before.
+                {paidFor?.paidAt ? "Paid, thank you. " : "Thank you. Your payment is being confirmed, and we'll email you when it is. "}
+                Booking <span className="font-display font-bold">{paid}</span> is held{reminderOn ? ", and a reminder goes out the day before" : ""}.
               </p>
             )}
             {unpaid && (
@@ -195,10 +203,11 @@ export default async function Consulting({
                 request is still with us; the link to pay is in your confirmation email.
               </p>
             )}
-            {/* Keyed on the session so a link that changes it while the visitor is already
-                on this page (the hero prices) remounts the wizard with the new choice.
-                Same route, new search params: without the key React keeps the old state. */}
-            <Booking key={initialSession ?? "open"} days={days} initialSession={initialSession} cardPayment={cardPayment} />
+            {/* NOT keyed on the session any more. The key remounted the wizard whenever
+                the link's session changed, and the header's "Book a call" names none, so
+                tapping it half way through threw every answer away. The wizard now
+                follows a changed session itself and keeps the rest. */}
+            <Booking days={days} initialSession={initialSession} cardPayment={cardPayment} mailOn={mailOn} reminderOn={reminderOn} />
             {/* The two prices are his, from the 2026-11-04 email. What is still ours: the
                 lines under each session in step 1, which used to be bullets on price cards. */}
             <div className="mt-6 rounded-xl2 border border-dashed border-edge/70 bg-ink-panel/40 p-5">

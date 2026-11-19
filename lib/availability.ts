@@ -277,19 +277,26 @@ export async function openSlots(now: Date = new Date(), fresh = false): Promise<
  * submit: by then the first booking is on his calendar, the feed carries it, and the
  * second visitor gets "no longer open" instead of a silent collision.
  */
-export async function bookableSlot(
-  value: string,
-  sessionMinutes: number,
-  now: Date = new Date()
-): Promise<boolean> {
-  // Fresh booking records: this is the check that refuses a time somebody else
-  // took a moment ago.
-  const days = await openSlots(now, true);
-  for (const day of days) {
-    const hit = day.slots.find((s) => s.value === value);
-    if (hit) return hit.maxMinutes >= sessionMinutes;
+/**
+ * The check a booking submit makes. "unknown" means the stored bookings could
+ * not be read, so nobody can say whether the time is free. The page draws
+ * without them when that happens; a booking is refused (review, 2026-11-19).
+ */
+export async function slotCheck(value: string, sessionMinutes: number, now: Date = new Date()): Promise<"open" | "taken" | "unknown"> {
+  let booked;
+  try {
+    booked = await upcomingBookings(now.getTime(), true, true);
+  } catch (err) {
+    console.error("[migas] bookings unreadable at submit; the booking is refused", err);
+    return "unknown";
   }
-  return false;
+  const [availability, busy] = await Promise.all([getAvailability(true), getBusyIntervals(now)]);
+  const taken = booked.map((b) => ({ start: b.startMs, end: b.startMs + b.minutes * 60_000 }));
+  for (const day of slotGrid(now, runtime(availability, [...busy, ...taken]))) {
+    const hit = day.slots.find((s) => s.value === value);
+    if (hit) return hit.maxMinutes >= sessionMinutes ? "open" : "taken";
+  }
+  return "taken";
 }
 
 const runtime = (

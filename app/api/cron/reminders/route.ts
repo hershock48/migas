@@ -26,11 +26,13 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Not for you." }, { status: 401 });
   }
   const now = Date.now();
-  const due = (await bookingsStarting(now, now + 24 * 3_600_000)).filter((b) => !b.reminderSentAt);
+  // Either copy still owed. It used to look only at the grower's, so if theirs
+  // went and his failed, he was never reminded.
+  const due = (await bookingsStarting(now, now + 24 * 3_600_000)).filter((b) => !b.reminderSentAt || !b.ownerRemindedAt);
   const sent: string[] = [];
   for (const b of due) {
     const when = describeSlot(b.slot);
-    const toGrower = await sendMail({
+    const toGrower = !b.reminderSentAt && (await sendMail({
       to: b.email,
       subject: `${SITE.name} - your ${b.sessionName} is ${when} (${b.ref})`,
       text: [
@@ -42,7 +44,7 @@ export async function GET(req: Request) {
         "",
         "Reply to this email if you need to move it.",
       ].join("\n"),
-    });
+    }));
     /* His note goes once, tracked on its own. It used to go on every run until the
        grower's copy succeeded, so one bouncing address meant an email to him every
        hour for a day. */

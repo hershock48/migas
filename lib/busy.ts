@@ -48,6 +48,30 @@ const WINDOWS_ZONES: Record<string, string> = {
   "Pacific Standard Time": "America/Los_Angeles",
 };
 
+/** Exchange also writes the long form, "(UTC-05:00) Eastern Time (US & Canada)". */
+const windowsZoneByName = (raw: string): string | undefined =>
+  /Eastern/i.test(raw) ? "America/New_York" : /Central/i.test(raw) ? "America/Chicago" : /Mountain/i.test(raw) ? "America/Denver" : /Pacific/i.test(raw) ? "America/Los_Angeles" : undefined;
+
+/**
+ * One property line of an event: its parameters and its value. The split is
+ * at the first colon that is not inside quotes. Splitting at the first colon
+ * of any kind dropped every event whose timezone name is quoted and contains
+ * one, which is how some Exchange invites write it, and dropped it without
+ * counting it (review, 2026-11-19).
+ */
+function prop(body: string, name: string): { params: string; value: string } | null {
+  const m = new RegExp(`^${name}((?:;(?:[^:"\\r\\n]|"[^"\\r\\n]*")*)?):(.+)$`, "m").exec(body);
+  return m ? { params: m[1], value: m[2] } : null;
+}
+
+/** DURATION, the other way an event says how long it is: P1D, PT4H, PT1H30M, P1W. */
+function durationMs(body: string): number | null {
+  const m = /^DURATION:\s*P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?)?\s*$/m.exec(body);
+  if (!m) return null;
+  const ms = (+(m[1] ?? 0) * 7 + +(m[2] ?? 0)) * 86_400_000 + +(m[3] ?? 0) * 3_600_000 + +(m[4] ?? 0) * 60_000 + +(m[5] ?? 0) * 1000;
+  return ms > 0 ? ms : null;
+}
+
 type When = {
   /** The instant, epoch ms. */
   ms: number;
@@ -84,8 +108,9 @@ function parseWhen(params: string, value: string): When | null {
     return { ms: Date.UTC(+m[1], +m[2] - 1, +m[3], +m[4], +m[5], +(m[6] ?? 0)), local, zone: "UTC", allDay: false };
   }
   // Outlook quotes some TZIDs; strip the quotes before the lookup.
-  const raw = /TZID=([^;:]+)/.exec(params)?.[1]?.replace(/^"|"$/g, "");
-  const zone = raw ? (WINDOWS_ZONES[raw] ?? raw) : AVAILABILITY.timeZone;
+  const tz = /TZID=(?:"([^"]+)"|([^;:]+))/.exec(params);
+  const raw = tz?.[1] ?? tz?.[2];
+  const zone = raw ? (WINDOWS_ZONES[raw] ?? windowsZoneByName(raw) ?? raw) : AVAILABILITY.timeZone;
   return { ms: toInstantIn(local, zone).getTime(), local, zone, allDay: false };
 }
 
@@ -156,13 +181,27 @@ function expand(
 
   const out: BusyInterval[] = [];
   let made = 0;
-  for (let i = 0; i < MAX_WALK_DAYS && made < count; i++) {
+  /* WHERE THE WALK STARTS. A series with no COUNT does not need its earlier
+     occurrences counted, so the walk begins two days before the window. It
+     used to begin at the series' first day and resolve every occurrence's
+     timezone on the way: a daily event from four years back cost 130 ms on
+     every read, and a series more than twenty years old ran out of walk and
+     produced nothing at all (review, 2026-11-19). With a COUNT the earlier
+     occurrences still have to be counted, but only counted: their instants
+     are not resolved. */
+  const i0 = count === Infinity ? Math.max(0, Math.floor((windowStart - first) / DAY) - 2) : 0;
+  for (let i = i0; i < i0 + MAX_WALK_DAYS && made < count; i++) {
     const dayMs = first + i * DAY;
     // Nothing this late can reach the window; a day of slack covers any zone.
     if (dayMs - DAY > windowEnd) break;
     if (freq === "DAILY" && i % interval !== 0) continue;
     if (freq === "WEEKLY" && Math.floor((i + intoWeek) / 7) % interval !== 0) continue;
     if (wanted && !wanted.includes(new Date(dayMs).getUTCDay())) continue;
+    if (dayMs + 2 * DAY < windowStart) {
+      if (dayMs - DAY > until) break;
+      made++;
+      continue;
+    }
     const at = instantOf(`${new Date(dayMs).toISOString().slice(0, 10)}T${time}`, start.zone);
     if (at > until) break;
     made++;
@@ -200,10 +239,10 @@ export function parseFeed(ics: string, windowStart: number, windowEnd: number): 
   const replaced = new Map<string, Set<number>>();
   for (const body of blocks) {
     try {
-      const rid = /^RECURRENCE-ID([^:]*):(.+)$/m.exec(body);
+      const rid = prop(body, "RECURRENCE-ID");
       const uid = /^UID:(.+)$/m.exec(body)?.[1]?.trim();
       if (!rid || !uid) continue;
-      const when = parseWhen(rid[1], rid[2]);
+      const when = parseWhen(rid.params, rid.value);
       if (!when) continue;
       if (!replaced.has(uid)) replaced.set(uid, new Set());
       replaced.get(uid)!.add(when.ms);
@@ -223,17 +262,36 @@ export function parseFeed(ics: string, windowStart: number, windowEnd: number): 
       if (/^TRANSP:TRANSPARENT\s*$/m.test(body)) continue;
       if (/^STATUS:CANCELLED\s*$/m.test(body)) continue;
 
-      const dtstart = /^DTSTART([^:]*):(.+)$/m.exec(body);
+      const dtstart = prop(body, "DTSTART");
       if (!dtstart) continue;
-      const start = parseWhen(dtstart[1], dtstart[2]);
-      if (start === null) continue;
+      const start = parseWhen(dtstart.params, dtstart.value);
+      // A start that cannot be read is an event that does not block. Say so:
+      // it used to be skipped without being counted, so /admin showed nothing.
+      if (start === null) {
+        unreadable++;
+        continue;
+      }
 
-      const dtend = /^DTEND([^:]*):(.+)$/m.exec(body);
-      const endWhen = dtend ? parseWhen(dtend[1], dtend[2]) : null;
-      // No DTEND: an all-day event runs a day, anything else defaults to zero length
+      const dtend = prop(body, "DTEND");
+      const endWhen = dtend ? parseWhen(dtend.params, dtend.value) : null;
+      const hasDuration = durationMs(body);
+
+      // Extra dates a series or a single event also happens on.
+      for (const rd of body.matchAll(/^RDATE((?:;(?:[^:"\r\n]|"[^"\r\n]*")*)?):(.+)$/gm)) {
+        for (const v of rd[2].split(",")) {
+          const w = parseWhen(rd[1], v.split("/")[0]);
+          if (!w) {
+            unreadable++;
+            continue;
+          }
+          const len = endWhen ? endWhen.ms - start.ms : (hasDuration ?? (start.allDay ? DAY : 3_600_000));
+          if (w.ms + len > windowStart && w.ms < windowEnd) intervals.push({ start: w.ms, end: w.ms + len });
+        }
+      }
+      // No DTEND: its DURATION if it gives one. With neither, an all-day event runs a day, anything else defaults to zero length
       // per the spec; a zero-length event cannot collide, so give it an hour instead
       // of pretending precision the data does not have.
-      const end = endWhen ? endWhen.ms : start.ms + (start.allDay ? DAY : 3_600_000);
+      const end = endWhen ? endWhen.ms : start.ms + (hasDuration ?? (start.allDay ? DAY : 3_600_000));
 
       const rule = /^RRULE:(.+)$/m.exec(body)?.[1]?.trim();
       if (rule) {

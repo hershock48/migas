@@ -6,7 +6,7 @@ import FeedRig from "@/components/FeedRig";
 import MiniForm, { type MiniField } from "@/components/MiniForm";
 import SteerLoop from "@/components/SteerLoop";
 import { requestCoManagement } from "@/app/actions";
-import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, CREDS, SESSIONS, SITE, money } from "@/lib/site";
+import { COMANAGE_APPLY, COMANAGE_FAQ, COMANAGEMENT, COMANAGEMENT_LIVE, CREDS, SESSIONS, SITE, money } from "@/lib/site";
 import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 
 export const metadata: Metadata = {
@@ -190,9 +190,13 @@ export default function CoManagement() {
           </Link>
           {/* To the home page's software section, which has the screenshot, the demo and
               its sign-in. It went straight to the demo's sign-in form, which looked locked. */}
-          <Link href="/#software" className="text-sm font-semibold text-flare hover:underline">
-            See the software it runs on
-          </Link>
+          {/* The home page's software section is hidden with the rest while
+              COMANAGEMENT_LIVE is false, so there is nothing to link to. */}
+          {COMANAGEMENT_LIVE && (
+            <Link href="/#software" className="text-sm font-semibold text-flare hover:underline">
+              See the software it runs on
+            </Link>
+          )}
         </div>
       </section>
 

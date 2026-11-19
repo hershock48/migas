@@ -190,9 +190,11 @@ export function slotGrid(
       const close = minutes(w.to);
       for (let t = minutes(w.from); t + LENGTHS[LENGTHS.length - 1] <= close; t += AVAILABILITY.stepMinutes) {
         const value = `${date}T${pad(Math.floor(t / 60))}:${pad(t % 60)}`;
-        // Epoch resolution only when there is something to collide with: 72 slots
-        // times two Intl passes is measurable, and an empty calendar needs neither.
-        const startMs = runtime.busy.length ? toInstant(value).getTime() : 0;
+        const startMs = toInstant(value).getTime();
+        // A time that has already started is not a time. With a lead of zero
+        // days the grid's first day is today, and it used to offer, and accept,
+        // this morning's times in the afternoon (review, 2026-11-19).
+        if (startMs <= now.getTime()) continue;
         const maxMinutes = LENGTHS.find(
           (m) =>
             t + m <= close &&

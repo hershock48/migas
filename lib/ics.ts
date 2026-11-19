@@ -29,11 +29,21 @@ import { AVAILABILITY, SITE } from "./site";
  *  hardcoded, so it is right on both sides of a clock change without a table. Takes the
  *  zone as an argument because the busy-calendar feed (lib/busy.ts) carries events in
  *  whatever TZID the calendar app wrote, not only ours. */
+// One formatter per timezone, kept. Building one is the slow part, and the
+// calendar feed asks for thousands of offsets: a long-running calendar took
+// 4.5 seconds of blocked server time to read before this (review, 2026-11-19).
+const formatters = new Map<string, Intl.DateTimeFormat>();
+const formatterFor = (timeZone: string) => {
+  let f = formatters.get(timeZone);
+  if (!f) {
+    f = new Intl.DateTimeFormat("en-US", { timeZone, timeZoneName: "longOffset" });
+    formatters.set(timeZone, f);
+  }
+  return f;
+};
+
 function offsetMinutes(at: Date, timeZone: string): number {
-  const name = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    timeZoneName: "longOffset",
-  })
+  const name = formatterFor(timeZone)
     .formatToParts(at)
     .find((p) => p.type === "timeZoneName")?.value;
   const m = /GMT([+-])(\d{2}):(\d{2})/.exec(name ?? "");
@@ -61,8 +71,18 @@ export const toInstant = (local: string): Date => toInstantIn(local, AVAILABILIT
 const stamp = (d: Date) => d.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 
 /** Commas, semicolons, backslashes and newlines all carry meaning in a property value. */
+// Every line break becomes the two characters backslash-n, a lone carriage
+// return included, and other control characters are dropped. A bare CR used
+// to pass through raw, and a calendar that treats it as a line break would
+// read whatever followed it in a typed name as a new property of the event.
 const esc = (v: string) =>
-  v.replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+  v
+    .replace(/\\/g, "\\\\")
+    .replace(/;/g, "\\;")
+    .replace(/,/g, "\\,")
+    .replace(/\r\n|\r|\n/g, "\\n")
+    // eslint-disable-next-line no-control-regex
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "");
 
 /** RFC 5545 §3.1: fold content lines at 75 octets, continuations start with a space. */
 function fold(line: string): string {

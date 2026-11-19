@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
-import { ADMIN_COOKIE, cookieIsValid, pinConfigured } from "@/lib/admin-auth";
+import { ADMIN_COOKIE, cookieIsValid, pinConfigured, pinIsShort } from "@/lib/admin-auth";
 import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, availabilityStatus, getAvailability } from "@/lib/availability";
 import { upcomingBookings } from "@/lib/bookings";
 import { busyFeedStatus } from "@/lib/busy";
@@ -26,6 +26,8 @@ const DAY_NAMES = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Frid
  *  echoing arbitrary query text into the page. */
 const MESSAGES: Record<string, string> = {
   "wrong-pin": "That PIN is not it. Try again.",
+  locked: "Five wrong PINs from here in a row. Sign-in is paused for fifteen minutes.",
+  "locked-all": "Too many wrong PINs have been tried, so sign-in is paused for everyone for up to an hour. A device that is already signed in still works.",
   "signed-out": "You were signed out. Sign in and save again; what you typed is kept.",
   "signed-out-again": "You were signed out, so that was not saved. Sign in and do it again.",
   "half-window": "A window needs both an open and a close time. One of them has only one.",
@@ -197,6 +199,12 @@ export default async function Admin({
           </button>
         </form>
       </div>
+      {pinIsShort() && (
+        <p className="mt-6 max-w-2xl rounded-lg border border-alert/50 bg-ink px-4 py-3 text-sm leading-relaxed text-bone" role="status">
+          Your PIN is shorter than six characters. This page lists your callers&rsquo; names, emails and phone numbers,
+          and a short PIN can be guessed in about a week even with wrong tries limited. Ask Glazed Web to set a longer one.
+        </p>
+      )}
 
       {saved && (
         <p role="status" className="mt-6 max-w-xl rounded-xl2 border border-ember/50 bg-ink-panel p-4 text-[15px] text-bone">
@@ -261,7 +269,7 @@ export default async function Admin({
             k: "Day-before reminder",
             ok: remindersOn,
             yes: "On. You and the grower each get an email the day before a call",
-            no: "Off. It starts once outgoing mail is connected",
+            no: smtpOn && status.configured ? "Off. Mail is connected; it still needs its timer switched on by Glazed Web" : "Off. It starts once outgoing mail is connected",
           },
         ].map((s) => (
           <div key={s.k} className="bg-ink-panel px-5 py-5">
@@ -319,6 +327,16 @@ export default async function Admin({
                     </a>
                     {b.phone ? ` · ${b.phone}` : ""} · {b.ref} · {b.paidAt ? "Paid" : "Not paid"}
                   </p>
+                  {/* Only when his email for this booking failed to send. The room's
+                      answers normally live in that email and nowhere else. */}
+                  {b.mailFailed && b.brief && (
+                    <details className="mt-2 rounded-lg border border-alert/50 bg-ink px-4 py-3">
+                      <summary className="cursor-pointer text-sm font-semibold text-bone">
+                        The email for this booking did not send. Their answers are here. Photos were not kept; ask for them.
+                      </summary>
+                      <pre className="mt-3 whitespace-pre-wrap break-words font-sans text-sm leading-relaxed text-muted">{b.brief}</pre>
+                    </details>
+                  )}
                 </div>
                 <form action={cancelBooking}>
                   <input type="hidden" name="ref" value={b.ref} />

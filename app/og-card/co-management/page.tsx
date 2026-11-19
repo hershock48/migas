@@ -1,6 +1,9 @@
 import Sun from "@/components/Sun";
 import { Graffiti } from "@/components/brand";
 
+/** A canvas for a screenshot, not a page. Kept out of search once the site-wide noindex comes off on launch day. */
+export const metadata = { robots: { index: false, follow: false } };
+
 /**
  * The source frame for public/og-comanagement.jpg — the link card for the one page
  * that gets forwarded into ownership groups and the division conversations. Same

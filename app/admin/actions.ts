@@ -10,6 +10,7 @@ import {
 } from "@/lib/admin-auth";
 import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, getAvailabilityForWrite, saveAvailability, withoutPast, type StoredAvailability } from "@/lib/availability";
 import { deleteBooking } from "@/lib/bookings";
+import { adminLock, caller, recordAdminFail } from "@/lib/throttle";
 import { notifyTo, sendMailChecked } from "@/lib/mail";
 import { AVAILABILITY, SITE } from "@/lib/site";
 
@@ -36,6 +37,12 @@ function draftOf(fd: FormData): Record<string, string> {
   return json.length <= DRAFT_MAX ? { draft: json } : {};
 }
 
+/** A cleared box is not a number. Number("") is 0, which saved "no lead time" without a word. */
+const numberOrNaN = (v: FormDataEntryValue | null) => {
+  const s = String(v ?? "").trim();
+  return s === "" ? NaN : Number(s);
+};
+
 const back = (params: Record<string, string>) => {
   const q = new URLSearchParams(params).toString();
   redirect(q ? `/admin?${q}` : "/admin");
@@ -47,7 +54,14 @@ export async function adminLogin(fd: FormData) {
   // had lapsed. It goes back to the editor once the PIN is right.
   const carried = String(fd.get("draft") ?? "");
   const keep: Record<string, string> = carried && carried.length <= DRAFT_MAX ? { draft: carried } : {};
+  // Counted and locked: lib/throttle.ts. The lock is checked before the PIN is
+  // looked at, so while it is on even the right PIN is refused, and a guesser
+  // learns nothing from trying.
+  const who = await caller();
+  const lock = await adminLock(who);
+  if (lock) back({ error: lock === "everyone" ? "locked-all" : "locked", ...keep });
   if (!pinMatches(pin)) {
+    await recordAdminFail(who);
     // A flat second's delay is most of the brute-force defense a PIN this size
     // needs when every attempt is a full page round trip.
     await new Promise((r) => setTimeout(r, 1000));
@@ -98,8 +112,8 @@ export async function saveAvailabilityAction(fd: FormData) {
     windows,
     blockedDates,
     blocks: current.blocks ?? [],
-    leadDays: Number(fd.get("leadDays") ?? NaN),
-    horizonDays: Number(fd.get("horizonDays") ?? NaN),
+    leadDays: numberOrNaN(fd.get("leadDays")),
+    horizonDays: numberOrNaN(fd.get("horizonDays")),
   };
   if (!Number.isFinite(doc.leadDays) || !Number.isFinite(doc.horizonDays)) {
     back({ error: "bad-days", ...draft });

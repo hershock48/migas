@@ -1,13 +1,17 @@
 "use server";
 
 import { COMANAGE_APPLY, INTAKE, SESSIONS, SITE } from "@/lib/site";
-import { mailConfigured, notifyTo as notifyAddress, sendMail, type Attachment } from "@/lib/mail";
-import { bookingsConfigured, saveBooking } from "@/lib/bookings";
+import { mailConfigured, notifyTo as notifyAddress, sendMail, sendMailChecked, type Attachment } from "@/lib/mail";
+import { bookingsConfigured, saveBooking, upcomingBookings, type Booking } from "@/lib/bookings";
 import { checkoutFor } from "@/lib/pay";
 import { toInstant } from "@/lib/ics";
 import { PHOTO_LIMITS, type FormState } from "@/lib/forms";
 import { describeSlot } from "@/lib/slots";
-import { bookableSlot } from "@/lib/availability";
+import { slotCheck } from "@/lib/availability";
+import { caller, tooMany } from "@/lib/throttle";
+
+/** How many bookings one address, one place and everybody together may make. */
+const BOOKING_LIMITS = { perAddress: 2, perPlaceADay: 4, anHour: 8 };
 import { buildIcs, icsDataUrl } from "@/lib/ics";
 
 /**
@@ -54,7 +58,10 @@ const str = (fd: FormData, key: string) => String(fd.get(key) ?? "").trim();
 /** Deliberately permissive. A regex that rejects a valid address is worse than one that
  *  accepts an invalid one, because the second costs a bounce and the first costs a
  *  client who cannot work out why the button will not go. */
-const emailLooksReal = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v);
+// Letters, digits and . _ % + - only. The looser pattern let quotes, brackets,
+// parentheses and semicolons through to the mail library, whose address parser
+// has had a run of advisories about exactly those characters.
+const emailLooksReal = (v: string) => /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(v);
 
 const reference = () => `MG-${crypto.randomUUID().slice(0, 6).toUpperCase()}`;
 
@@ -83,18 +90,32 @@ const notifyTo = () => notifyAddress(SITE.email);
  * host, nothing to expire, nothing to pay for, and no bucket full of strangers' grow rooms
  * sitting around waiting to be a liability.
  */
+/** What the file IS, read from its first bytes. The type and the name a browser
+ *  sends with an upload are whatever the sender says they are. */
+function sniff(b: Buffer): { ext: string; type: string } | null {
+  const ascii = (from: number, to: number) => b.subarray(from, to).toString("latin1");
+  if (b.length > 3 && b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff) return { ext: "jpg", type: "image/jpeg" };
+  if (b.length > 8 && b[0] === 0x89 && ascii(1, 4) === "PNG") return { ext: "png", type: "image/png" };
+  if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return { ext: "webp", type: "image/webp" };
+  if (ascii(0, 4) === "GIF8") return { ext: "gif", type: "image/gif" };
+  if (ascii(4, 8) === "ftyp") {
+    const brand = ascii(8, 12);
+    if (brand === "avif" || brand === "avis") return { ext: "avif", type: "image/avif" };
+    if (/^(heic|heix|hevc|hevx|heim|heis|mif1|msf1)$/.test(brand)) return { ext: "heic", type: "image/heic" };
+  }
+  return null;
+}
+
 async function readPhotos(files: File[]): Promise<{ attachments: Attachment[]; error?: string }> {
   const real = files.filter((f) => f && f.size > 0 && f.name);
   if (real.length > PHOTO_LIMITS.count) {
     return { attachments: [], error: `Up to ${PHOTO_LIMITS.count} photos.` };
   }
+  const each = `${(PHOTO_LIMITS.bytesEach / 1_000_000).toFixed(1)} MB`;
   let total = 0;
   for (const f of real) {
-    if (!f.type.startsWith("image/")) {
-      return { attachments: [], error: `${f.name} is not an image.` };
-    }
     if (f.size > PHOTO_LIMITS.bytesEach) {
-      return { attachments: [], error: `${f.name} is too large. Keep photos under 3 MB each.` };
+      return { attachments: [], error: `${f.name} is too large. Keep photos under ${each} each.` };
     }
     total += f.size;
   }
@@ -104,15 +125,17 @@ async function readPhotos(files: File[]): Promise<{ attachments: Attachment[]; e
       error: "Those photos are too large altogether. Try three instead of four.",
     };
   }
+  /* The attachment's name and type come from the file's own bytes. They used to
+     come from the upload: anything that claimed "image/..." was accepted, and
+     the name kept whatever ending the sender gave it, so a crafted post could
+     put photo-1.html in his inbox on a genuine booking email (review, 2026-11-19).
+     Run against the build: a program renamed canopy.jpg was accepted and sent on. */
   const attachments: Attachment[] = [];
   for (const [i, f] of real.entries()) {
-    attachments.push({
-      // Renamed on the way through. A camera roll filename is noise in an inbox, and
-      // `IMG_4821.jpg` from four different growers in one week is worse than noise.
-      filename: `photo-${i + 1}${f.name.match(/\.[a-z0-9]+$/i)?.[0] ?? ".jpg"}`,
-      content: Buffer.from(await f.arrayBuffer()),
-      contentType: f.type,
-    });
+    const content = Buffer.from(await f.arrayBuffer());
+    const kind = sniff(content);
+    if (!kind) return { attachments: [], error: `${f.name} is not a photo we can read. Send a JPEG, PNG, WebP or HEIC.` };
+    attachments.push({ filename: `photo-${i + 1}.${kind.ext}`, content, contentType: kind.type });
   }
   return { attachments };
 }
@@ -157,17 +180,34 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
   values.slot = slot;
   if (!slot) {
     errors.slot = "Pick a time.";
-  } else if (session && !(await bookableSlot(slot, session.minutes))) {
-    // Reachable honestly, two ways: with no JavaScript nothing greys out the 11:30
-    // slot that cannot hold a 90-minute consult, and with the calendar feed on, a
-    // time can genuinely close between page load and submit. Same sentence covers
-    // both, and it has to explain itself.
-    errors.slot =
-      `That time is no longer open for a ${session.minutes}-minute session. Pick another.`;
+  } else if (session) {
+    // "unknown" is storage not answering. The page renders without the stored
+    // bookings when that happens; a submit must not, or it confirms a taken time.
+    const state = await slotCheck(slot, session.minutes);
+    if (state === "unknown") errors.slot = "We can't check the calendar right now, so nothing was sent. Try again in a minute.";
+    else if (state === "taken") errors.slot = `That time is no longer open for a ${session.minutes}-minute session. Pick another.`;
   }
 
   const photos = await readPhotos(fd.getAll("photos") as File[]);
   if (photos.error) errors.photos = photos.error;
+
+  /* LIMITS, counted from the stored bookings themselves, so they hold across
+     every server instance. Nothing limited this form before: a script could
+     post once per open time, empty the calendar, and have his mailbox send a
+     confirmation to any address it chose (review, 2026-11-19). The list was
+     read fresh a moment ago by the time check, so this costs no second read. */
+  const who = await caller();
+  if (!Object.keys(errors).length) {
+    const now = Date.now();
+    const open = await upcomingBookings(now);
+    if (open.filter((b) => b.email.toLowerCase() === email.toLowerCase()).length >= BOOKING_LIMITS.perAddress) {
+      errors.email = "This address already has two calls booked. Reply to one of the confirmations to change it, or send us a message.";
+    } else if (open.filter((b) => b.ipHash === who && now - b.createdAt < 86_400_000).length >= BOOKING_LIMITS.perPlaceADay) {
+      errors.slot = "That is a lot of bookings from one place today. Send us a message and we'll sort it out.";
+    } else if (open.filter((b) => now - b.createdAt < 3_600_000).length >= BOOKING_LIMITS.anHour) {
+      errors.slot = "The calendar is taking a lot of requests right now. Try again in an hour, or send us a message.";
+    }
+  }
 
   if (Object.keys(errors).length) return { status: "error", errors, values };
 
@@ -191,28 +231,30 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
 
   const ref = reference();
 
-  // One invite, built once, sent to both sides. His copy makes his own calendar the record
-  // of what is booked — which is the closest this build gets to solving availability, and
-  // it is closer than a weekly pattern in a config file will ever get on its own.
-  const ics = buildIcs({
-    uid: `${ref.toLowerCase()}@mi-gas.net`,
-    localStart: slot,
-    minutes: session!.minutes,
-    title: `${SITE.name} - ${session!.name} - ${name}`,
-    description: brief,
-    attendeeEmail: email,
-  });
-  const invite: Attachment = {
+  /* TWO INVITES, ONE EVENT. His copy carries the whole brief. The grower's
+     carries nothing the sender of the form typed. The comment on that email
+     below has always said it "contains NO text they supplied", and the
+     attachment broke it: the invite's title held the typed name and its
+     description held the whole brief, free text included. So a booking made
+     with somebody else's address sent that person a calendar invite, from his
+     real mailbox, saying whatever the sender liked (review, 2026-11-19). */
+  const inviteWith = (title: string, description: string) =>
+    buildIcs({
+      uid: `${ref.toLowerCase()}@mi-gas.net`,
+      localStart: slot,
+      minutes: session!.minutes,
+      title,
+      description,
+      attendeeEmail: email,
+    });
+  const ownerIcs = inviteWith(`${SITE.name} - ${session!.name} - ${name}`, brief);
+  const visitorIcs = inviteWith(`${SITE.name} - ${session!.name}`, `${session!.name}, ${session!.minutes} minutes, ${when}\nReference: ${ref}`);
+  const asAttachment = (ics: string): Attachment => ({
     filename: `${ref}.ics`,
     content: Buffer.from(ics, "utf8"),
-    // The method in the header has to be the method in the file. It said REQUEST
-    // while buildIcs writes PUBLISH until there is an organiser address, and a
-    // mail client that trusts the header then finds a REQUEST with no organiser.
     contentType: `text/calendar; charset=utf-8; method=${/^METHOD:(\w+)/m.exec(ics)?.[1] ?? "PUBLISH"}`,
-  };
+  });
 
-  // Pay at booking, when the processor is switched on (lib/pay.ts says what
-  // "switched on" means and why it is not yet). Null means the invoice path.
   const payUrl = await checkoutFor({
     ref,
     sessionName: session!.name,
@@ -222,10 +264,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     siteUrl: SITE.url,
   });
 
-  // The booking on record, so the reminder cron can find it and a payment can
-  // be matched to it. Without the Blob store this is a no-op and the invite
-  // in his inbox is the record, as before.
-  const stored = await saveBooking({
+  const record: Booking = {
     ref,
     name,
     email,
@@ -238,27 +277,47 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     startMs: toInstant(slot).getTime(),
     createdAt: Date.now(),
     payUrl: payUrl ?? undefined,
-  }).catch((err) => {
-    console.error("[migas] booking not stored; the email is the record", err);
-    return false;
-  });
+    ipHash: who,
+  };
+  /* A BOOKING THAT CANNOT BE SAVED IS REFUSED. It used to go ahead: both
+     emails went out and the visitor saw a normal confirmation, but the time
+     was not held, the call was not on /admin and no reminder would follow.
+     With no storage configured at all, the email is the record, as before. */
+  let stored = false;
+  if (bookingsConfigured()) {
+    try {
+      stored = await saveBooking(record);
+    } catch (err) {
+      console.error("[migas] booking not stored, so it was refused", err);
+      return {
+        status: "error",
+        values,
+        errors: { slot: "We couldn't save your booking just now, so nothing was sent and the time is not held. Try again in a minute." },
+      };
+    }
+  }
 
-  // A reminder is only promised when one can be sent: the record, mail, and the
-  // hourly job's secret.
-  const reminder = Boolean(stored) && mailConfigured() && Boolean(process.env.CRON_SECRET);
+  const reminder = stored && mailConfigured() && Boolean(process.env.CRON_SECRET);
 
-  const toOwner = await sendMail({
+  const ownerMail = await sendMailChecked({
     to: notifyTo(),
     subject: `[${ref}] ${session!.name} - ${name} - ${when}`,
     replyTo: email,
     text: `${brief}\n\nPayment: ${payUrl ? "card link sent with the confirmation" : "invoice"}\nReminder: ${reminder ? "automatic, the day before" : "not on"}`,
-    attachments: [...photos.attachments, invite],
+    attachments: [...photos.attachments, asAttachment(ownerIcs)],
   });
+  const toOwner = ownerMail.ok;
+  /* His email is the only place the room's answers live. If mail is connected
+     and that send failed, they are kept on the stored booking instead, and
+     /admin shows them under the call. The photos cannot be kept: they only
+     ever ride on the email. */
+  if (!toOwner && stored && mailConfigured()) {
+    await saveBooking({ ...record, brief, mailFailed: true }).catch((err) => console.error("[migas] the intake could not be kept with the booking either", err));
+  }
 
-  // And a confirmation to the grower. Deliberately contains NO text they supplied — only the
-  // session name, the time, the reference and, when on, the payment link. A form that will
-  // email an arbitrary address is a relay; one whose body an attacker cannot influence is
-  // not worth abusing.
+  /* The grower's copy. It contains NO text the sender typed, in the body or in
+     the invite, so the form cannot be used to send somebody a message from his
+     mailbox. */
   const toVisitor = await sendMail({
     to: email,
     subject: `${SITE.name} - booking request received (${ref})`,
@@ -277,30 +336,32 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       "",
       "A calendar invite is attached.",
     ].join("\n"),
-    attachments: [invite],
+    attachments: [asAttachment(visitorIcs)],
   });
 
+  const n = photos.attachments.length;
   return {
     status: "done",
     reference: ref,
-    ics: icsDataUrl(ics),
+    ics: icsDataUrl(visitorIcs),
     payUrl: payUrl ?? undefined,
     reminder,
-    recorded: Boolean(stored),
+    recorded: stored,
+    mailOn: mailConfigured(),
     delivered: { toOwner, toVisitor },
     summary: [
       `${session!.name}, ${session!.minutes} minutes`,
       when,
       payUrl ? `${money(session!.price)}, pay by card below` : `${money(session!.price)}, invoiced before the call`,
-      // "0 photos received" is a worse thing to read than an ask. When somebody skipped the
-      // most useful field on the form, the confirmation is the last good moment to get it.
-      photos.attachments.length === 0
+      n === 0
         ? toVisitor
           ? "No photos yet. Reply to your confirmation email with any and we'll read them before the call"
-          : "No photos yet. Send them with your reference and we'll read them before the call"
-        : photos.attachments.length === 1
-          ? "1 photo sent with your intake"
-          : `${photos.attachments.length} photos sent with your intake`,
+          : "No photos yet"
+        : toOwner
+          ? n === 1
+            ? "1 photo sent with your intake"
+            : `${n} photos sent with your intake`
+          : `Your ${n === 1 ? "photo" : "photos"} did not reach us. We'll ask for ${n === 1 ? "it" : "them"} when we write to you`,
     ],
   };
 }
@@ -339,6 +400,11 @@ export async function requestCoManagement(_prev: FormState, fd: FormData): Promi
   if (values.email && !emailLooksReal(values.email)) errors.email = "An email address we can reply to.";
 
   if (Object.keys(errors).length) return { status: "error", errors, values };
+
+  // Counted per place, so a script cannot post this as fast as it likes. lib/throttle.ts.
+  if (tooMany("message", await caller(), 5, 3_600_000)) {
+    return { status: "error", values, errors: { name: "That is a lot of messages from one place. Try again in an hour." } };
+  }
 
   const ref = reference();
   const ticket = [
@@ -395,6 +461,11 @@ export async function requestCall(_prev: FormState, fd: FormData): Promise<FormS
   }
   if (Object.keys(errors).length) return { status: "error", errors, values };
 
+  // Counted per place, so a script cannot post this as fast as it likes. lib/throttle.ts.
+  if (tooMany("message", await caller(), 5, 3_600_000)) {
+    return { status: "error", values, errors: { name: "That is a lot of messages from one place. Try again in an hour." } };
+  }
+
   const toOwner = await sendMail({
     to: notifyTo(),
     subject: `Call request - ${values.name}`,
@@ -436,6 +507,11 @@ export async function sendMessage(_prev: FormState, fd: FormData): Promise<FormS
   if (!emailLooksReal(values.email)) errors.email = "An email address we can reply to.";
   if (values.message.length < 10) errors.message = "A sentence or two about what you need.";
   if (Object.keys(errors).length) return { status: "error", errors, values };
+
+  // Counted per place, so a script cannot post this as fast as it likes. lib/throttle.ts.
+  if (tooMany("message", await caller(), 5, 3_600_000)) {
+    return { status: "error", values, errors: { name: "That is a lot of messages from one place. Try again in an hour." } };
+  }
 
   const toOwner = await sendMail({
     to: notifyTo(),

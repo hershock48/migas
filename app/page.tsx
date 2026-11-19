@@ -12,6 +12,7 @@ import flowerDepth from "@/public/assets/rooms/flower-depth.webp";
 import rgsOverview from "@/public/assets/rgs/rgs-overview.webp";
 import { MirrorLockup } from "@/components/brand";
 import { SessionCard } from "@/components/cards";
+import { mailConfigured } from "@/lib/mail";
 import { COMANAGEMENT, COMANAGEMENT_LIVE, CONSULT_TOPICS, CREDS, INSTAGRAM_POSTS, PATREON, PATREON_POSTS, SESSIONS, SITE, money } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -64,6 +65,12 @@ export default function Home() {
      in the head, so it starts with the fonts. Home only, because the sun is only here. */
   preload("/noise/plasma-a.webp", { as: "image", fetchPriority: "high" });
   const igImages = [roomBench, roomCanopy, roomCola];
+  /* What the call section may promise. This page is built once, at deploy, so
+     these are the settings of that deploy; connecting mail takes a redeploy
+     anyway. The sentence used to promise an invite on both calendars and a
+     reminder unconditionally, with neither switched on. */
+  const mailOn = mailConfigured();
+  const reminderOn = mailOn && Boolean(process.env.CRON_SECRET) && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
   /* THE THREE WAYS IN, WITH THEIR PRICES. Jake's intro is "the sun, his canopy, three
      ways in", and the three ways were three pill buttons that said what each path was
      called and nothing about what it cost. His own writing is the brief here: one real
@@ -292,8 +299,8 @@ export default function Home() {
         {/* This was a third panel with a third "Book a call" button under two cards that
             each already end in one. The sentence is what it was for. */}
         <p className="reveal mt-6 max-w-3xl text-[15px] leading-relaxed text-muted">
-          You pick a time from the live calendar, and the invite goes on both calendars with a reminder the day
-          before. Booked times drop off the calendar right away.
+          You pick a time from the live calendar, and it comes off the calendar as soon as you book.
+          {mailOn ? ` We email you a calendar invite${reminderOn ? ", and a reminder the day before" : ""}.` : ""}
         </p>
       </section>
 

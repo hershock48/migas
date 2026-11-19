@@ -1,6 +1,6 @@
 import "server-only";
 import { createHmac } from "node:crypto";
-import { blobTimeout } from "./blob";
+import { BLOB_TIMEOUT_MS, blobTimeout } from "./blob";
 
 /**
  * The bookings on record, so a reminder can go out before the call and a
@@ -40,6 +40,11 @@ export type Booking = {
   /** When his own day-before note went out, tracked apart from the grower's so a
    *  bounce on one side never repeats the other every hour. */
   ownerRemindedAt?: number;
+  /** A keyed hash of where the booking was made from. Counted by the booking form's limits; never the address itself. */
+  ipHash?: string;
+  /** Set only when his booking email failed to send: the room's answers, kept here so they are not lost. /admin shows them. */
+  brief?: string;
+  mailFailed?: boolean;
 };
 
 const PREFIX = "bookings/";
@@ -93,15 +98,18 @@ export async function saveBooking(b: Booking): Promise<boolean> {
 let upcoming: { at: number; list: Booking[] } | null = null;
 const UPCOMING_TTL_MS = 30_000;
 
-export async function upcomingBookings(nowMs: number = Date.now(), fresh = false): Promise<Booking[]> {
+export async function upcomingBookings(nowMs: number = Date.now(), fresh = false, strict = false): Promise<Booking[]> {
   if (!configured()) return [];
   if (!fresh && upcoming && nowMs - upcoming.at < UPCOMING_TTL_MS) return upcoming.list;
   try {
     // From an hour back, so a call in progress still holds its time.
-    const list = (await bookingsStarting(nowMs - 3_600_000, nowMs + 100 * 86_400_000)).sort((a, b) => a.startMs - b.startMs);
+    const list = (await bookingsStarting(nowMs - 3_600_000, nowMs + 100 * 86_400_000, strict)).sort((a, b) => a.startMs - b.startMs);
     upcoming = { at: nowMs, list };
     return list;
   } catch (err) {
+    // `strict` is the booking submit: it must know, not guess. Everything else
+    // renders without the records rather than not at all.
+    if (strict) throw err;
     // Open failure, like the calendar feed: the booking page must not go down
     // because the store did. The last good list beats none.
     console.error("[migas] Booking records unreadable, slots render without them", err);
@@ -126,29 +134,45 @@ export async function getBooking(ref: string): Promise<Booking | null> {
   const { list } = await import("@vercel/blob");
   const found = (await list({ prefix: pathFor(ref), limit: 1, ...blobTimeout() })).blobs[0];
   if (!found) return null;
-  const res = await fetch(found.url, { cache: "no-store" });
+  const res = await fetch(found.url, { cache: "no-store", signal: AbortSignal.timeout(BLOB_TIMEOUT_MS) });
   if (!res.ok) return null;
   return (await res.json()) as Booking;
 }
 
 /** Every booking that starts inside [from, to], newest written last. */
-export async function bookingsStarting(fromMs: number, toMs: number): Promise<Booking[]> {
+/**
+ * HOW THE RECORDS ARE READ (changed in the review of 2026-11-19). They were
+ * fetched one after another with no time limit, so every page that needed
+ * them waited for the sum of all of them, one that hung stalled the page, and
+ * one that would not parse threw the whole read away, which reopened every
+ * booked time. Now they are read twenty at a time, each with the storage
+ * time limit, and one bad record costs only itself: it is skipped and logged.
+ * With `strict` (the booking submit) a record that cannot be read is an
+ * error instead, because the submit must not confirm a time it could not check.
+ */
+export async function bookingsStarting(fromMs: number, toMs: number, strict = false): Promise<Booking[]> {
   if (!configured()) return [];
   const { list } = await import("@vercel/blob");
   const out: Booking[] = [];
   let cursor: string | undefined;
   do {
     const page = await list({ prefix: PREFIX, limit: 200, cursor, ...blobTimeout() });
-    for (const blob of page.blobs) {
-      // A record this old cannot be for a call still ahead; skip the fetch. 120
-      // days, because /admin allows booking up to 90 days out (30 of lead time
-      // plus 60 offered). It was 60, which would have dropped the reminder for a
-      // call booked more than two months ahead.
-      if (Date.now() - blob.uploadedAt.getTime() > 120 * 86_400_000) continue;
-      const res = await fetch(blob.url, { cache: "no-store" });
-      if (!res.ok) continue;
-      const b = (await res.json()) as Booking;
-      if (b.startMs >= fromMs && b.startMs <= toMs) out.push(b);
+    const recent = page.blobs.filter((blob) => Date.now() - blob.uploadedAt.getTime() <= 120 * 86_400_000);
+    for (let i = 0; i < recent.length; i += 20) {
+      const batch = await Promise.all(
+        recent.slice(i, i + 20).map(async (blob): Promise<Booking | null> => {
+          try {
+            const res = await fetch(blob.url, { cache: "no-store", signal: AbortSignal.timeout(BLOB_TIMEOUT_MS) });
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return (await res.json()) as Booking;
+          } catch (err) {
+            if (strict) throw err;
+            console.error(`[migas] booking record ${blob.pathname} unreadable, skipped`, err);
+            return null;
+          }
+        }),
+      );
+      for (const b of batch) if (b && b.startMs >= fromMs && b.startMs <= toMs) out.push(b);
     }
     cursor = page.hasMore ? page.cursor : undefined;
   } while (cursor);

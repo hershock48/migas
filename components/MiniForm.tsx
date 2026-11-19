@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { startTransition, useActionState, useEffect, useId, useRef } from "react";
 import { EMPTY, type FormState } from "@/lib/forms";
 import { scrollBehavior } from "@/lib/scroll";
 
@@ -69,6 +69,12 @@ export default function MiniForm({
   className?: string;
 }) {
   const [state, formAction, pending] = useActionState(action, EMPTY);
+  /* Ids are made unique per form. They were the bare field names, so on
+     /consulting this form's Name, Phone and Email shared their ids with the
+     booking form above it, and each label here pointed at the booking form's
+     field instead of its own: three unlabelled boxes to a screen reader. */
+  const uid = useId();
+  const fid = (id: string) => `${uid}${id}`;
   const formRef = useRef<HTMLFormElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
 
@@ -103,7 +109,7 @@ export default function MiniForm({
       <div
         ref={doneRef}
         tabIndex={-1}
-        className={`rounded-xl2 border border-ember/60 bg-ember/[0.07] p-6 ${className}`}
+        className={`rounded-xl2 border border-ember/60 bg-ember/[0.07] p-6 ${className.replace(/\breveal\b/g, "")}`}
         aria-live="polite"
       >
         <p className="eyebrow">Done</p>
@@ -126,13 +132,26 @@ export default function MiniForm({
   /* The hint and, after a rejected submit, the message: both are read when the field
      takes focus. role="alert" alone announces the message once, as it appears. */
   const describe = (f: MiniField) =>
-    [f.hint && `${f.id}-hint`, state.errors?.[f.id] && `${f.id}-error`].filter(Boolean).join(" ") || undefined;
+    [f.hint && `${fid(f.id)}-hint`, state.errors?.[f.id] && `${fid(f.id)}-error`].filter(Boolean).join(" ") || undefined;
 
   return (
-    <form ref={formRef} action={formAction} noValidate className={className}>
+    <form
+      ref={formRef}
+      action={formAction}
+      noValidate
+      className={className}
+      // Sent by hand so React 19 does not reset the form after a refused send,
+      // which put every dropdown back to "Choose one". See onSubmit in Booking.tsx.
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (pending) return;
+        const fd = new FormData(e.currentTarget);
+        startTransition(() => formAction(fd));
+      }}
+    >
       <div aria-hidden className="absolute h-0 w-0 overflow-hidden">
-        <label htmlFor={`trap-${fields[0].id}`}>Leave blank</label>
-        <input id={`trap-${fields[0].id}`} type="text" name="_trap" tabIndex={-1} autoComplete="off" />
+        <label htmlFor={fid("trap")}>Leave blank</label>
+        <input id={fid("trap")} type="text" name="_trap" tabIndex={-1} autoComplete="off" />
       </div>
       {hidden &&
         Object.entries(hidden).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
@@ -149,21 +168,21 @@ export default function MiniForm({
             className={`row-span-3 grid grid-rows-subgrid pb-4 last:pb-0 ${f.wide && columns === 2 ? "sm:col-span-2" : ""}`}
           >
             <div className="self-end">
-              <label htmlFor={f.id} className="block text-sm font-semibold text-bone">
+              <label htmlFor={fid(f.id)} className="block text-sm font-semibold text-bone">
                 {f.label}
                 {!f.required && f.tag !== null && (
                   <span className="ml-2 font-normal text-muted">{f.tag ?? "optional"}</span>
                 )}
               </label>
               {f.hint && (
-                <p id={`${f.id}-hint`} className="mt-1 text-[13px] leading-snug text-muted">
+                <p id={`${fid(f.id)}-hint`} className="mt-1 text-[13px] leading-snug text-muted">
                   {f.hint}
                 </p>
               )}
             </div>
             {f.type === "textarea" ? (
               <textarea
-                id={f.id}
+                id={fid(f.id)}
                 name={f.id}
                 rows={5}
                 placeholder={f.placeholder}
@@ -175,7 +194,7 @@ export default function MiniForm({
               />
             ) : f.type === "select" ? (
               <select
-                id={f.id}
+                id={fid(f.id)}
                 name={f.id}
                 defaultValue={state.values?.[f.id] ?? ""}
                 aria-required={f.required}
@@ -192,7 +211,7 @@ export default function MiniForm({
               </select>
             ) : (
               <input
-                id={f.id}
+                id={fid(f.id)}
                 name={f.id}
                 type={f.type ?? "text"}
                 autoComplete={AUTOFILL[f.id]}
@@ -205,7 +224,7 @@ export default function MiniForm({
               />
             )}
             {state.errors?.[f.id] && (
-              <p id={`${f.id}-error`} role="alert" className="mt-2 text-sm text-alert">
+              <p id={`${fid(f.id)}-error`} role="alert" className="mt-2 text-sm text-alert">
                 {state.errors[f.id]}
               </p>
             )}

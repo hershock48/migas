@@ -1,6 +1,7 @@
 "use client";
 
-import { useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useActionState, useEffect, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import { requestBooking } from "@/app/actions";
 import { EMPTY, PHOTO_LIMITS } from "@/lib/forms";
 import { scrollBehavior } from "@/lib/scroll";
@@ -67,12 +68,17 @@ type Props = {
    *  and passed down, so the copy can say what will actually happen instead of
    *  describing both outcomes with an "if" a visitor has no way to resolve. */
   cardPayment?: boolean;
+  /** Whether outgoing mail and the day-before reminder are switched on, so the
+   *  form only promises an invite and a reminder when they will be sent. */
+  mailOn?: boolean;
+  reminderOn?: boolean;
 };
 
 const STEPS = ["Session", "Your room", "Time", "Details"];
 
-export default function Booking({ days, initialSession, cardPayment = false }: Props) {
+export default function Booking({ days, initialSession, cardPayment = false, mailOn = false, reminderOn = false }: Props) {
   const [state, action, pending] = useActionState(requestBooking, EMPTY);
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
   const headingRef = useRef<HTMLParagraphElement>(null);
   const doneRef = useRef<HTMLDivElement>(null);
@@ -106,6 +112,15 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
   const [errors, setErrors] = useState<Record<string, string>>(state.errors ?? {});
   const [resizing, setResizing] = useState(false);
   const [touched, setTouched] = useState(false);
+
+  /* A link that names a session while the wizard is already open (the price
+     cards, the header) changes the session and nothing else. The wizard used
+     to be keyed on the session by the page, so any such link, and the header's
+     "Book a call", which names none, threw away every answer and photo, and
+     after a booking erased the confirmation with its reference. */
+  useEffect(() => {
+    if (initialSession && SESSIONS.some((s) => s.slug === initialSession)) setSession(initialSession);
+  }, [initialSession]);
 
   const chosen = SESSIONS.find((s) => s.slug === session);
 
@@ -154,6 +169,13 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
       k === "session" ? 0 : INTAKE.some((q) => q.id === k) || k === "photos" ? 1 : k === "slot" ? 2 : 3;
     setTouched(true);
     setStep(Math.min(...keys.map(owner)));
+    /* The time went while they were filling this in. Unpick it and draw the
+       calendar again from the server, so the time that was just refused is
+       not still on offer, and not still selected for Continue to wave through. */
+    if (state.errors.slot && /no longer open/.test(state.errors.slot)) {
+      setSlot("");
+      router.refresh();
+    }
   }, [state]);
 
   /* Focus as well as scroll: the panel mounts with its text already inside, and a live
@@ -163,6 +185,17 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
     doneRef.current?.focus({ preventScroll: true });
     doneRef.current?.scrollIntoView({ block: "center", behavior: scrollBehavior() });
   }, [state.status]);
+
+  /* The day on show must have a time that fits. After the calendar is drawn
+     again a day can be gone, and the first day can hold only half hours while
+     a full hour is chosen: either way the visitor was looking at nothing, or
+     at a grid of greyed-out times. */
+  useEffect(() => {
+    const opens = (i: number) => !!days[i]?.slots.some((s) => fits(s.maxMinutes));
+    if (opens(activeDay)) return;
+    const first = days.findIndex((_, i) => opens(i));
+    if (first >= 0) setActiveDay(first);
+  }, [days, chosen?.minutes]);
 
   useEffect(() => () => photos.forEach((p) => URL.revokeObjectURL(p.url)), [photos]);
 
@@ -225,7 +258,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
     if (which === 2 && !get("slot")) bad.slot = "Pick a time.";
     if (which === 3) {
       if (get("name").length < 2) bad.name = "Your name, so we know who we are talking to.";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(get("email")))
+      if (!/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(get("email")))
         bad.email = "An email address we can send the invite to.";
     }
     return bad;
@@ -259,7 +292,22 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
     setTouched(true);
     const bad = validate(step);
     setErrors(withStepErrors(step, bad));
-    if (Object.keys(bad).length) return;
+    if (Object.keys(bad).length) {
+      /* Bring the first problem into view. On a phone the room step is eleven
+         fields tall: a skipped one sat above the screen, focus stayed on the
+         button, and Continue looked dead. */
+      const key = Object.keys(bad)[0];
+      requestAnimationFrame(() => {
+        const form = formRef.current;
+        const el =
+          (key === "slot" ? form?.querySelector<HTMLElement>('fieldset.bk-day:not(.bk-hide) input[name="slot"]:not([disabled])') : null) ??
+          form?.querySelector<HTMLElement>(`[name="${key}"]:not([disabled])`);
+        if (!el) return;
+        el.focus({ preventScroll: true });
+        el.scrollIntoView({ block: "center", behavior: scrollBehavior() });
+      });
+      return;
+    }
     setStep((s) => Math.min(s + 1, STEPS.length - 1));
   }
 
@@ -302,11 +350,25 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
      the last step. It also held the corrected first-person wording while the server kept
      the old "he" copy. */
   function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    const bad = validate(STEPS.length - 1);
-    if (!Object.keys(bad).length) return;
+    /* SENT BY HAND, NOT BY THE FORM. React 19 resets a form after every action
+       it runs through <form action>, including one the server refused. The
+       text boxes came back, because they are re-fed from state.values. The
+       five dropdowns went back to "Choose one" and the photos were dropped,
+       while the recap still said "2 photos attached". So a visitor told "that
+       time is no longer open" picked another time, was sent back to re-answer
+       the room, and finally booked with no photos. Seen in a browser,
+       2026-11-19. Calling the action ourselves leaves the form alone. With no
+       script this handler never runs and the form posts natively, as before. */
     e.preventDefault();
-    setTouched(true);
-    setErrors(withStepErrors(STEPS.length - 1, bad));
+    const bad = validate(STEPS.length - 1);
+    if (Object.keys(bad).length) {
+      setTouched(true);
+      setErrors(withStepErrors(STEPS.length - 1, bad));
+      return;
+    }
+    if (pending) return;
+    const fd = new FormData(e.currentTarget);
+    startTransition(() => action(fd));
   }
 
   /* ── Confirmation ────────────────────────────────────────────────────────── */
@@ -317,10 +379,12 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
         <p className="eyebrow">Request sent</p>
         <h3 className="mt-4 text-3xl">Thanks, we&rsquo;ve got it</h3>
         <p className="mt-4 max-w-xl leading-relaxed text-muted">
-          {state.payUrl
-            ? "We'll read your profile and photos before the call. Pay below to hold the time."
-            : "We'll read your profile and photos before the call. We'll confirm the time by email and send the invoice with it."}
-          {state.reminder ? " A reminder goes out the day before." : ""}
+          {state.delivered && !state.delivered.toOwner
+            ? "Here is what you sent. One part of this did not go as it should; see the note below the reference."
+            : state.payUrl
+              ? "We'll read your profile and photos before the call. Pay below before the call."
+              : "We'll read your profile and photos before the call. We'll confirm the time by email and send the invoice with it."}
+          {state.reminder && state.delivered?.toOwner ? " A reminder goes out the day before." : ""}
         </p>
         {state.payUrl && (
           <a href={state.payUrl} className="btn-primary mt-6">
@@ -371,10 +435,17 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             while the owner's does not, and a blanket "nothing was emailed" then sits
             directly under a line promising an email. Verified in all three states. */}
         {state.delivered && !state.delivered.toOwner && (
-          <p className="mt-4 text-xs text-muted">
-            {state.recorded
-              ? "Your booking is saved, but email isn't switched on for this site yet, so no confirmation was sent. Keep the reference above."
-              : "Email isn't switched on for this site yet, so this request hasn't reached us. Keep the reference above."}
+          <p className="mt-4 rounded-lg border border-line bg-ink px-4 py-3 text-sm text-bone" role="status">
+            {/* Two different failures. "Not switched on" used to be said for both,
+                so a mail server that was down for an hour told the visitor the
+                site had no email at all. */}
+            {state.mailOn
+              ? state.recorded
+                ? "Your time is held and your answers are saved with it, but our own notice of this booking did not send. If you have not heard from us within a day, send us a message with the reference above."
+                : "This did not reach us: our mail did not send and the booking could not be saved. Send us a message with the reference above."
+              : state.recorded
+                ? "Your booking is saved, but email isn't switched on for this site yet, so no confirmation was sent. Keep the reference above."
+                : "Email isn't switched on for this site yet, so this request hasn't reached us. Keep the reference above."}
           </p>
         )}
       </div>
@@ -422,7 +493,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             >
               Step {step + 1} of {STEPS.length} &middot; {STEPS[step]}
             </p>
-            <p className="text-xs text-muted">{openCount} times open</p>
+            <p className="text-xs text-muted">{openCount} {openCount === 1 ? "time" : "times"} open</p>
           </div>
           {/* The four steps by name, so what is left is visible before it arrives, and the
               finished ones are buttons. A bar with no labels said how far along the visitor
@@ -685,6 +756,15 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             )}
           </p>
 
+          {openCount === 0 && (
+            <p className="mt-6 rounded-lg border border-line bg-ink px-4 py-3 text-sm text-bone">
+              No times are open{chosen ? ` for a ${chosen.name.toLowerCase()}` : ""} right now.{" "}
+              <a href="/connect" className="font-semibold text-flare hover:underline">
+                Send us a message
+              </a>{" "}
+              and we&rsquo;ll find one.
+            </p>
+          )}
           <div className="bk-nav mt-6 flex gap-2 overflow-x-auto pb-2">
             {days.map((d, i) => {
               const open = d.slots.filter((s) => fits(s.maxMinutes)).length;
@@ -819,7 +899,7 @@ export default function Booking({ days, initialSession, cardPayment = false }: P
             </button>
           </div>
           <p className="mt-4 max-w-xl text-xs leading-relaxed text-muted">
-            The invite lands on both calendars straight away, with a reminder the day before.{" "}
+            {mailOn ? `We email you a calendar invite as soon as you send this${reminderOn ? ", and a reminder the day before" : ""}. ` : ""}
             {cardPayment ? "You pay on the next screen to hold the time." : "We send the invoice with the confirmation."}
           </p>
         </div>
@@ -864,22 +944,22 @@ function Field({
 }) {
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-semibold text-bone">
+      <label htmlFor={`bk-${id}`} className="block text-sm font-semibold text-bone">
         {label}
         {!required && <span className="ml-2 font-normal text-muted">optional</span>}
       </label>
       <input
-        id={id}
+        id={`bk-${id}`}
         name={id}
         type={type}
         autoComplete={autoComplete}
         defaultValue={state.values?.[id] ?? ""}
         aria-required={required}
         aria-invalid={!!error}
-        aria-describedby={error ? `${id}-error` : undefined}
+        aria-describedby={error ? `bk-${id}-error` : undefined}
         className="field mt-2"
       />
-      <Err id={`${id}-error`} msg={error} />
+      <Err id={`bk-${id}-error`} msg={error} />
     </div>
   );
 }

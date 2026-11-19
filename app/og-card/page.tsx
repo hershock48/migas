@@ -1,6 +1,9 @@
 import Sun from "@/components/Sun";
 import { Graffiti } from "@/components/brand";
 
+/** A canvas for a screenshot, not a page. Kept out of search once the site-wide noindex comes off on launch day. */
+export const metadata = { robots: { index: false, follow: false } };
+
 /**
  * THE SOURCE FRAME FOR public/og.png — the picture that shows up when the link is pasted
  * into a text, a Slack channel or anywhere else that reads Open Graph tags. Not a page
