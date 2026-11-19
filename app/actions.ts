@@ -2,8 +2,8 @@
 
 import { COMANAGE_APPLY, INTAKE, SESSIONS, SITE } from "@/lib/site";
 import { mailConfigured, notifyTo as notifyAddress, sendMail, sendMailChecked, type Attachment } from "@/lib/mail";
-import { bookingsConfigured, saveBooking, upcomingBookings, type Booking } from "@/lib/bookings";
-import { checkoutFor } from "@/lib/pay";
+import { bookingsConfigured, clashesWith, deleteBooking, saveBooking, upcomingBookings, type Booking } from "@/lib/bookings";
+import { payConfigured, payLink, payPath } from "@/lib/pay";
 import { toInstant } from "@/lib/ics";
 import { PHOTO_LIMITS, type FormState } from "@/lib/forms";
 import { describeSlot } from "@/lib/slots";
@@ -41,12 +41,13 @@ import { buildIcs, icsDataUrl } from "@/lib/ics";
  *
  * WHAT IS DELIBERATELY NOT HERE.
  *
- * No card is taken. That is not laziness, it is unresolved: Stripe's published
+ * No card is taken here. That is not laziness, it is unresolved: Stripe's published
  * restricted-business list prohibits "Courses and information on cultivating
  * marijuana", and Calendly, Acuity and Setmore all settle through Stripe, Square or
  * PayPal. Which processor a cannabis-education business can actually use is a question
- * for him and whoever underwrites him, and building a checkout against the wrong answer
- * wastes the work twice. A booking request therefore reaches him and he invoices.
+ * for him and whoever underwrites him. A booking request therefore reaches him and he
+ * invoices. When he has switched the card step on (lib/pay.ts), the booking is given a
+ * pay link instead, and the paying happens there, after this action has finished.
  *
  * VALIDATION IS SERVER-SIDE AND MEANT IT. The client validates too, for speed, but
  * every rule below is enforced here, because the no-JS path can genuinely post a slot
@@ -255,14 +256,11 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     contentType: `text/calendar; charset=utf-8; method=${/^METHOD:(\w+)/m.exec(ics)?.[1] ?? "PUBLISH"}`,
   });
 
-  const payUrl = await checkoutFor({
-    ref,
-    sessionName: session!.name,
-    minutes: session!.minutes,
-    priceDollars: session!.price,
-    customerEmail: email,
-    siteUrl: SITE.url,
-  });
+  /* Whether this booking is paid by card. Nothing is asked of Stripe here any
+     more: the booking gets a pay link on this site, and a payment page is only
+     opened when that link is. So Stripe being slow or down cannot hold up or
+     change a booking. */
+  const card = payConfigured();
 
   const record: Booking = {
     ref,
@@ -276,7 +274,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     slot,
     startMs: toInstant(slot).getTime(),
     createdAt: Date.now(),
-    payUrl: payUrl ?? undefined,
+    ...(card ? { payByCard: true } : {}),
     ipHash: who,
   };
   /* A BOOKING THAT CANNOT BE SAVED IS REFUSED. It used to go ahead: both
@@ -296,6 +294,44 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       };
     }
   }
+
+  /* SAVED, THEN LOOKED AT AGAIN, BEFORE ANYTHING IS SENT. The time was checked
+     as free further up, but storage has no way to check and save in one step,
+     so two visitors who pressed the button in the same instant both passed
+     the check and both saved, and both were confirmed (and, with the card
+     step on, both sent a link to pay for the one time). Review, 2026-11-19.
+
+     So each booking, once saved, reads the records again. If another booking
+     overlaps it, this one takes itself back off the books and says so. It
+     does not try to work out who was first: the store gives no order both
+     sides can trust, and "whoever sees the other steps back" cannot leave two
+     standing. If each saw the other, both step back and the time is open
+     again, which is why the sentence says to pick again and not that the time
+     has gone. If the records cannot be read, it steps back too. */
+  if (stored) {
+    let clash: boolean | null;
+    try {
+      clash = (await clashesWith(record)).length > 0;
+    } catch (err) {
+      console.error("[migas] a saved booking could not be checked against the others, so it was taken back", ref, err);
+      clash = null;
+    }
+    if (clash !== false) {
+      await deleteBooking(ref).catch((err) => console.error("[migas] a booking that was refused could not be removed; remove it on /admin", ref, err));
+      return {
+        status: "error",
+        values,
+        errors: {
+          slot: clash
+            ? "Someone else asked for that time at the same moment, so nothing was sent and the time is not held. Pick a time again."
+            : "We can't check the calendar right now, so nothing was sent. Try again in a minute.",
+        },
+      };
+    }
+  }
+
+  // Only a booking that is on record can be paid by link: the link looks it up.
+  const payUrl = card && stored ? payPath(ref) : undefined;
 
   const reminder = stored && mailConfigured() && Boolean(process.env.CRON_SECRET);
 
@@ -329,7 +365,8 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
       `Price:     ${money(session!.price)}`,
       `Reference: ${ref}`,
       "",
-      payUrl ? `Pay for the call here: ${payUrl}` : "We'll confirm the time by reply and send an invoice to pay before the call.",
+      // The link is this site's, and it works until the call is paid or removed.
+      payUrl ? `Pay for the call here: ${payLink(ref)}` : "We'll confirm the time by reply and send an invoice to pay before the call.",
       "",
       "We read your facility profile and photos before the call.",
       reminder ? "A reminder goes out the day before." : "",
@@ -344,7 +381,7 @@ export async function requestBooking(_prev: FormState, fd: FormData): Promise<Fo
     status: "done",
     reference: ref,
     ics: icsDataUrl(visitorIcs),
-    payUrl: payUrl ?? undefined,
+    payUrl,
     reminder,
     recorded: stored,
     mailOn: mailConfigured(),

@@ -33,7 +33,8 @@ export type FormState = {
    * about it. Those are different lies and the page needs to be able to tell them apart.
    */
   delivered?: { toOwner: boolean; toVisitor: boolean };
-  /** The hosted payment page for this booking, when the processor is switched on. */
+  /** This booking's pay link, when the card step is switched on. An address on
+   *  this site (/api/pay), not Stripe's: it does not expire. See lib/pay.ts. */
   payUrl?: string;
   /** Whether a day-before reminder will really go out: the booking is on record,
    *  mail is connected, and the hourly job has its secret. It was "on record"

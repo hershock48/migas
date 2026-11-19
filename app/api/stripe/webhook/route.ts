@@ -42,7 +42,23 @@ export async function POST(req: Request) {
     }
     return NextResponse.json({ ok: true, ignored: "unknown reference" });
   }
-  if (booking.paidAt) return NextResponse.json({ ok: true, ignored: "already paid" });
+  if (booking.paidAt) {
+    /* The same notice again is ignored, as before. A DIFFERENT session paid
+       for a booking that is already paid is a second charge for one call. The
+       pay link is built not to let that happen, but if it ever does, he is
+       the one who has to refund it, so he is told. */
+    const first = booking.paymentId ?? "";
+    const second = String(session.id ?? "");
+    if (first && second && first !== second) {
+      await sendMail({
+        to: notifyTo(SITE.email),
+        subject: `[${ref}] Paid twice`,
+        text: `A second card payment came in for booking ${ref}, which was already paid. Refund one of them. Stripe sessions ${first} and ${second}.`,
+      });
+      return NextResponse.json({ ok: true, ignored: "paid twice" });
+    }
+    return NextResponse.json({ ok: true, ignored: "already paid" });
+  }
   await saveBooking({ ...booking, paidAt: Date.now(), paymentId: String(session.id ?? "") });
   await sendMail({
     to: notifyTo(SITE.email),

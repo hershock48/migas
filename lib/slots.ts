@@ -20,10 +20,11 @@ import { AVAILABILITY, SESSIONS } from "./site";
  * always did — the static windows, nothing busy — which is what keeps it testable
  * with nothing mocked.
  *
- * WHAT IS STILL TRUE: two people submitting the same moment four seconds apart both
- * pass, because the feed only knows about a booking once it is on his calendar. The
- * confirmation flow absorbs that: he confirms by reply, so a collision costs an
- * apology, not a no-show.
+ * WHAT WAS STILL TRUE HERE, AND IS NOT NOW: two people submitting the same time four
+ * seconds apart both passed, because the feed only knows about a booking once it is
+ * on his calendar. The stored bookings close that (lib/bookings.ts, 2026-11-12), and
+ * two submitting in the same instant are caught after the save (requestBooking in
+ * app/actions.ts, 2026-11-19).
  *
  * ONE GRID FOR ALL THREE SESSION LENGTHS. Slots step every 30 minutes, and each one
  * carries the longest session that still fits inside its window, so 10:30 in a window

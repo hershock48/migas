@@ -33,7 +33,12 @@ export type Booking = {
   /** The same moment as epoch ms, for the reminder window. */
   startMs: number;
   createdAt: number;
-  payUrl?: string;
+  /** Set when the booking was offered the card step. Its pay link is not
+   *  stored: it is worked out from the reference each time (lib/pay.ts). A
+   *  booking made on the invoice path never has this, so switching card
+   *  payment on later does not start asking people who were invoiced to pay
+   *  by card as well. */
+  payByCard?: boolean;
   paidAt?: number;
   paymentId?: string;
   reminderSentAt?: number;
@@ -127,6 +132,31 @@ export async function deleteBooking(ref: string): Promise<boolean> {
   await del(found.url);
   if (upcoming) upcoming.list = upcoming.list.filter((x) => x.ref !== ref);
   return true;
+}
+
+/**
+ * Whether a booking is on record right now, asked of the store's listing and
+ * nothing else. The listing is not cached, where the record's own file can be
+ * served from the CDN for up to a minute after it is deleted, so this is the
+ * one to ask when the answer has to be true this second: the pay link, just
+ * before it sends someone to a payment page.
+ */
+export async function bookingExists(ref: string): Promise<boolean> {
+  if (!configured()) return false;
+  const { list } = await import("@vercel/blob");
+  return (await list({ prefix: pathFor(ref), limit: 1, ...blobTimeout() })).blobs.length > 0;
+}
+
+/**
+ * The other bookings on record that overlap this one, read fresh. Called
+ * straight after a booking is saved; see requestBooking for why. It throws
+ * when the records cannot be read, because the caller must know, not guess.
+ */
+export async function clashesWith(mine: Booking): Promise<Booking[]> {
+  const end = mine.startMs + mine.minutes * 60_000;
+  return (await upcomingBookings(Date.now(), true, true)).filter(
+    (b) => b.ref !== mine.ref && b.startMs < end && mine.startMs < b.startMs + b.minutes * 60_000,
+  );
 }
 
 export async function getBooking(ref: string): Promise<Booking | null> {

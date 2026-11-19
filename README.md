@@ -324,12 +324,58 @@ These were wrong, and are fixed.
 - `?paid=` with any well-formed reference thanked the visitor for paying.
 - There was no error page; a thrown error showed the framework's own.
 
+**Card payment** (found in the review, fixed later the same day)
+
+The review left card payment marked "not ready to switch on". These are the
+three reasons it gave, and what was done about each. `lib/pay.ts` has the long
+version.
+
+- **The pay link died after a day.** One Stripe Checkout Session was made at
+  booking and its address stored as the pay link. Stripe ends a session after
+  24 hours at most and nothing made another, so the link in the confirmation
+  email and in the day-before reminder was dead for any call booked more than
+  a day ahead. The pay link is now an address on this site,
+  `/api/pay?ref=MG-XXXXXX&k=...`, that does not expire. Opening it looks the
+  booking up, refuses if it is gone or paid, and sends the grower on to a
+  payment page that lasts an hour: the one already open, or a new one. The
+  confirmation screen, both emails and the "not completed" banner all carry
+  it, and the banner has a button instead of sending people to their inbox.
+  The `k` is a keyed hash of the reference, so references cannot be walked to
+  reach somebody else's payment page, and it is not the hash in the stored
+  record's address.
+- **A removed call could still be paid for.** Removing a call on `/admin` now
+  deletes the record first, which makes the pay link refuse from that moment,
+  and then closes any Stripe payment page still open for it. If the call was
+  already paid, or a page could not be closed, `/admin` says so. A removal
+  that lands while a payment page is being made is caught too.
+- **Two visitors could both be confirmed for one time**, and both sent a link
+  to pay for it, if they pressed the button in the same instant. A booking is
+  now read back against the others straight after it is saved and before
+  anything is sent. If another overlaps it, it takes itself off the books.
+- Two smaller things came with these. Card payment now needs the webhook
+  secret as well as the key before it turns on, because without it the site
+  is never told a call was paid and would ask a paid grower to pay again. And
+  a second, different payment for a call that is already paid emails him.
+
 **Left as they are, knowingly**
 
-- **Card payment is not ready to switch on.** Stripe ends a checkout link
-  after 24 hours and nothing makes a new one, so the link in the confirmation
-  and in the reminder is dead for any call booked more than a day ahead.
-  Removing a call does not cancel its link. Fix both before a live key is set.
+- **Card payment has never been run against Stripe itself.** No Stripe key,
+  test or live, was available, so it was checked against a local stand-in
+  (`tools/stripe-standin.mjs`, 74 checks in a browser, see Verifying). The
+  stand-in keeps Stripe's rules as documented, but it is not Stripe. Before a
+  live key is set, set a Stripe **test** key and the webhook, book a call and
+  pay for it once. And the processor question in `lib/pay.ts` is still open.
+- Two visitors who press the button in the very same instant can both be
+  refused, with a sentence saying so, and the time is open again for either.
+  Never both confirmed.
+- Removing a paid call does not refund it. `/admin` tells him to.
+- The pay link keeps working after the call's time has passed, until the
+  booking is paid or removed, so a grower can still pay late.
+- The Paid mark and the two reminder marks are each written by reading the
+  stored record and writing it back, and the store can serve a copy up to a
+  minute old. A payment that lands in the same minute as the hourly reminder
+  run can lose its Paid mark on `/admin`. Stripe still has the payment, and
+  the pay link asks Stripe, not the record, so it will not charge again.
 - An unpaid booking holds its time until he removes it.
 - Past bookings are never deleted from storage, so callers' names, emails and
   phones stay there with no end date. Whether to prune them is his call.
@@ -349,16 +395,24 @@ Three things the email asked for around the calendar, and what each one is:
 
 - **Set and change availability.** Already his: `/admin`, behind
   `MIGAS_ADMIN_PIN`, plus his calendar's private feed removing taken times.
-- **Pay at booking.** `lib/pay.ts`: Stripe Checkout behind `STRIPE_SECRET_KEY`.
-  With a key set, the confirmation screen and the confirmation email carry a
-  payment link, Stripe sends the paid event to `/api/stripe/webhook`
-  (`STRIPE_WEBHOOK_SECRET`), and he gets an email saying who paid. With no
-  key, nothing changes: book, then an invoice by email. **The processor is not
-  settled.** Stripe's restricted-business list names cultivation courses and
-  information; Square's and PayPal's are no kinder. The step is built and works
-  against a test key so the flow can be shown; whether it goes live on Stripe,
-  elsewhere, or stays an invoice is his decision with whoever underwrites him.
-  Read the header of `lib/pay.ts` before setting a live key.
+- **Pay at booking.** `lib/pay.ts`: Stripe Checkout, on when
+  `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` and the Blob store are all set.
+  A booking then gets a pay link on this site (`/api/pay`), on the
+  confirmation screen, in the confirmation email and in the reminder. The
+  link does not expire: each time it is opened it checks the booking and
+  sends the grower to a Stripe payment page that lasts an hour. Stripe sends
+  the paid event to `/api/stripe/webhook`, the booking shows as Paid on
+  `/admin`, and he gets an email saying who paid. Removing a call on `/admin`
+  ends its pay link and closes its payment page. With any of the three unset,
+  nothing changes: book, then an invoice by email. In Stripe, the webhook
+  endpoint is `https://<the site>/api/stripe/webhook`, listening for
+  `checkout.session.completed` and `checkout.session.async_payment_succeeded`.
+  **The processor is not settled.** Stripe's restricted-business list names
+  cultivation courses and information; Square's and PayPal's are no kinder.
+  The step is built and has been checked against a local stand-in, not against
+  Stripe; whether it goes live on Stripe, elsewhere, or stays an invoice is
+  his decision with whoever underwrites him. Read the header of `lib/pay.ts`
+  before setting a live key.
 - **The reminder before the call.** `lib/bookings.ts` keeps one small JSON
   document per booking in the project's Blob store (the same store as his
   availability). `/api/cron/reminders` runs hourly (`vercel.json`), guarded by
@@ -384,9 +438,10 @@ a chat window.
 | `MIGAS_ADMIN_PIN` | `/admin` says it is not switched on and nothing can sign in. |
 | `BLOB_READ_WRITE_TOKEN` | Availability edits cannot be saved; the grid serves the `lib/site.ts` defaults and `/admin` says so. Written by Vercel when a Blob store is attached to the project. |
 | `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address; treat that URL as a secret. |
-| `STRIPE_SECRET_KEY` | No card step: book, then an invoice by email. With a key, the confirmation and the email carry a Stripe Checkout link. **Read `lib/pay.ts` before setting a live key; the processor is not settled.** |
+| `STRIPE_SECRET_KEY` | No card step: book, then an invoice by email. With a key, the webhook secret and the Blob store all set, a booking gets a pay link on this site that leads to Stripe Checkout. **Read `lib/pay.ts` before setting a live key; the processor is not settled.** |
 | `MIGAS_ADMIN_SECRET` | Optional. The key the admin cookie is signed with. Unset, the storage token is used, which is fine. Setting or changing it signs every device out. |
-| `STRIPE_WEBHOOK_SECRET` | Payments complete on Stripe but the site is not told, so he gets no "paid" email and the booking record stays unpaid. |
+| `STRIPE_WEBHOOK_SECRET` | The card step stays off even with a key, and `/admin` says this is what is missing. Without it the site could not be told a call was paid, and would ask a grower who had paid to pay. It is the signing secret of the Stripe webhook endpoint that points at `/api/stripe/webhook`. |
+| `STRIPE_API_BASE` | Leave unset. For testing only: sends a **test** key's calls to a local stand-in instead of Stripe (`tools/stripe-standin.mjs`). A live key ignores it. |
 | `CRON_SECRET` | The hourly reminder run at `/api/cron/reminders` refuses every call, so no day-before reminders go out. Any long random string; Vercel sends it back as a bearer token. |
 
 Any mailbox with SMTP works: his own domain mail, Google Workspace, Fastmail, whatever he
@@ -465,9 +520,12 @@ to leave alone.
 - [ ] **The four Instagram posts and the four Patreon posts.** `INSTAGRAM_POSTS` and `PATREON_POSTS`.
       Send the eight links (and the four images, or permission to pull them) and the tiles
       become his picks instead of the stand-ins.
-- [ ] **The payment processor.** `lib/pay.ts`. Stripe is built and works against a test key;
-      whether a cultivation consult can run on Stripe at all is his call with his bank. Until
-      that call, leave `STRIPE_SECRET_KEY` unset and the booking goes on the invoice path.
+- [ ] **The payment processor.** `lib/pay.ts`. Stripe is built and passes its checks against a
+      local stand-in; it has not been run against Stripe. Whether a cultivation consult can run
+      on Stripe at all is his call with his bank. Until that call, leave `STRIPE_SECRET_KEY`
+      unset and the booking goes on the invoice path. When he does switch it on: a Stripe
+      **test** key first, the webhook endpoint and its secret, one test booking paid end to
+      end (`/admin` shows it as Paid), and only then the live key.
 - [ ] **The reminder.** `CRON_SECRET` set, Blob and SMTP on, and one test booking reminded
       the day before. A text message needs a provider he has not chosen; the invite on the
       phone is the phone reminder until then.
@@ -541,6 +599,14 @@ lib/availability.ts His editable hours: Blob-stored JSON over lib/site.ts defaul
                     plus openSlots()/bookableSlot(), the two calls everything books through.
 lib/busy.ts         His calendar's iCal feed, parsed into busy intervals. Fails open.
 lib/admin-auth.ts   The PIN gate for /admin. One operator, one cookie, no store.
+lib/bookings.ts     The calls on record: one small JSON file each, in the Blob store.
+lib/pay.ts          Card payment: the pay link, Stripe Checkout over plain fetch, the
+                    webhook signature. Read its header before touching payment.
+app/api/pay/        The pay link itself. Checks the booking, then sends on to Stripe.
+app/api/stripe/webhook/   Stripe saying a call was paid.
+app/api/cron/reminders/   The hourly day-before reminder.
+tools/              Local stand-ins for Stripe, storage and mail, and the browser
+                    check that drives the card step through them. Never deployed.
 lib/ics.ts          Calendar invites, hand-rolled. Timezone conversion and RFC 5545 folding.
 lib/forms.ts        Form types and limits — NOT in app/actions.ts, see below.
 app/actions.ts      The four actions: booking, co-management application, call
@@ -640,6 +706,25 @@ node tools/contrast.mjs  --base http://127.0.0.1:4491 --routes /,/consulting,/co
 node tools/animating.mjs --url  http://127.0.0.1:4491/ --selector ".sun-cell-1"
 ```
 
+**The card step has its own check, and it lives in this repo.** There is no Stripe key
+to test with, so `tools/pay-check.mjs` starts a stand-in for Stripe
+(`tools/stripe-standin.mjs`), one for the Blob store and a mail server that keeps what
+it is sent, starts the production build against them on ports 3011 to 3013, and drives
+it with a browser: book, follow the link in the email, let a day pass, get the
+reminder, pay, remove a call with a payment page open, race two visitors for one time.
+74 checks, all passing on 2026-11-19. It needs `playwright-core`, which this repo does
+not depend on; the copy in the glazedweb repo will do.
+
+```bash
+npm run build
+PLAYWRIGHT_CORE=/path/to/glazedweb/node_modules/playwright-core node tools/pay-check.mjs
+```
+
+Add `SHOTS=/some/folder` for pictures of the banners and the `/admin` notes. To click
+through a booking by hand instead, run `node tools/stripe-standin.mjs` and start the
+site with `STRIPE_API_BASE=http://127.0.0.1:4598`, a key beginning `sk_test_` and
+`STRIPE_WEBHOOK_SECRET=whsec_local_test_only`.
+
 Current state: **0 axe violations, no horizontal overflow, no console errors, no 4xx/5xx**
 across eight routes at 390px and 1440px. No contrast failures. Reduced motion leaves nothing
 hidden and rests the sun and the diagram on complete frames. With JavaScript disabled, nothing
@@ -661,8 +746,9 @@ should ever find from a search result. `/agreement` is a 308 to the studio page 
 **This list was incomplete; corrected 2026-11-19.** Besides the three above, on cutover day:
 
 - `SITE.url` in `lib/site.ts` is `https://migas.glazedweb.com` today, not mi-gas.net as this
-  section used to say. It feeds `metadataBase`, the JSON-LD ids, `og:image` and the Stripe
-  return addresses. Set it to the real host.
+  section used to say. It feeds `metadataBase`, the JSON-LD ids, `og:image`, the Stripe
+  return addresses and the pay link written into emails. Set it to the real host. A pay
+  link already sent keeps working for as long as the old host still serves this site.
 - `openGraph.url` is `${SITE.url}/demo` in `app/layout.tsx` (and in
   `app/co-management/page.tsx`, and the address printed on the one-pager). Drop the `/demo`.
 - `rewrites()` in `next.config.ts` and `public/pitch/migas` are the proposal at the host
