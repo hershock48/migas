@@ -497,7 +497,7 @@ to leave alone.
       calendar's private iCal address, and the SMTP set. `/admin` shows all four as a status
       panel, red until real. Done means: a test booking arrives in his inbox with photos and
       invite, lands on his phone calendar, and the slot disappears from the grid.
-- [ ] **The four Instagram posts and the four Patreon posts.** `INSTAGRAM_POSTS` and `PATREON_POSTS`.
+- [x] **The four Instagram posts and the four Patreon posts.** His eight links arrived on 2026-11-22 and are in. Still owed: the four Instagram pictures, or his say-so to copy them. Until then each Instagram tile shows one of his room photographs and opens the post he chose. The original note: `INSTAGRAM_POSTS` and `PATREON_POSTS`.
       Send the eight links (and the four images, or permission to pull them) and the tiles
       become his picks instead of the stand-ins.
 - [ ] **The payment processor.** `lib/pay.ts`. Stripe is built and works against a test key;

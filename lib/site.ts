@@ -258,27 +258,51 @@ export const HAVE_READY = [
 
 /**
  * The four Instagram posts and four Patreon posts the home page shows, two by
- * two, per the email. PLACEHOLDER: he has not named the four of each yet. Until
- * he does, the Instagram tiles are three of his own room photographs linking
- * to the profile plus one tile that asks for the fourth, and the Patreon tiles
- * are his four guide topics linking to the Patreon page.
+ * two, per his email. These are HIS PICKS: he texted the eight links to Kevin
+ * on the call of 2026-11-22. The links are the posts' own addresses with the
+ * share-tracking part cut off.
+ *
+ * PLACEHOLDER, the Instagram pictures only. He sent links, not images, and no
+ * permission to copy the posts' pictures has been given. So each tile shows one
+ * of his own room photographs already in this repo (app/page.tsx, igImages) and
+ * opens the post he chose. `caption` describes the photograph on the tile, as
+ * its alt text; it is not the post's caption. When he sends the four images, or
+ * says to pull them, they replace the photographs and the captions follow.
  */
-export const INSTAGRAM_POSTS = [
-  { href: SITE.instagram, caption: "The bench, staked and lined out before a run" },
-  { href: SITE.instagram, caption: "The canopy at lights-off" },
-  { href: SITE.instagram, caption: "Late flower, in the net" },
-  { href: SITE.instagram, caption: "PLACEHOLDER" },
-] as const;
+export const INSTAGRAM_POSTS: readonly { href: string; caption: string }[] = [
+  { href: "https://www.instagram.com/reel/DeNB5UNpKMA/", caption: "The bench, staked and lined out before a run" },
+  { href: "https://www.instagram.com/p/DWsGF1zD6Sk/", caption: "The canopy at lights-off" },
+  { href: "https://www.instagram.com/p/CtaXe0dNg90/", caption: "Late flower, in the net" },
+  { href: "https://www.instagram.com/reel/C8AHbcTRbpS/", caption: "A full room in late flower, seen from the end of the bench" },
+];
 
-export const PATREON_POSTS = [
-  // Stand-ins until he sends his four. The titles were "Flower, start to finish", "Veg,
-  // from clone to flip" and "Runoff, the SOP": the same comma shape three times, read as
-  // a template (Kevin, 2026-11-11). The first and third name his real posts.
-  { title: "The complete bloom guide", blurb: "The bloom program by phase, with the feed and runoff targets for each.", href: PATREON.url },
-  { title: "Veg and transplant", blurb: "Rooting and transplant, through to the end of veg.", href: PATREON.url },
-  { title: "The runoff guide", blurb: "Collecting and reading runoff, and what to change when the numbers move.", href: PATREON.url },
-  { title: "Hand-water to automation", blurb: "Moving a room from hand-watering to drip and sensors.", href: PATREON.url },
-] as const;
+/**
+ * Titles are the posts' own, shortened where the rest of the title moved into
+ * the line under it. Each blurb says only what its title says. "Callus
+ * Tech" has none, because its title does not say what the post covers and we
+ * will not guess at his work.
+ */
+export const PATREON_POSTS: readonly { kind: string; title: string; blurb?: string; href: string }[] = [
+  {
+    kind: "Guide",
+    title: "Rockwool Series: Veg Guide",
+    blurb: "The veg guide from the rockwool series, written with Botany Dropout.",
+    href: "https://www.patreon.com/Mi_gas_/posts/rockwool-series-171183623",
+  },
+  {
+    kind: "SOP",
+    title: "Late Flower and Finish SOP",
+    blurb: "The late flower and finish SOP, from the grower spotlight on Chubbys Cannabis.",
+    href: "https://www.patreon.com/Mi_gas_/posts/late-flower-sop-127902826",
+  },
+  {
+    kind: "Guide",
+    title: "Handwater to Automated: Making the Switch",
+    blurb: "Moving a room from hand-watering to automated irrigation. This one is in Spanish.",
+    href: "https://www.patreon.com/Mi_gas_/posts/handwater-to-89785388",
+  },
+  { kind: "Post", title: "Callus Tech", href: "https://www.patreon.com/Mi_gas_/posts/callus-tech-79831765" },
+];
 
 /**
  * CO-MANAGEMENT. His outline from the 2026-08-27 call, close to verbatim: we run the

@@ -64,7 +64,10 @@ export default function Home() {
      arrived and been parsed, about 540ms in on the perf-check profile. This hint puts it
      in the head, so it starts with the fonts. Home only, because the sun is only here. */
   preload("/noise/plasma-a.webp", { as: "image", fetchPriority: "high" });
-  const igImages = [roomBench, roomCanopy, roomCola];
+  // One photograph per Instagram tile, in the order of INSTAGRAM_POSTS. A post with
+  // no photograph here would hand next/image nothing and take the page down, so the
+  // two lists must stay the same length.
+  const igImages = [roomBench, roomCanopy, roomCola, flowerRows];
   /* What the call section may promise. This page is built once, at deploy, so
      these are the settings of that deploy; connecting mail takes a redeploy
      anyway. The sentence used to promise an invite on both calendars and a
@@ -218,7 +221,7 @@ export default function Home() {
                   </li>
                 ) : (
                   <li key={i}>
-                    <a href={p.href} rel="noopener" className="lift group block overflow-hidden rounded-xl2 border border-line hover:border-edge">
+                    <a href={p.href} rel="noopener" aria-label={`Open this post on Instagram. Pictured: ${p.caption}`} className="lift group block overflow-hidden rounded-xl2 border border-line hover:border-edge">
                       <Image src={igImages[i]} alt={p.caption} sizes="(min-width: 1024px) 270px, 45vw" className="aspect-square h-auto w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" />
                     </a>
                   </li>
@@ -245,9 +248,9 @@ export default function Home() {
                 <li key={p.title}>
                   {/* The arrow says "link" on a phone, where there is no hover to say it. */}
                   <a href={p.href} rel="noopener" className="card lift group flex h-full flex-col p-5 hover:border-flare">
-                    <span className="eyebrow">Guide</span>
+                    <span className="eyebrow">{p.kind}</span>
                     <span className="mt-2 font-display text-lg font-bold leading-snug text-bone">{p.title}</span>
-                    <span className="mt-2 text-sm leading-relaxed text-muted">{p.blurb}</span>
+                    {p.blurb && <span className="mt-2 text-sm leading-relaxed text-muted">{p.blurb}</span>}
                     <span aria-hidden className="mt-auto inline-block pt-3 text-flare transition-transform duration-200 group-hover:translate-x-1">
                       &rarr;
                     </span>
