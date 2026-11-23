@@ -349,6 +349,35 @@ These were wrong, and are fixed.
   on this repo's own CSS, and wants Next 16 to clear.
 - `npm run lint` has never been configured and only prints a setup prompt.
 
+## The call of 2026-11-22: what Jake answered
+
+Kevin went through the launch list with him by phone. From the transcript:
+
+| Asked | Answered |
+| --- | --- |
+| His hours | Set and saved on `/admin`, by him. |
+| His calendar link | He turned on Public Calendar for a calendar on his iPhone and sent Kevin the link. **Which calendar is not certain.** His phone lists iCloud, Exchange and two email accounts, and the Public Calendar switch exists only on iCloud calendars, where his is named Home. If his appointments live under an email account, the link he sent is an empty calendar. The admin's calendar tile shows how many busy times the link carries; zero means the wrong one. |
+| Who sends the confirmations | His own address. He believed it is hosted by Microsoft, and DNS confirms it: the domain's mail goes to Microsoft 365 and its DNS is at GoDaddy. See the note under this table. |
+| Where bookings land, and the contact address | His personal address, "everything revolves around that". Both agreed a mailbox on the site's own domain would be better once the domain is sorted, so it is NOT on the public page yet. |
+| Invoice or card | **Card, through Stripe.** Card and Apple Pay matter most; PayPal and Cash App if they are easy. |
+| The domain | `mi-gas.net` is at Squarespace (its nameservers say so), under an old work email he cannot open. He started Squarespace's identity check on the call and wants to keep trying. He spelled it "migas.net" while searching GoDaddy, which is a different, parked domain: that is why GoDaddy found nothing. A new domain is the fallback. |
+| Half hour \$250, full hour \$400 | Confirmed. |
+| The lines under each session | Read to him. No answer is audible on the recording. |
+| Moving a call | The 24-hour draft was put to him and he agreed. Published, without the draft's second sentence. |
+| Is what they tell him confidential | Not answered. He raised that he may run an AI note-taker on calls, which the answer has to account for. Still hidden. |
+| The four Instagram and four Patreon posts | He was texting links to Kevin during the call. They are not in the repo yet. |
+
+**Microsoft mail has a deadline.** Sending through a Microsoft 365 mailbox with
+a password (which is what plain SMTP is) still works for existing accounts,
+but Microsoft switches it off by default at the end of December 2026 and has
+said it will name a final removal date in 2027. A Google mailbox with an app
+password, or a mailbox on the new domain at a host that keeps plain SMTP,
+avoids building on something that is being withdrawn.
+
+**What changed in the code for this:** `MIGAS_BUSY_ICS_URL` takes several
+links (`lib/busy.ts`), each read on its own so one that fails does not drop
+the others, and the reschedule answer is live.
+
 ## Schedule and pay, and the reminder
 
 Three things the email asked for around the calendar, and what each one is:
@@ -389,7 +418,7 @@ a chat window.
 | `MIGAS_NOTIFY_TO` | Falls back to `SITE.email`, which is a placeholder — so notification is skipped until one or the other is real. |
 | `MIGAS_ADMIN_PIN` | `/admin` says it is not switched on and nothing can sign in. |
 | `BLOB_READ_WRITE_TOKEN` | Availability edits cannot be saved; the grid serves the `lib/site.ts` defaults and `/admin` says so. Written by Vercel when a Blob store is attached to the project. |
-| `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address; treat that URL as a secret. |
+| `MIGAS_BUSY_ICS_URL` | Slots come from the windows alone, exactly as before the feed existed. Set it to his calendar's private iCal address, or to several separated by spaces (he keeps more than one calendar, and a phone shares each as its own link). `webcal://` links work as given. Treat that URL as a secret. |
 | `STRIPE_SECRET_KEY` | No card step: book, then an invoice by email. With a key, the confirmation and the email carry a Stripe Checkout link. **Read `lib/pay.ts` before setting a live key; the processor is not settled.** |
 | `MIGAS_ADMIN_SECRET` | Optional. The key the admin cookie is signed with. Unset, the storage token is used, which is fine. Setting or changing it signs every device out. |
 | `STRIPE_WEBHOOK_SECRET` | Payments complete on Stripe but the site is not told, so he gets no "paid" email and the booking record stays unpaid. |

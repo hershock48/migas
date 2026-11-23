@@ -339,6 +339,8 @@ export function parseFeed(ics: string, windowStart: number, windowEnd: number): 
 export type FeedStatus = {
   /** A link is set. */
   connected: boolean;
+  /** How many calendar links are set. */
+  feeds?: number;
   /** The last read worked. False with `connected` means the link is not answering. */
   ok: boolean;
   blocks: number;
@@ -359,59 +361,72 @@ let lastStatus: FeedStatus = { connected: false, ok: false, blocks: 0, repeating
  */
 const FEED_WINDOW_MS = (30 + 60 + 2) * DAY;
 
-/** iCloud and Outlook hand out their private link as webcal://, which is https
- *  under another name and which fetch refuses. */
-const feedUrl = () => (process.env.MIGAS_BUSY_ICS_URL ?? "").trim().replace(/^webcals?:\/\//i, "https://");
+/** One link or several, separated by spaces or new lines (or by a comma before
+ *  the next link). iCloud and Outlook hand theirs out as webcal://, which is https
+ *  under another name that fetch does not know, so it is rewritten here. */
+const feedUrls = (): string[] =>
+  (process.env.MIGAS_BUSY_ICS_URL ?? "")
+    .split(/\s+|,(?=\s*(?:https?|webcals?):)/i)
+    .map((u) => u.trim().replace(/^webcals?:\/\//i, "https://"))
+    .filter(Boolean);
+
+/** Each link's last good reading, kept for the times that link does not answer. */
+const lastGood = new Map<string, BusyInterval[]>();
 
 /**
  * The busy intervals overlapping the booking horizon, or [] when no feed is set or
  * the feed cannot be read. Cached five minutes.
  */
 export async function getBusyIntervals(now: Date = new Date()): Promise<BusyInterval[]> {
-  const url = feedUrl();
-  if (!url) {
+  const urls = feedUrls();
+  if (urls.length === 0) {
     lastStatus = { connected: false, ok: false, blocks: 0, repeating: 0, unsupported: 0, unreadable: 0 };
     return [];
   }
-  if (cache && cache.url === url && now.getTime() - cache.at < FEED_TTL_MS) {
+  const key = urls.join(" ");
+  if (cache && cache.url === key && now.getTime() - cache.at < FEED_TTL_MS) {
     return cache.intervals;
   }
-  try {
-    // Eight seconds: a calendar host that hangs must not hang the booking page.
-    const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8_000) });
-    if (!res.ok) throw new Error(`the calendar answered ${res.status}`);
-    const text = await res.text();
-    if (!text.includes("BEGIN:VCALENDAR")) throw new Error("the link did not return a calendar");
-    const read = parseFeed(text, now.getTime(), now.getTime() + FEED_WINDOW_MS);
-    cache = { at: now.getTime(), url, intervals: read.intervals };
-    lastStatus = {
-      connected: true,
-      ok: true,
-      blocks: read.intervals.length,
-      repeating: read.repeating,
-      unsupported: read.unsupported,
-      unreadable: read.unreadable,
-    };
-    return read.intervals;
-  } catch (err) {
-    // Open failure, logged. See the header: an unreachable calendar must never take
-    // the booking form down. A stale cache from the last good read beats nothing.
-    console.error("[migas] Busy feed unreachable, slots render from windows alone", err);
-    lastStatus = {
-      connected: true,
-      ok: false,
-      blocks: 0,
-      repeating: 0,
-      unsupported: 0,
-      unreadable: 0,
-      error: err instanceof Error ? err.message : String(err),
-    };
-    // Remember the failure for a minute. Without this every visitor to the booking
-    // page waited out the full eight seconds while the calendar host was down.
-    const stale = cache?.url === url ? cache.intervals : [];
-    cache = { at: now.getTime() - FEED_TTL_MS + 60_000, url, intervals: stale };
-    return stale;
-  }
+  /* SEVERAL CALENDARS, EACH READ ON ITS OWN. He keeps more than one (call of
+     2026-11-22: an iCloud calendar and one under each of two email accounts),
+     and a phone shares each as its own link. One link not answering must not
+     drop the others: each keeps its own last good reading, and that is what
+     is used for a link that fails this time. */
+  const read = await Promise.all(
+    urls.map(async (url) => {
+      try {
+        const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(8_000) });
+        if (!res.ok) throw new Error(`the calendar answered ${res.status}`);
+        const text = await res.text();
+        if (!text.includes("BEGIN:VCALENDAR")) throw new Error("the link did not return a calendar");
+        const parsed = parseFeed(text, now.getTime(), now.getTime() + FEED_WINDOW_MS);
+        lastGood.set(url, parsed.intervals);
+        return { ok: true as const, parsed };
+      } catch (err) {
+        console.error("[migas] A busy calendar link is unreachable; its last good reading is used", err);
+        return { ok: false as const, error: err instanceof Error ? err.message : String(err), stale: lastGood.get(url) ?? [] };
+      }
+    }),
+  );
+  const intervals = read.flatMap((r) => (r.ok ? r.parsed.intervals : r.stale));
+  const good = read.flatMap((r) => (r.ok ? [r.parsed] : []));
+  const failed = read.flatMap((r) => (r.ok ? [] : [r.error]));
+  const sum = (pick: (p: FeedReading) => number) => good.reduce((n, p) => n + pick(p), 0);
+  lastStatus = {
+    connected: true,
+    ok: failed.length === 0,
+    feeds: urls.length,
+    blocks: intervals.length,
+    repeating: sum((p) => p.repeating),
+    unsupported: sum((p) => p.unsupported),
+    unreadable: sum((p) => p.unreadable),
+    ...(failed.length
+      ? { error: urls.length > 1 ? `${failed.length} of your ${urls.length} calendar links: ${failed[0]}` : failed[0] }
+      : {}),
+  };
+  // After a failure, look again in a minute instead of in five.
+  cache = { at: failed.length ? now.getTime() - FEED_TTL_MS + 60_000 : now.getTime(), url: key, intervals };
+  return intervals;
 }
 
 /** For /admin: read the feed now and say how it went. */

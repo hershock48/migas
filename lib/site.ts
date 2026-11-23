@@ -802,7 +802,10 @@ export const FAQ = [
   },
   {
     q: "What if I need to move it?",
-    a: "PLACEHOLDER: reply to your confirmation and we'll move it, up to 24 hours ahead. Inside 24 hours the time is held.",
+    // Put to him on the call of 2026-11-22 as "24 hours ahead, 24 hours' notice", and
+    // he agreed ("Yeah"). The draft's second sentence, "Inside 24 hours the time is
+    // held", was not read to him, so it is not published.
+    a: "Reply to your confirmation email and we'll move it. We need at least 24 hours' notice.",
   },
   {
     q: "Is what I tell you confidential?",

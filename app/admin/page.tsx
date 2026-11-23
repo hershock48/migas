@@ -243,14 +243,16 @@ export default async function Admin({
             k: "Your calendar",
             ok: feed.connected && feed.ok,
             yes:
-              `Connected. ${plural(feed.blocks, "busy time", "busy times")} in the next three months are off the booking page` +
+              `Connected${(feed.feeds ?? 1) > 1 ? `, ${feed.feeds} calendars` : ""}. ${plural(feed.blocks, "busy time", "busy times")} in the next three months are off the booking page` +
               (feed.repeating ? `, counting ${plural(feed.repeating, "repeating event", "repeating events")}` : "") +
               (feed.unsupported
                 ? `. ${plural(feed.unsupported, "monthly or yearly repeating event", "monthly or yearly repeating events")} can't be read, so add those dates under Days off`
                 : "") +
               (feed.unreadable ? `. ${plural(feed.unreadable, "event", "events")} could not be read` : ""),
             no: feed.connected
-              ? `Your calendar link isn't answering (${feed.error ?? "no reason given"}), so your busy times are not being taken off the booking page. Send Glazed Web a fresh link`
+              ? (feed.feeds ?? 1) > 1
+                ? `Not all of your calendars are answering (${feed.error ?? "no reason given"}). The others still take their busy times off the booking page. Send Glazed Web a fresh link for the one that is not`
+                : `Your calendar link isn't answering (${feed.error ?? "no reason given"}), so your busy times are not being taken off the booking page. Send Glazed Web a fresh link`
               : "Not connected. Send Glazed Web your calendar's private iCal link, and the times you're busy will drop off the booking page",
           },
           {
