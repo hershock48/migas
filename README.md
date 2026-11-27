@@ -410,7 +410,7 @@ Kevin went through the launch list with him by phone. From the transcript:
 | Half hour \$250, full hour \$400 | Confirmed. |
 | The lines under each session | Read to him. No answer is audible on the recording. |
 | Moving a call | The 24-hour draft was put to him and he agreed. Published, without the draft's second sentence. |
-| Is what they tell him confidential | Not answered. He raised that he may run an AI note-taker on calls, which the answer has to account for. Still hidden. |
+| Is what they tell him confidential | Not answered on the call. He raised that he may run an AI note-taker. **Answered 2026-11-27 through Kevin: yes, it is confidential.** The question is on the consulting page with a plain yes. It does not mention a note-taker; if he uses one, the answer needs a sentence saying so. The co-management page's version of the question is still a placeholder, on a hidden page. |
 | The four Instagram and four Patreon posts | He texted the eight links during the call and they went in on 2026-11-23 (`INSTAGRAM_POSTS`, `PATREON_POSTS`). The four Instagram pictures are still owed. |
 
 **Microsoft mail has a deadline.** Sending through a Microsoft 365 mailbox with
@@ -623,8 +623,8 @@ to leave alone.
       the edit allowance and hourly rate, which are house numbers (2 hours a month, $125 an
       hour) and not his. The proposal already links `glazedweb.com/agreement/migas`; the
       exhibit line prints whatever the row says.
-- [ ] **Confidentiality and rescheduling.** `FAQ`. Licensed operators will ask about the
-      first before they book.
+- [x] **Confidentiality and rescheduling.** `FAQ`. Both answered: 24 hours' notice to
+      move a call (2026-11-22), and yes, confidential (2026-11-27).
 
 ## The look
 

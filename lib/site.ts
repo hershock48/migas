@@ -842,8 +842,12 @@ export const FAQ = [
     a: "Reply to your confirmation email and we'll move it. We need at least 24 hours' notice.",
   },
   {
+    // His answer, relayed by Kevin on 2026-11-27: "yes its confidential". The
+    // wording is ours. On the call of 2026-11-22 he said he may run an AI
+    // note-taker, and this answer does not mention one: if he does, it wants a
+    // sentence here saying so.
     q: "Is what I tell you confidential?",
-    a: "PLACEHOLDER: licensed operators will ask this before they book. It should be in your own words.",
+    a: "Yes. What you tell us about your operation, and the photos you send, stay between us. We don't share them and we don't post them.",
   },
   {
     q: "Will you look at photos before the call?",
