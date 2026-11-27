@@ -5,6 +5,7 @@ import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, availabilityStatus, getAvailabi
 import { upcomingBookings } from "@/lib/bookings";
 import { busyFeedStatus } from "@/lib/busy";
 import { mailConfigured } from "@/lib/mail";
+import { payStatus } from "@/lib/pay";
 import { AVAILABILITY, SITE, money } from "@/lib/site";
 import { describeSlot } from "@/lib/slots";
 import { addBlock, adminLogin, adminLogout, cancelBooking, openEveryDay, removeBlock, saveAvailabilityAction, sendTestMail } from "./actions";
@@ -184,6 +185,7 @@ export default async function Admin({
   // The day-before reminder needs all three: the hourly job's secret, the stored
   // bookings it reads, and mail to send with.
   const remindersOn = Boolean(process.env.CRON_SECRET) && status.configured && smtpOn;
+  const pay = payStatus();
   const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
   return (
@@ -283,6 +285,23 @@ export default async function Admin({
         ))}
       </dl>
 
+      {/* ── Card payment, only once a key exists ──
+          With no key this is the invoice path and there is nothing to say. With
+          a key, he set it himself, so he is told whether the card step is really
+          on, in which mode, and what it is still waiting for if it is not. */}
+      {pay.keySet && (
+        <p
+          role="status"
+          className={`mt-6 max-w-2xl rounded-lg border bg-ink px-4 py-3 text-sm leading-relaxed ${pay.on && pay.mode === "live" ? "border-line text-bone" : "border-alert/50 text-bone"}`}
+        >
+          {pay.on
+            ? pay.mode === "live"
+              ? "Card payment is on. A booking gets a link to pay, and the call shows as Paid here once the money is in."
+              : "Card payment is on with a test key. Bookings get a link to pay, but no real card is charged. Set the live key when you are ready."
+            : `A Stripe key is set, but card payment is off because it still needs ${pay.missing.join(" and ")}. Until then bookings go out with an invoice, as before.`}
+        </p>
+      )}
+
       {/* ── Mail, checked: the tile above only knows mail is set up ── */}
       {smtpOn && notifyReal && (
         <form action={sendTestMail} className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
@@ -353,7 +372,21 @@ export default async function Admin({
       )}
       {call === "removed" && (
         <p role="status" className="mt-4 max-w-xl rounded-xl2 border border-ember/50 bg-ink-panel p-4 text-[15px] text-bone">
-          Removed{callRef ? ` ${callRef}` : ""}. Its time is back on the booking page.
+          Removed{callRef ? ` ${callRef}` : ""}. Its time is back on the booking page{pay.on ? ", and its link to pay no longer works" : ""}.
+        </p>
+      )}
+      {/* The two endings that leave him something to do. */}
+      {call === "removed-paid" && (
+        <p role="alert" className="mt-4 max-w-xl rounded-xl2 border border-alert/50 bg-ink-panel p-4 text-[15px] text-bone">
+          Removed{callRef ? ` ${callRef}` : ""}, and its time is back on the booking page. This call had already been paid
+          for by card. Nothing was refunded: refund it in Stripe, or re-book the call with the grower.
+        </p>
+      )}
+      {call === "removed-open" && (
+        <p role="alert" className="mt-4 max-w-xl rounded-xl2 border border-alert/50 bg-ink-panel p-4 text-[15px] text-bone">
+          Removed{callRef ? ` ${callRef}` : ""}, and its time is back on the booking page. Its link to pay no longer works,
+          but a payment page that was already open could not be closed just now. It closes by itself within an hour. If a
+          payment does come in for it, you&rsquo;ll get an email.
         </p>
       )}
       {call === "missing" && (

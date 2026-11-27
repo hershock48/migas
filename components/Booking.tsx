@@ -40,7 +40,9 @@ import type { SlotDay } from "@/lib/slots";
  * (Dated. Both paragraphs below were true when written. Since 2026-08-27 lib/busy.ts
  * reads his calendar back and closes taken times, and since 2026-11-04 a card step
  * exists behind STRIPE_SECRET_KEY, off until the processor question in lib/pay.ts is
- * settled. The `cardPayment` prop is how this component knows which world it is in.)
+ * settled. The `cardPayment` prop is how this component knows which world it is in.
+ * Since 2026-11-19 two people taking the same 9am in the same instant are caught as
+ * well: see the check after the save in requestBooking, app/actions.ts.)
  *
  * It is not a calendar. It does not know what is already booked, it does not sync, and
  * it does not stop two people taking the same 9am four seconds apart. Slots come from a
@@ -64,7 +66,7 @@ type Props = {
   /** A session slug already chosen on the way in, from `?session=` on the link. The
    *  page checks it against SESSIONS before passing it, so it is a real slug or absent. */
   initialSession?: string;
-  /** Whether the card step is switched on (STRIPE_SECRET_KEY set). Read on the server
+  /** Whether the card step is switched on (payConfigured in lib/pay.ts). Read on the server
    *  and passed down, so the copy can say what will actually happen instead of
    *  describing both outcomes with an "if" a visitor has no way to resolve. */
   cardPayment?: boolean;

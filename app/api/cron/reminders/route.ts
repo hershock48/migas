@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { bookingsStarting, saveBooking } from "@/lib/bookings";
 import { notifyTo, sendMail } from "@/lib/mail";
+import { payConfigured, payLink } from "@/lib/pay";
 import { describeSlot } from "@/lib/slots";
 import { SITE } from "@/lib/site";
 
@@ -40,7 +41,10 @@ export async function GET(req: Request) {
         "",
         `Length:    ${b.minutes} minutes`,
         `Reference: ${b.ref}`,
-        b.paidAt ? "Paid." : b.payUrl ? `Pay before the call: ${b.payUrl}` : "The invoice is sent separately, before the call.",
+        // The pay link is worked out here, not read off the booking. It used to
+        // be a Stripe address saved at booking, which Stripe had ended a day
+        // later, long before this email went out.
+        b.paidAt ? "Paid." : b.payByCard && payConfigured() ? `Pay before the call: ${payLink(b.ref)}` : "The invoice is sent separately, before the call.",
         "",
         "Reply to this email if you need to move it.",
       ].join("\n"),

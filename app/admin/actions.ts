@@ -9,7 +9,8 @@ import {
   pinMatches,
 } from "@/lib/admin-auth";
 import { DRAFT_FIELD, DRAFT_MAX, OPEN_EVERY_DAY, getAvailabilityForWrite, saveAvailability, withoutPast, type StoredAvailability } from "@/lib/availability";
-import { deleteBooking } from "@/lib/bookings";
+import { deleteBooking, getBooking } from "@/lib/bookings";
+import { closeCheckouts } from "@/lib/pay";
 import { adminLock, caller, recordAdminFail } from "@/lib/throttle";
 import { notifyTo, sendMailChecked } from "@/lib/mail";
 import { AVAILABILITY, SITE } from "@/lib/site";
@@ -221,16 +222,33 @@ export async function sendTestMail() {
   back({ mail: "failed", detail: (result.error ?? "No reason given.").slice(0, 300) });
 }
 
-/** Remove a booked call, which puts its time back on the booking page. It does
- *  not tell the grower; the page says so beside the button. */
+/**
+ * Remove a booked call, which puts its time back on the booking page. It does
+ * not tell the grower; the page says so beside the button.
+ *
+ * It also ends the call's card payment. The record goes first, and from that
+ * moment the booking's pay link refuses. Then any Stripe payment page still
+ * open for it is closed, for the grower who has one sitting in a tab. It used
+ * to do neither, so a call could be paid for after it was removed (review,
+ * 2026-11-19). The order matters: closing the page first would leave a moment
+ * where the link could open another.
+ */
 export async function cancelBooking(fd: FormData) {
   const jar = await cookies();
   if (!cookieIsValid(jar.get(ADMIN_COOKIE)?.value)) back({ error: "signed-out" });
   const ref = String(fd.get("ref") ?? "");
   if (!/^MG-[A-F0-9]{6}$/.test(ref)) back({ call: "missing" });
+  // Read before it is deleted, to know whether it was paid. A record that
+  // cannot be read is still removed; Stripe is asked about payment below.
+  const before = await getBooking(ref).catch(() => null);
   const removed = await deleteBooking(ref).catch((err) => {
     console.error("[migas] could not remove booking", ref, err);
     return false;
   });
-  back(removed ? { call: "removed", ref } : { call: "missing" });
+  if (!removed) back({ call: "missing" });
+  const pages = await closeCheckouts(ref);
+  // Paid beats everything: there is money to give back or a call to re-book.
+  if (before?.paidAt || pages.paid) back({ call: "removed-paid", ref });
+  if (pages.failed) back({ call: "removed-open", ref });
+  back({ call: "removed", ref });
 }

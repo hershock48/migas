@@ -9,7 +9,7 @@ import { AVAILABILITY, CONSULT_TOPICS, FAQ, HAVE_READY, PROCESS, SESSIONS, money
 import { openSlots } from "@/lib/availability";
 import { getBooking } from "@/lib/bookings";
 import { mailConfigured } from "@/lib/mail";
-import { payConfigured } from "@/lib/pay";
+import { payConfigured, payKeyOk, payPath } from "@/lib/pay";
 import roomAisle from "@/public/assets/rooms/flower-aisle.webp";
 
 export const metadata: Metadata = {
@@ -49,7 +49,7 @@ export const dynamic = "force-dynamic";
 export default async function Consulting({
   searchParams,
 }: {
-  searchParams: Promise<{ paid?: string; unpaid?: string; session?: string }>;
+  searchParams: Promise<{ paid?: string; unpaid?: string; pay?: string; ref?: string; k?: string; session?: string }>;
 }) {
   // Stored windows minus blocked dates minus his calendar. See lib/availability.ts;
   // the page stays force-dynamic for the same reason it always was, plus one more:
@@ -64,6 +64,14 @@ export default async function Consulting({
   // when the payment notice has arrived. It used to thank anyone who typed
   // ?paid= and a well-formed reference into the address.
   const paidFor = paid ? await getBooking(paid).catch(() => null) : null;
+  /* Back from the pay link without having paid: the grower pressed back on
+     Stripe's page (?unpaid=), or the page could not be opened (?pay=later).
+     Both come with the link's own key, and the button to try again is only
+     drawn when that key is right. Without it, anyone who typed a reference
+     into the address would be handed that booking's pay link. */
+  const payNote = sp.pay === "gone" || sp.pay === "off" || sp.pay === "later" ? sp.pay : null;
+  const retryRef = unpaid ?? (payNote === "later" ? refOf(sp.ref) : null);
+  const retryPay = retryRef && payConfigured() && payKeyOk(retryRef, sp.k) ? payPath(retryRef) : null;
   const mailOn = mailConfigured();
   const reminderOn = mailOn && Boolean(process.env.CRON_SECRET) && Boolean(process.env.BLOB_READ_WRITE_TOKEN);
   // A session chosen on the link that brought them here (the home page's price cards).
@@ -197,10 +205,49 @@ export default async function Consulting({
                 Booking <span className="font-display font-bold">{paid}</span> is held{reminderOn ? ", and a reminder goes out the day before" : ""}.
               </p>
             )}
+            {/* "The link to pay is in your confirmation email" used to be the whole
+                answer here, and that link was dead a day after booking. It is this
+                site's own link now and keeps working, so the sentence is true, and
+                the button saves the trip to the inbox. */}
             {unpaid && (
-              <p className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="status">
-                Payment for booking <span className="font-display font-bold text-bone">{unpaid}</span> was not completed. The
-                request is still with us; the link to pay is in your confirmation email.
+              <div className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="status">
+                <p>
+                  Payment for booking <span className="font-display font-bold text-bone">{unpaid}</span> was not completed, and
+                  nothing was charged. The request is still with us.{" "}
+                  {retryPay
+                    ? "You can pay now, or later from the link in your confirmation email."
+                    : "The link to pay is in your confirmation email, and it keeps working."}
+                </p>
+                {retryPay && (
+                  <a href={retryPay} className="btn-primary mt-4">
+                    Pay for the call
+                  </a>
+                )}
+              </div>
+            )}
+            {payNote === "later" && (
+              <div className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="alert">
+                <p>
+                  We couldn&rsquo;t open the payment page just now, and nothing was charged. Your booking is not affected.
+                  Try again in a minute{retryPay ? "." : ", from the link in your confirmation email."}
+                </p>
+                {retryPay && (
+                  <a href={retryPay} className="btn-primary mt-4">
+                    Try again
+                  </a>
+                )}
+              </div>
+            )}
+            {payNote === "gone" && (
+              <p className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="alert">
+                That link to pay doesn&rsquo;t match a call on our calendar, so nothing was charged. The call may have been
+                moved or cancelled. Reply to your confirmation email and we&rsquo;ll sort it out.
+              </p>
+            )}
+            {payNote === "off" && (
+              <p className="mb-8 rounded-xl2 border border-line bg-ink-panel px-6 py-5 text-[15px] text-muted" role="alert">
+                Paying by card isn&rsquo;t available right now, and nothing was charged. We&rsquo;ll email you an invoice
+                for the call instead.
               </p>
             )}
             {/* NOT keyed on the session any more. The key remounted the wizard whenever
