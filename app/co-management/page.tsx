@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Faq from "@/components/Faq";
 import FeedRig from "@/components/FeedRig";
+import HomeLink from "@/components/HomeLink";
 import MiniForm, { type MiniField } from "@/components/MiniForm";
 import SteerLoop from "@/components/SteerLoop";
 import { requestCoManagement } from "@/app/actions";
@@ -193,9 +194,9 @@ export default function CoManagement() {
           {/* The home page's software section is hidden with the rest while
               COMANAGEMENT_LIVE is false, so there is nothing to link to. */}
           {COMANAGEMENT_LIVE && (
-            <Link href="/#software" className="text-sm font-semibold text-flare hover:underline">
+            <HomeLink hash="#software" className="text-sm font-semibold text-flare hover:underline">
               See the software it runs on
-            </Link>
+            </HomeLink>
           )}
         </div>
       </section>

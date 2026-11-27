@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { HAS_REVIEWS, NAV } from "@/lib/site";
 import { Graffiti } from "./brand";
+import HomeLink from "./HomeLink";
 
 /**
  * THE MOBILE MENU USED TO CLOSE ON THE PATHNAME, AND THAT IS WHY "BOOK A CONSULT" LOOKED
@@ -85,9 +86,10 @@ export default function Nav() {
             its outlines are about 2px in an 867px-wide source, so they scale to nothing: at
             28px the crown and the bursts are indistinguishable noise and MIGAS is a smudge. It
             resolves at 32px and is clean at 40, which fits a 68px bar with room to spare. */}
-        <Link href="/" className="flex items-center" aria-label="MI Gas home">
+        {/* HomeLink, not Link: on the test address "/" is the proposal. */}
+        <HomeLink className="flex items-center" aria-label="MI Gas home">
           <Graffiti className="h-10 w-auto" />
-        </Link>
+        </HomeLink>
 
         <nav className="hidden items-center gap-7 md:flex" aria-label="Main">
           {HEADER_NAV.map((i) => {

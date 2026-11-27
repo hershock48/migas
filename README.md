@@ -411,7 +411,7 @@ Kevin went through the launch list with him by phone. From the transcript:
 | The lines under each session | Read to him. No answer is audible on the recording. |
 | Moving a call | The 24-hour draft was put to him and he agreed. Published, without the draft's second sentence. |
 | Is what they tell him confidential | Not answered. He raised that he may run an AI note-taker on calls, which the answer has to account for. Still hidden. |
-| The four Instagram and four Patreon posts | He was texting links to Kevin during the call. They are not in the repo yet. |
+| The four Instagram and four Patreon posts | He texted the eight links during the call and they went in on 2026-11-23 (`INSTAGRAM_POSTS`, `PATREON_POSTS`). The four Instagram pictures are still owed. |
 
 **Microsoft mail has a deadline.** Sending through a Microsoft 365 mailbox with
 a password (which is what plain SMTP is) still works for existing accounts,
@@ -423,6 +423,20 @@ avoids building on something that is being withdrawn.
 **What changed in the code for this:** `MIGAS_BUSY_ICS_URL` takes several
 links (`lib/busy.ts`), each read on its own so one that fails does not drop
 the others, and the reschedule answer is live.
+
+## The address to send him, and the logo (2026-11-27)
+
+`https://migas.glazedweb.com` on its own is the **proposal** from August, with
+the old prices in it. The site is `https://migas.glazedweb.com/demo`. Give out
+the second one. `/consulting`, `/connect` and `/admin` open the site at either
+spelling.
+
+Checking the links before they went to him found that the logo on every page
+pointed at `/`, so one tap on it from inside the site opened the proposal, and
+every page logged a 404 for the logo's prefetch. Home links now go through
+`components/HomeLink.tsx`, which sends them to `/demo` on that host and to `/`
+anywhere else. The whole split comes out on cutover day (see Going live), and
+the proposal can come down sooner by deleting the `rewrites()` block.
 
 ## Schedule and pay, and the reminder
 

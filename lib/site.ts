@@ -81,6 +81,16 @@
  */
 export const COMANAGEMENT_LIVE = false;
 
+/**
+ * THE TEST ADDRESS. On this host the root is the proposal and the site itself
+ * is under /demo. next.config.ts does the split and has to name the same host;
+ * it cannot import this file, so the two are kept in step by hand.
+ * components/HomeLink.tsx reads these so the logo stays inside the site. Both
+ * go away with the rest of the pitch scaffolding.
+ */
+export const PITCH_HOST = "migas.glazedweb.com";
+export const PITCH_HOME = "/demo";
+
 export const SITE = {
   name: "MI Gas",
   // His Patreon describes the work more sharply than his own website does:

@@ -33,6 +33,12 @@ const nextConfig: NextConfig = {
   // drops off after the first click. Nothing 404s, and the alternative is rewriting
   // every href in the app for the benefit of a temporary host.
   //
+  // The one link that wart broke was the home link. "/" on this host is the proposal,
+  // so the logo took a visitor out of the site and into the pitch, and its prefetch
+  // logged a 404 on every page. Found 2026-11-27. Home links go through
+  // components/HomeLink.tsx, which sends them to /demo on this host. The host name
+  // below has to match PITCH_HOST in lib/site.ts.
+  //
   // Delete this block and public/pitch/migas the day they sign or pass.
   async rewrites() {
     const onPitchHost = [{ type: "host" as const, value: "migas.glazedweb.com" }];
